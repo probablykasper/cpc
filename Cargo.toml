@@ -1,0 +1,8 @@
+[package]
+name = "cpc"
+version = "0.1.0"
+authors = ["Kasper <kasperkh.kh@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+logos = "0.9.7"
