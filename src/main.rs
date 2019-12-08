@@ -1,6 +1,6 @@
 use std::time::{Instant};
-// use num_rational::BigRational;
 use decimal::d128;
+use std::str::FromStr;
 
 #[derive(Debug)]
 enum Operator {
@@ -24,7 +24,7 @@ enum Token {
 
 type TokenVector = Vec<Token>;
 
-fn lex(input: &str) -> Option<TokenVector> {
+fn lex(input: &str) -> Result<TokenVector, String> {
 
   let mut chars = input.chars().enumerate().peekable();
   let mut tokens: TokenVector = vec![];
@@ -57,25 +57,27 @@ fn lex(input: &str) -> Option<TokenVector> {
             break;
           }
         }
-        match &input[start_index..end_index].parse::<d128>() {
+        
+        match d128::from_str(&input[start_index..end_index]) {
           Ok(number) => {
-            tokens.push(Token::Number(*number));
-            println!("parsed as d128: {}", number);
+            if d128::get_status().is_empty() {
+              tokens.push(Token::Number(number));
+            } else {
+              return Err(format!("Error parsing d128 number: {}", &input[start_index..end_index]));
+            }
           },
-          Err(e) => {
-            println!("{:?}", e);
-            return None;
+          Err(_e) => {
+            return Err("Error parsing d128 number (This should not happen because d128 does not throw errors)".to_owned());
           }
         };
 
       },
       _ => {
-        println!("{}", current_char);
-        return None;
+        return Err(format!("Unknown character: {}", current_char));
       },
     }
   };
-  return Some(tokens)
+  return Ok(tokens)
 }
 
 fn main() {
@@ -86,8 +88,8 @@ fn main() {
   let s = if args.len() == 2 { &args[1] } else { "0.1" };
 
   match lex(s) {
-    Some(vector) => println!("{:?}", vector),
-    None => println!("Error"),
+    Ok(vector) => println!("{:?}", vector),
+    Err(e) => println!("lexing error: {}", e),
   }
   
   let duration = Instant::now().duration_since(now).as_nanos() as f32;
