@@ -1,5 +1,6 @@
 use std::time::{Instant};
-// use num::rational::BigRational;
+// use num_rational::BigRational;
+use decimal::d128;
 
 #[derive(Debug)]
 enum Operator {
@@ -15,30 +16,21 @@ enum Operator {
 }
 use Operator::*;
 
-// #[derive(Debug)]
-// enum Number {
-//   FloatNumber(i32),
-//   BigRationalNumber(BigRational),
-// }
-// use Number::*;
-
 #[derive(Debug)]
 enum Token {
   Operator(Operator),
-  // Number(Number),
+  Number(d128),
 }
 
 type TokenVector = Vec<Token>;
 
 fn lex(input: &str) -> Option<TokenVector> {
 
-  let chars:Vec<char> = input.chars().collect();
+  let mut chars = input.chars().enumerate().peekable();
   let mut tokens: TokenVector = vec![];
   
-  let mut index = 0;
-  while index < chars.len() {
-    let value = chars[index];
-    match value {
+  while let Some((index, current_char)) = chars.next() {
+    match current_char {
       '+' => tokens.push(Token::Operator(Plus)),
       '-' => tokens.push(Token::Operator(Minus)),
       '*' => tokens.push(Token::Operator(Multiply)),
@@ -52,36 +44,47 @@ fn lex(input: &str) -> Option<TokenVector> {
       value if value.is_whitespace() => continue,
       value if value.is_alphabetic() => {
 
-        // word
-        
       },
       '.' | '0'..='9' => {
 
-        // numbers
-        if value == '.' {
-          if !chars[index+1].is_digit(10) { return None };
+        let start_index = index;
+        let mut end_index = index+1;
+        while let Some((_idk, current_char)) = chars.peek() {
+          if current_char == &'.' || current_char.is_digit(10) {
+            chars.next();
+            end_index += 1;
+          } else {
+            break;
+          }
         }
+        match &input[start_index..end_index].parse::<d128>() {
+          Ok(number) => {
+            tokens.push(Token::Number(*number));
+            println!("parsed as d128: {}", number);
+          },
+          Err(e) => {
+            println!("{:?}", e);
+            return None;
+          }
+        };
 
       },
       _ => {
-        println!("{}", value);
+        println!("{}", current_char);
         return None;
       },
     }
-    index += 1;
   };
   return Some(tokens)
 }
 
-mod bignumbers;
 fn main() {
-  bignumbers::main();
   let now = Instant::now();
   
-  // use std::env;
-  // let s = &args[1];
-  // let s = "3 +pi^ (1+1* 2)-pi^3 "; // = 3
-  let s = "*+(/)";
+  use std::env;
+  let args: Vec<String> = env::args().collect();
+  let s = if args.len() == 2 { &args[1] } else { "0.1" };
+
   match lex(s) {
     Some(vector) => println!("{:?}", vector),
     None => println!("Error"),
