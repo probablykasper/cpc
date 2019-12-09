@@ -15,9 +15,17 @@ pub enum Operator {
 }
 
 #[derive(Debug)]
+pub enum Constant {
+  Pi,
+  EulersNumber,
+}
+
+#[derive(Debug)]
 pub enum Token {
   Operator(Operator),
   Number(d128),
+  Function(String),
+  Constant(Constant),
 }
 
 pub type TokenVector = Vec<Token>;

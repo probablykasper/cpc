@@ -6,4 +6,5 @@ edition = "2018"
 
 [dependencies]
 nom = "5.0"
+unicode-segmentation = "1.6.0"
 decimal = "2.0.4"
