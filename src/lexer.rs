@@ -34,6 +34,8 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           if end_index >= start_index + max_word_length - 1 { break; }
 
           if current_char.is_alphabetic() {
+            println!("{}", current_char);
+            byte_index += current_char.len_utf8();
             chars.next();
             end_index += 1;
           } else {
@@ -42,7 +44,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         }
 
         let string = &input[start_index..=end_index];
-        println!("{}", string);
+        println!("STR {}", string);
         match string {
           
           // MAKE SURE max_word_length IS EQUAL TO THE
@@ -89,6 +91,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         let mut end_index = byte_index;
         while let Some((_index, current_char)) = chars.peek() {
           if current_char == &'.' || current_char.is_digit(10) {
+            byte_index += current_char.len_utf8();
             chars.next();
             end_index += 1;
           } else {
