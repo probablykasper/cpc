@@ -8,6 +8,7 @@ pub enum Operator {
   Multiply,
   Divide,
   PercentOrModulo,
+  Modulo,
   Caret,
   Factorial,
   LeftParen,
@@ -15,17 +16,41 @@ pub enum Operator {
 }
 
 #[derive(Debug)]
-pub enum Constant {
+pub enum Identifier {
   Pi,
-  EulersNumber,
+  E,
+
+  Sqrt,
+  Cbrt,
+
+  Log,
+  Ln,
+  Exp,
+  
+  Ceil,
+  Floor,
+  Round,
+  Fabs,
+
+  Sin,
+  Cos,
+  Tan,
+  Asin,
+  Acos,
+  Atan,
+  Sinh,
+  Cosh,
+  Tanh,
+  Asinh,
+  Acosh,
+  Atanh,
 }
 
 #[derive(Debug)]
 pub enum Token {
   Operator(Operator),
   Number(d128),
-  Function(String),
-  Constant(Constant),
+  Identifier(Identifier),
 }
 
 pub type TokenVector = Vec<Token>;

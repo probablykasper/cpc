@@ -1,13 +1,14 @@
 use std::str::FromStr;
 use decimal::d128;
 use crate::{Token, TokenVector};
-use crate::Operator::{Caret, Divide, Factorial, LeftParen, Minus, Multiply, PercentOrModulo, Plus, RightParen};
-use crate::Constant::{Pi, EulersNumber};
+use crate::Operator::{Caret, Divide, Factorial, LeftParen, Minus, Modulo, Multiply, PercentOrModulo, Plus, RightParen};
+use crate::Identifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Pi, Round, Sin, Sinh, Sqrt, Tan, Tanh, E};
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
 
   let mut chars = input.chars().enumerate().peekable();
   let mut tokens: TokenVector = vec![];
+  let max_word_length = 5;
   
   let mut byte_index = 0;
   while let Some((_index, current_char)) = chars.next() {
@@ -21,7 +22,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       '!' => tokens.push(Token::Operator(Factorial)),
       '(' => tokens.push(Token::Operator(LeftParen)),
       ')' => tokens.push(Token::Operator(RightParen)),
-      'π' => tokens.push(Token::Constant(Pi)),
+      'π' => tokens.push(Token::Identifier(Pi)),
       ',' => continue,
       value if value.is_whitespace() => continue,
       value if value.is_alphabetic() => {
@@ -29,6 +30,9 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         let start_index = byte_index;
         let mut end_index = byte_index;
         while let Some((_index, current_char)) = chars.peek() {
+          // don't loop more than max_word_length:
+          if end_index >= start_index + max_word_length - 1 { break; }
+
           if current_char.is_alphabetic() {
             chars.next();
             end_index += 1;
@@ -38,9 +42,41 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         }
 
         let string = &input[start_index..=end_index];
+        println!("{}", string);
         match string {
-          "pi" => tokens.push(Token::Constant(Pi)),
-          "e" => tokens.push(Token::Constant(EulersNumber)),
+          
+          // MAKE SURE max_word_length IS EQUAL TO THE
+          // LENGTH OF THE LONGEST STRING IN THIS MATCH STATEMENT.
+
+          "pi" => tokens.push(Token::Identifier(Pi)),
+          "e" => tokens.push(Token::Identifier(E)),
+          
+          "mod" => tokens.push(Token::Operator(Modulo)),
+
+          "sqrt" => tokens.push(Token::Identifier(Sqrt)),
+          "cbrt" => tokens.push(Token::Identifier(Cbrt)),
+          
+          "log" => tokens.push(Token::Identifier(Log)),
+          "ln" => tokens.push(Token::Identifier(Ln)),
+          "exp" => tokens.push(Token::Identifier(Exp)),
+
+          "ceil" => tokens.push(Token::Identifier(Ceil)),
+          "floor" => tokens.push(Token::Identifier(Floor)),
+          "round" | "rint" => tokens.push(Token::Identifier(Round)),
+          "fabs" => tokens.push(Token::Identifier(Fabs)),
+
+          "sin" => tokens.push(Token::Identifier(Sin)),
+          "cos" => tokens.push(Token::Identifier(Cos)),
+          "tan" => tokens.push(Token::Identifier(Tan)),
+          "asin" => tokens.push(Token::Identifier(Asin)),
+          "acos" => tokens.push(Token::Identifier(Acos)),
+          "atan" => tokens.push(Token::Identifier(Atan)),
+          "sinh" => tokens.push(Token::Identifier(Sinh)),
+          "cosh" => tokens.push(Token::Identifier(Cosh)),
+          "tanh" => tokens.push(Token::Identifier(Tanh)),
+          "asinh" => tokens.push(Token::Identifier(Asinh)),
+          "acosh" => tokens.push(Token::Identifier(Acosh)),
+          "atanh" => tokens.push(Token::Identifier(Atanh)),
           _ => {
             return Err(format!("Invalid string: {}", string))
           }
