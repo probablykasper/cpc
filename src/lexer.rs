@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use decimal::d128;
 use crate::{Token, TokenVector};
-use crate::Operator::{Caret, Divide, Factorial, LeftParen, Minus, Modulo, Multiply, PercentOrModulo, Plus, RightParen};
+use crate::Operator::{Caret, Divide, Factorial, LeftParen, Minus, Modulo, ModuloOrPercent, Multiply, Of, Plus, RightParen, To};
 use crate::Identifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Pi, Round, Sin, Sinh, Sqrt, Tan, Tanh, E};
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
@@ -10,6 +10,9 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
   let mut tokens: TokenVector = vec![];
   let max_word_length = 5;
   
+  let mut left_paren_count = 0;
+  let mut right_paren_count = 0;
+
   let mut byte_index = 0;
   while let Some((_index, current_char)) = chars.next() {
     match current_char {
@@ -17,11 +20,17 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       '-' => tokens.push(Token::Operator(Minus)),
       '*' => tokens.push(Token::Operator(Multiply)),
       '/' => tokens.push(Token::Operator(Divide)),
-      '%' => tokens.push(Token::Operator(PercentOrModulo)),
+      '%' => tokens.push(Token::Operator(ModuloOrPercent)),
       '^' => tokens.push(Token::Operator(Caret)),
       '!' => tokens.push(Token::Operator(Factorial)),
-      '(' => tokens.push(Token::Operator(LeftParen)),
-      ')' => tokens.push(Token::Operator(RightParen)),
+      '(' => {
+        left_paren_count += 1;
+        tokens.push(Token::Operator(LeftParen));
+      },
+      ')' => {
+        right_paren_count += 1;
+        tokens.push(Token::Operator(RightParen));
+      },
       'π' => tokens.push(Token::Identifier(Pi)),
       ',' => continue,
       value if value.is_whitespace() => continue,
@@ -34,7 +43,6 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           if end_index >= start_index + max_word_length - 1 { break; }
 
           if current_char.is_alphabetic() {
-            println!("{}", current_char);
             byte_index += current_char.len_utf8();
             chars.next();
             end_index += 1;
@@ -44,11 +52,13 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         }
 
         let string = &input[start_index..=end_index];
-        println!("STR {}", string);
         match string {
           
           // MAKE SURE max_word_length IS EQUAL TO THE
           // LENGTH OF THE LONGEST STRING IN THIS MATCH STATEMENT.
+
+          "to" => tokens.push(Token::Operator(To)),
+          "of" => tokens.push(Token::Operator(Of)),
 
           "pi" => tokens.push(Token::Identifier(Pi)),
           "e" => tokens.push(Token::Identifier(E)),
@@ -124,5 +134,20 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
     // (aka "user-perceived characters").
     byte_index += current_char.len_utf8();
   };
+
+  if left_paren_count > right_paren_count {
+    println!("Added right_parens");
+    let missing_right_parens = left_paren_count - right_paren_count;
+    println!("{}", missing_right_parens);
+    for _ in 0..missing_right_parens {
+      tokens.push(Token::Operator(RightParen));
+    }
+  } else if left_paren_count < right_paren_count {
+    println!("Added left_parens");
+    let missing_left_parens = right_paren_count - left_paren_count;
+    for _ in 0..missing_left_parens {
+      tokens.insert(0, Token::Operator(LeftParen));
+    }
+  }
   return Ok(tokens)
 }

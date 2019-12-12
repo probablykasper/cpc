@@ -7,12 +7,14 @@ pub enum Operator {
   Minus,
   Multiply,
   Divide,
-  PercentOrModulo,
+  ModuloOrPercent,
   Modulo,
   Caret,
   Factorial,
   LeftParen,
   RightParen,
+  To,
+  Of,
 }
 
 #[derive(Debug)]
