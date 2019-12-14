@@ -34,8 +34,8 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         tokens.push(Token::Operator(RightParen));
       },
       'π' => tokens.push(Token::Identifier(Pi)),
-      ',' => continue,
-      value if value.is_whitespace() => continue,
+      ',' => {},
+      value if value.is_whitespace() => {},
       value if value.is_alphabetic() => {
 
         let start_index = byte_index;
