@@ -7,12 +7,16 @@ pub enum Operator {
   Minus,
   Multiply,
   Divide,
-  ModuloOrPercent,
   Modulo,
+  Percent,
   Caret,
   Factorial,
-  LeftParen,
-  RightParen,
+  LeftParen, // lexer only
+  RightParen, // lexer only
+}
+
+#[derive(Debug)]
+pub enum TextOperator {
   To,
   Of,
 }
@@ -49,10 +53,17 @@ pub enum Identifier {
 }
 
 #[derive(Debug)]
+pub enum Unit {
+  Normal,
+}
+
+#[derive(Debug)]
 pub enum Token {
   Operator(Operator),
-  Number(d128),
+  Number((d128, Unit)),
   Identifier(Identifier),
+  Paren, // parser only
+  TextOperator(TextOperator),
 }
 
 pub type TokenVector = Vec<Token>;
@@ -67,7 +78,9 @@ fn main() {
   let s = if args.len() == 2 { &args[1] } else { "0.1" };
 
   match lexer::lex(s) {
-    Ok(vector) => println!("{:?}", vector),
+    Ok(tokens) => {
+      println!("Lexed TokenVector: {:?}", tokens);
+    },
     Err(e) => println!("lexing error: {}", e),
   }
   

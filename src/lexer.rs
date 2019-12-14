@@ -1,8 +1,10 @@
 use std::str::FromStr;
 use decimal::d128;
 use crate::{Token, TokenVector};
-use crate::Operator::{Caret, Divide, Factorial, LeftParen, Minus, Modulo, ModuloOrPercent, Multiply, Of, Plus, RightParen, To};
+use crate::Operator::{Percent, Caret, Divide, Factorial, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
+use crate::TextOperator::{Of, To};
 use crate::Identifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Pi, Round, Sin, Sinh, Sqrt, Tan, Tanh, E};
+use crate::Unit::{Normal};
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
 
@@ -20,7 +22,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       '-' => tokens.push(Token::Operator(Minus)),
       '*' => tokens.push(Token::Operator(Multiply)),
       '/' => tokens.push(Token::Operator(Divide)),
-      '%' => tokens.push(Token::Operator(ModuloOrPercent)),
+      '%' => tokens.push(Token::Operator(Modulo)),
       '^' => tokens.push(Token::Operator(Caret)),
       '!' => tokens.push(Token::Operator(Factorial)),
       '(' => {
@@ -57,8 +59,8 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           // MAKE SURE max_word_length IS EQUAL TO THE
           // LENGTH OF THE LONGEST STRING IN THIS MATCH STATEMENT.
 
-          "to" => tokens.push(Token::Operator(To)),
-          "of" => tokens.push(Token::Operator(Of)),
+          "to" => tokens.push(Token::TextOperator(To)),
+          "of" => tokens.push(Token::TextOperator(Of)),
 
           "pi" => tokens.push(Token::Identifier(Pi)),
           "e" => tokens.push(Token::Identifier(E)),
@@ -113,7 +115,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         match d128::from_str(number_string) {
           Ok(number) => {
             if d128::get_status().is_empty() {
-              tokens.push(Token::Number(number));
+              tokens.push(Token::Number((number, Normal)));
             } else {
               return Err(format!("Error parsing d128 number: {}", number_string));
             }
@@ -135,6 +137,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
     byte_index += current_char.len_utf8();
   };
 
+  // auto insert missing parentheses in first and last position
   if left_paren_count > right_paren_count {
     println!("Added right_parens");
     let missing_right_parens = left_paren_count - right_paren_count;
@@ -149,5 +152,37 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       tokens.insert(0, Token::Operator(LeftParen));
     }
   }
+
+  // wrap in parentheses acting as start and end for parsing.
+  tokens.push(Token::Operator(RightParen));
+  tokens.insert(0, Token::Operator(LeftParen));
+
+  // the lexer parses percentages as modulo, so here modulos become percentages
+  let mut token_index = 0;
+  for _i in 1..tokens.len() {
+    match tokens[token_index] {
+      Token::Operator(Modulo) => {
+        match &tokens[token_index + 1] {
+          Token::TextOperator(Of) => {
+            // for example "10% of 1km" should be a percentage, not modulo
+            tokens[token_index] = Token::Operator(Percent);
+          },
+          Token::Operator(operator) => {
+            match operator {
+              LeftParen => {},
+              _ => {
+                // for example "10%*2" should be a percentage, but "10%(2)" should be modulo
+                tokens[token_index] = Token::Operator(Percent);
+              }
+            }
+          },
+          _ => {},
+        }
+      }
+      _ => {},
+    }
+    token_index += 1;
+  }
+
   return Ok(tokens)
 }
