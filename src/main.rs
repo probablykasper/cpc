@@ -1,7 +1,7 @@
 use std::time::{Instant};
 use decimal::d128;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Operator {
   Plus,
   Minus,
@@ -15,17 +15,20 @@ pub enum Operator {
   RightParen, // lexer only
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum TextOperator {
   To,
   Of,
 }
 
-#[derive(Debug)]
-pub enum Identifier {
+#[derive(Clone, Debug)]
+pub enum Constant {
   Pi,
   E,
+}
 
+#[derive(Clone, Debug)]
+pub enum FunctionIdentifier {
   Sqrt,
   Cbrt,
 
@@ -52,16 +55,17 @@ pub enum Identifier {
   Atanh,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Unit {
   Normal,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Token {
   Operator(Operator),
   Number((d128, Unit)),
-  Identifier(Identifier),
+  FunctionIdentifier(FunctionIdentifier),
+  Constant(Constant),
   Paren, // parser only
   TextOperator(TextOperator),
 }
@@ -69,21 +73,32 @@ pub enum Token {
 pub type TokenVector = Vec<Token>;
 
 mod lexer;
+mod parser;
 
 fn main() {
-  let now = Instant::now();
+  let lex_start = Instant::now();
   
   use std::env;
   let args: Vec<String> = env::args().collect();
-  let s = if args.len() == 2 { &args[1] } else { "0.1" };
+  let s = if args.len() >= 2 { &args[1] } else { "0.1" };
 
   match lexer::lex(s) {
     Ok(tokens) => {
+      let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
       println!("Lexed TokenVector: {:?}", tokens);
+
+      let parse_start = Instant::now();
+      match parser::parse(&tokens) {
+        Ok(ast) => {
+          let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
+          println!("Parsed AstNode: {:#?}", ast);
+          println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
+          println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
+        },
+        Err(e) => println!("parsing error: {}", e),
+      }
     },
     Err(e) => println!("lexing error: {}", e),
   }
   
-  let duration = Instant::now().duration_since(now).as_nanos() as f32;
-  println!("\u{23f1}  {:.3}ms lexing", duration/1000.0/1000.0);
 }

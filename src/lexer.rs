@@ -3,7 +3,8 @@ use decimal::d128;
 use crate::{Token, TokenVector};
 use crate::Operator::{Percent, Caret, Divide, Factorial, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::TextOperator::{Of, To};
-use crate::Identifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Pi, Round, Sin, Sinh, Sqrt, Tan, Tanh, E};
+use crate::Constant::{E, Pi};
+use crate::FunctionIdentifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Round, Sin, Sinh, Sqrt, Tan, Tanh};
 use crate::Unit::{Normal};
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
@@ -33,7 +34,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         right_paren_count += 1;
         tokens.push(Token::Operator(RightParen));
       },
-      'π' => tokens.push(Token::Identifier(Pi)),
+      'π' => tokens.push(Token::Constant(Pi)),
       ',' => {},
       value if value.is_whitespace() => {},
       value if value.is_alphabetic() => {
@@ -62,37 +63,37 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "to" => tokens.push(Token::TextOperator(To)),
           "of" => tokens.push(Token::TextOperator(Of)),
 
-          "pi" => tokens.push(Token::Identifier(Pi)),
-          "e" => tokens.push(Token::Identifier(E)),
+          "pi" => tokens.push(Token::Constant(Pi)),
+          "e" => tokens.push(Token::Constant(E)),
           
           "mod" => tokens.push(Token::Operator(Modulo)),
 
-          "sqrt" => tokens.push(Token::Identifier(Sqrt)),
-          "cbrt" => tokens.push(Token::Identifier(Cbrt)),
+          "sqrt" => tokens.push(Token::FunctionIdentifier(Sqrt)),
+          "cbrt" => tokens.push(Token::FunctionIdentifier(Cbrt)),
           
-          "log" => tokens.push(Token::Identifier(Log)),
-          "ln" => tokens.push(Token::Identifier(Ln)),
-          "exp" => tokens.push(Token::Identifier(Exp)),
+          "log" => tokens.push(Token::FunctionIdentifier(Log)),
+          "ln" => tokens.push(Token::FunctionIdentifier(Ln)),
+          "exp" => tokens.push(Token::FunctionIdentifier(Exp)),
 
-          "ceil" => tokens.push(Token::Identifier(Ceil)),
-          "floor" => tokens.push(Token::Identifier(Floor)),
-          "round" | "rint" => tokens.push(Token::Identifier(Round)),
-          "fabs" => tokens.push(Token::Identifier(Fabs)),
+          "ceil" => tokens.push(Token::FunctionIdentifier(Ceil)),
+          "floor" => tokens.push(Token::FunctionIdentifier(Floor)),
+          "round" | "rint" => tokens.push(Token::FunctionIdentifier(Round)),
+          "fabs" => tokens.push(Token::FunctionIdentifier(Fabs)),
 
-          "sin" => tokens.push(Token::Identifier(Sin)),
-          "cos" => tokens.push(Token::Identifier(Cos)),
-          "tan" => tokens.push(Token::Identifier(Tan)),
-          "asin" => tokens.push(Token::Identifier(Asin)),
-          "acos" => tokens.push(Token::Identifier(Acos)),
-          "atan" => tokens.push(Token::Identifier(Atan)),
-          "sinh" => tokens.push(Token::Identifier(Sinh)),
-          "cosh" => tokens.push(Token::Identifier(Cosh)),
-          "tanh" => tokens.push(Token::Identifier(Tanh)),
-          "asinh" => tokens.push(Token::Identifier(Asinh)),
-          "acosh" => tokens.push(Token::Identifier(Acosh)),
-          "atanh" => tokens.push(Token::Identifier(Atanh)),
+          "sin" => tokens.push(Token::FunctionIdentifier(Sin)),
+          "cos" => tokens.push(Token::FunctionIdentifier(Cos)),
+          "tan" => tokens.push(Token::FunctionIdentifier(Tan)),
+          "asin" => tokens.push(Token::FunctionIdentifier(Asin)),
+          "acos" => tokens.push(Token::FunctionIdentifier(Acos)),
+          "atan" => tokens.push(Token::FunctionIdentifier(Atan)),
+          "sinh" => tokens.push(Token::FunctionIdentifier(Sinh)),
+          "cosh" => tokens.push(Token::FunctionIdentifier(Cosh)),
+          "tanh" => tokens.push(Token::FunctionIdentifier(Tanh)),
+          "asinh" => tokens.push(Token::FunctionIdentifier(Asinh)),
+          "acosh" => tokens.push(Token::FunctionIdentifier(Acosh)),
+          "atanh" => tokens.push(Token::FunctionIdentifier(Atanh)),
           _ => {
-            return Err(format!("Invalid string: {}", string))
+            return Err(format!("Invalid string: {}", string));
           }
         }
         
@@ -139,14 +140,11 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
 
   // auto insert missing parentheses in first and last position
   if left_paren_count > right_paren_count {
-    println!("Added right_parens");
     let missing_right_parens = left_paren_count - right_paren_count;
-    println!("{}", missing_right_parens);
     for _ in 0..missing_right_parens {
       tokens.push(Token::Operator(RightParen));
     }
   } else if left_paren_count < right_paren_count {
-    println!("Added left_parens");
     let missing_left_parens = right_paren_count - left_paren_count;
     for _ in 0..missing_left_parens {
       tokens.insert(0, Token::Operator(LeftParen));
@@ -184,5 +182,5 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
     token_index += 1;
   }
 
-  return Ok(tokens)
+  Ok(tokens)
 }
