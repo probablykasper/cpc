@@ -71,6 +71,25 @@ pub enum Unit {
   Decade,
   Century,
   Milleniums,
+
+  Millimeter,
+  Centimeter,
+  Decimeter,
+  Meter,
+  Kilometer,
+  Inch,
+  Foot,
+  Yard,
+  Mile,
+  NauticalMile,
+
+  SquareMeter,
+  // etc
+
+  CubicMeter,
+  //etc
+
+  
 }
 
 #[derive(Clone, Debug)]

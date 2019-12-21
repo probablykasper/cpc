@@ -107,7 +107,61 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "decade" | "decades" => tokens.push(Token::Unit(Decade)),
           "century" | "centuries" => tokens.push(Token::Unit(Century)),
           "millenium" | "milleniums" => tokens.push(Token::Unit(Milleniums)),
-          
+
+          "mm" | "millimeter" | "millimeters" => tokens.push(Token::Unit(Millimeter)),
+          "cm" | "centimeter" | "centimeters" => tokens.push(Token::Unit(Centimeter)),
+          "dm" | "decimeter" | "decimeters" => tokens.push(Token::Unit(Centimeter)),
+          "m" | "meter" | "meters" => tokens.push(Token::Unit(Meter)),
+          "km" | "kilometer" | "kilometers" => tokens.push(Token::Unit(Kilometer)),
+          "in" | "inch" | "inches" => tokens.push(Token::Unit(Inch)),
+          "ft" | "foot" | "feet" => tokens.push(Token::Unit(Foot)),
+          "yd" | "yard" | "yards" => tokens.push(Token::Unit(Yard)),
+          "mi" | "mile" | "miles" => tokens.push(Token::Unit(Mile)),
+          "nmi" => tokens.push(Token::Unit(NauticalMile)),
+
+          // two word unit
+          "nautical" | "square" | "cubic" => {
+            // skip past whitespace
+            if let Some((_index, current_char)) = chars.peek() {
+              if current_char.is_whitespace() {
+                byte_index += current_char.len_utf8();
+                chars.next();
+              }
+            }
+            // prevent off-by-one error causing string to be " mile"
+            byte_index += current_char.len_utf8();
+            chars.next();
+
+            let start_index = byte_index;
+            let mut end_index = byte_index;
+            while let Some((_index, current_char)) = chars.peek() {
+              // don't loop more than max_word_length:
+              if end_index >= start_index + max_word_length - 1 { break; }
+
+              if current_char.is_alphabetic() {
+                byte_index += current_char.len_utf8();
+                end_index += 1;
+                chars.next();
+              } else {
+                break;
+              }
+            }
+
+            let second_string = &input[start_index..=end_index];
+            let full_string = format!("{} {}", string, second_string);
+            match full_string.as_str() {
+              "nautical mile" => tokens.push(Token::Unit(NauticalMile)),
+              
+              "square meter" | "square meters" => tokens.push(Token::Unit(SquareMeter)),
+
+              "cubic meter" | "cubic meters" => tokens.push(Token::Unit(CubicMeter)),
+
+              _ => {
+                return Err(format!("Invalid string: {}", string));
+              }
+            }
+          }
+
           _ => {
             return Err(format!("Invalid string: {}", string));
           }
