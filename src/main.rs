@@ -57,17 +57,32 @@ pub enum FunctionIdentifier {
 
 #[derive(Clone, Copy, Debug)]
 pub enum Unit {
-  Normal,
+  Nanosecond,
+  Microsecond,
+  Millisecond,
+  Second,
+  Minute,
+  Hour,
+  Day,
+  Week,
+  Month,
+  Quarter,
+  Year,
+  Decade,
+  Century,
+  Milleniums,
 }
 
 #[derive(Clone, Debug)]
 pub enum Token {
   Operator(Operator),
-  Number((d128, Unit)),
+  Number(d128),
   FunctionIdentifier(FunctionIdentifier),
   Constant(Constant),
   Paren, // parser only
   TextOperator(TextOperator),
+  Negative, // parser only
+  Unit(Unit),
 }
 
 pub type TokenVector = Vec<Token>;

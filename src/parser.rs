@@ -6,14 +6,14 @@ use crate::TextOperator::{To, Of};
 #[derive(Debug)]
 pub struct AstNode {
     children: Vec<AstNode>,
-    entry: Token,
+    token: Token,
 }
 
 impl AstNode {
   pub fn new(token: Token) -> AstNode {
     AstNode {
       children: Vec::new(),
-      entry: token,
+      token: token,
     }
   }
 }
@@ -118,12 +118,11 @@ fn parse_level_4(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 
 // level 5 precedence: !, percent
 fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
-  let (mut node, mut pos) = parse_level_6(tokens, pos)?;
+  let (mut node, mut pos) = parse_level_6(tokens, pos, None)?;
   loop {
     let token = tokens.get(pos);
     match token {
       Some(&Token::Operator(Factorial)) | Some(&Token::Operator(Percent)) => {
-        
         // Here we are handling unary operators, aka stuff written as
         // "Number Operator" (3!) instead of "Number Operator Number" (3+3).
         // Therefore, if we find a match, we don't parse what comes after it.
@@ -132,8 +131,14 @@ fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
         node = new_node;
         pos += 1;
       },
+      Some(&Token::Unit(_unit)) => {
+        // We won't allow units to repeat, like "1min min", so we end the loop if it's found.
+        let mut new_node = AstNode::new(token.unwrap().clone());
+        new_node.children.push(node);
+        return Ok((new_node, pos + 1));
+      },
       _ => {
-        // let's say we parse 1+2. parse_level_6 then returns 1, and token
+        // let's say we parse 1+2. parse_level_7 then returns 1, and token
         // is set to plus. Plus has lower precedence than level 4, so we
         // don't do anything, and pass the number down to a lower precedence.
         return Ok((node, pos));
@@ -143,13 +148,28 @@ fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 }
 
 // level 6 precedence: numbers, parens
-fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+fn parse_level_6(tokens: &TokenVector, pos: usize, last_token: Option<Token>) -> Result<(AstNode, usize), String> {
   let token: &Token = tokens.get(pos).expect(&format!("Unexpected end of input at {}", pos));
   match token {
-    &Token::Number((_number, _unit)) => {
+    Token::Operator(Minus) => {
+      if let None = last_token {
+        let (right_node, next_pos) = parse_level_6(tokens, pos + 1, Some(Token::Operator(Minus)))?;
+        let mut new_node = AstNode::new(Token::Negative);
+        new_node.children.push(right_node);
+        Ok((new_node, next_pos))
+      } else {
+        // 3-1 might end up here?
+        return Err(format!("Unexpected unary operator {0:?} at {1}", token, pos));
+      }
+    },
+    &Token::Number(_number) => {
       let node = AstNode::new(token.clone());
       Ok((node, pos + 1))
     },
+    &Token::Unit(_unit) => {
+      let node = AstNode::new(token.clone());
+      Ok((node, pos + 1))
+    }
     Token::Constant(_constant) => {
       let node = AstNode::new(token.clone());
       Ok((node, pos + 1))
@@ -157,7 +177,7 @@ fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
     Token::FunctionIdentifier(_function_identifier) => {
       let left_paren_pos = pos + 1;
       let left_paren_token = tokens.get(left_paren_pos);
-      // check if ( comes after function identifier, like log(
+      // check if '(' comes after function identifier, like 'log('
       match left_paren_token {
         Some(&Token::Operator(LeftParen)) => {
           // parse everything inside as you would with normal parentheses,
@@ -176,8 +196,6 @@ fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
           return Err(format!("Expected ( after {} at {:?} but found {:?}", left_paren_pos, token, left_paren_token));
         }
       }
-
-      // Ok((node, pos + 1))
     },
     Token::Operator(LeftParen) => {
       parse_level_1(tokens, pos + 1).and_then(|(node, next_pos)| {

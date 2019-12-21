@@ -5,7 +5,7 @@ use crate::Operator::{Percent, Caret, Divide, Factorial, LeftParen, Minus, Modul
 use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
 use crate::FunctionIdentifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Round, Sin, Sinh, Sqrt, Tan, Tanh};
-use crate::Unit::{Normal};
+use crate::Unit::*;
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
 
@@ -92,6 +92,22 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "asinh" => tokens.push(Token::FunctionIdentifier(Asinh)),
           "acosh" => tokens.push(Token::FunctionIdentifier(Acosh)),
           "atanh" => tokens.push(Token::FunctionIdentifier(Atanh)),
+
+          "ns" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
+          "μs" | "us" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
+          "ms" | "millisecond" | "milliseconds" => tokens.push(Token::Unit(Millisecond)),
+          "s" | "sec" | "second" | "seconds" => tokens.push(Token::Unit(Second)),
+          "min" | "minute" | "minutes" => tokens.push(Token::Unit(Minute)),
+          "h" | "hour" | "hours" => tokens.push(Token::Unit(Hour)),
+          "day" | "days" => tokens.push(Token::Unit(Day)),
+          "week" | "weeks" => tokens.push(Token::Unit(Week)),
+          "mo" | "month" | "months" => tokens.push(Token::Unit(Month)),
+          "q" | "quater" | "quaters" => tokens.push(Token::Unit(Month)),
+          "yr" | "year" | "years" => tokens.push(Token::Unit(Year)),
+          "decade" | "decades" => tokens.push(Token::Unit(Decade)),
+          "century" | "centuries" => tokens.push(Token::Unit(Century)),
+          "millenium" | "milleniums" => tokens.push(Token::Unit(Milleniums)),
+          
           _ => {
             return Err(format!("Invalid string: {}", string));
           }
@@ -116,7 +132,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         match d128::from_str(number_string) {
           Ok(number) => {
             if d128::get_status().is_empty() {
-              tokens.push(Token::Number((number, Normal)));
+              tokens.push(Token::Number(number));
             } else {
               return Err(format!("Error parsing d128 number: {}", number_string));
             }
