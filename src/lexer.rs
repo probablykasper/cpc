@@ -11,7 +11,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
 
   let mut chars = input.chars().enumerate().peekable();
   let mut tokens: TokenVector = vec![];
-  let max_word_length = 5;
+  let max_word_length = 12;
   
   let mut left_paren_count = 0;
   let mut right_paren_count = 0;
