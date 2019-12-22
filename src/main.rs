@@ -8,8 +8,8 @@ pub enum Operator {
   Multiply,
   Divide,
   Modulo,
-  Percent,
   Caret,
+  Percent,
   Factorial,
   LeftParen, // lexer only
   RightParen, // lexer only
@@ -55,42 +55,7 @@ pub enum FunctionIdentifier {
   Atanh,
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum Unit {
-  Nanosecond,
-  Microsecond,
-  Millisecond,
-  Second,
-  Minute,
-  Hour,
-  Day,
-  Week,
-  Month,
-  Quarter,
-  Year,
-  Decade,
-  Century,
-  Milleniums,
-
-  Millimeter,
-  Centimeter,
-  Decimeter,
-  Meter,
-  Kilometer,
-  Inch,
-  Foot,
-  Yard,
-  Mile,
-  NauticalMile,
-
-  SquareMeter,
-  // etc
-
-  CubicMeter,
-  //etc
-
-  
-}
+mod units;
 
 #[derive(Clone, Debug)]
 pub enum Token {
@@ -101,13 +66,14 @@ pub enum Token {
   Paren, // parser only
   TextOperator(TextOperator),
   Negative, // parser only
-  Unit(Unit),
+  Unit(units::Unit),
 }
 
 pub type TokenVector = Vec<Token>;
 
 mod lexer;
 mod parser;
+mod evaluator;
 
 fn main() {
   let lex_start = Instant::now();
@@ -119,20 +85,32 @@ fn main() {
   match lexer::lex(s) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
-      println!("Lexed TokenVector: {:?}", tokens);
+      // println!("Lexed TokenVector: {:?}", tokens);
 
       let parse_start = Instant::now();
       match parser::parse(&tokens) {
         Ok(ast) => {
           let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
-          println!("Parsed AstNode: {:#?}", ast);
-          println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
-          println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
+          // println!("Parsed AstNode: {:#?}", ast);
+
+          let eval_start = Instant::now();
+          match evaluator::evaluate(&ast) {
+            Ok(answer) => {
+              let eval_time = Instant::now().duration_since(eval_start).as_nanos() as f32;
+              println!("Evaluated answer: {:#?}", answer);
+
+              println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
+              println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
+              println!("\u{23f1}  {:.3}ms evaluation", eval_time/1000.0/1000.0);
+            },
+            Err(e) => println!("Eval error: {}", e),
+          }
+          
         },
-        Err(e) => println!("parsing error: {}", e),
+        Err(e) => println!("Parsing error: {}", e),
       }
     },
-    Err(e) => println!("lexing error: {}", e),
+    Err(e) => println!("Lexing error: {}", e),
   }
   
 }

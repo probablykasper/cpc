@@ -1,12 +1,11 @@
 use crate::{Token, TokenVector};
-#[allow(unused_imports)]
 use crate::Operator::{Percent, Caret, Divide, Factorial, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::TextOperator::{To, Of};
 
 #[derive(Debug)]
 pub struct AstNode {
-    children: Vec<AstNode>,
-    token: Token,
+  pub children: Vec<AstNode>,
+  pub token: Token,
 }
 
 impl AstNode {

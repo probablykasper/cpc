@@ -5,7 +5,7 @@ use crate::Operator::{Percent, Caret, Divide, Factorial, LeftParen, Minus, Modul
 use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
 use crate::FunctionIdentifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Round, Sin, Sinh, Sqrt, Tan, Tanh};
-use crate::Unit::*;
+use crate::units::Unit::*;
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
 
@@ -106,7 +106,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "yr" | "year" | "years" => tokens.push(Token::Unit(Year)),
           "decade" | "decades" => tokens.push(Token::Unit(Decade)),
           "century" | "centuries" => tokens.push(Token::Unit(Century)),
-          "millenium" | "milleniums" => tokens.push(Token::Unit(Milleniums)),
+          "millenium" | "millenia" | "milleniums" => tokens.push(Token::Unit(Millenium)),
 
           "mm" | "millimeter" | "millimeters" => tokens.push(Token::Unit(Millimeter)),
           "cm" | "centimeter" | "centimeters" => tokens.push(Token::Unit(Centimeter)),
