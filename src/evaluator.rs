@@ -5,6 +5,7 @@ use crate::parser::AstNode;
 #[allow(unused_imports)]
 use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::UnaryOperator::{Percent, Factorial};
+use crate::TextOperator::{To, Of};
 
 #[derive(Clone, Debug)]
 pub struct Answer {
@@ -64,6 +65,37 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
             Err("Cannot perform factorial of numbers above 1000".to_string())
           } else {
             Ok(Answer::new(factorial(child_answer.value), child_answer.unit))
+          }
+        },
+      }
+    },
+    Token::TextOperator(operator) => {
+      let left_child = children.get(0).expect(format!("Token {:?} has no child[0]", token).as_str());
+      let right_child = children.get(1).expect(format!("Token {:?} has no child[1]", token).as_str());
+      
+      match operator {
+        To => {
+          if let Token::Unit(right_unit) = right_child.token {
+            let left = evaluate_node(left_child)?;
+            if left.unit.category() == right_unit.category() {
+              let left_weight = left.unit.weight();
+              let right_weight = right_unit.weight();
+              let result = left.value * left_weight / right_weight;
+              return Ok(Answer::new(result, right_unit))
+            } else {
+              return Err(format!("Cannot convert from {:?} to {:?}", left.unit, right_unit))
+            }
+          } else {
+            return Err("Right side of To operator needs to be a unit".to_string())
+          }
+        },
+        Of => {
+          let left = evaluate_node(left_child)?;
+          let right = evaluate_node(right_child)?;
+          if left.unit == Unit::NoUnit {
+            return Ok(Answer::new(left.value * right.value, right.unit))
+          } else {
+            return Err("child[0] of the Of operator must be NoUnit".to_string())
           }
         },
       }
