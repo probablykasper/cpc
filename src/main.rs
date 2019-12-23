@@ -9,10 +9,16 @@ pub enum Operator {
   Divide,
   Modulo,
   Caret,
-  Percent,
-  Factorial,
+  // Percent,
+  // Factorial,
   LeftParen, // lexer only
   RightParen, // lexer only
+}
+
+#[derive(Clone, Debug)]
+pub enum UnaryOperator {
+  Percent,
+  Factorial,
 }
 
 #[derive(Clone, Debug)]
@@ -60,6 +66,7 @@ mod units;
 #[derive(Clone, Debug)]
 pub enum Token {
   Operator(Operator),
+  UnaryOperator(UnaryOperator),
   Number(d128),
   FunctionIdentifier(FunctionIdentifier),
   Constant(Constant),

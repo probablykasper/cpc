@@ -1,5 +1,6 @@
 use crate::{Token, TokenVector};
-use crate::Operator::{Percent, Caret, Divide, Factorial, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
+use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
+use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{To, Of};
 
 #[derive(Debug)]
@@ -121,7 +122,7 @@ fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
   loop {
     let token = tokens.get(pos);
     match token {
-      Some(&Token::Operator(Factorial)) | Some(&Token::Operator(Percent)) => {
+      Some(&Token::UnaryOperator(Factorial)) | Some(&Token::UnaryOperator(Percent)) => {
         // Here we are handling unary operators, aka stuff written as
         // "Number Operator" (3!) instead of "Number Operator Number" (3+3).
         // Therefore, if we find a match, we don't parse what comes after it.

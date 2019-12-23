@@ -1,7 +1,8 @@
 use std::str::FromStr;
 use decimal::d128;
 use crate::{Token, TokenVector};
-use crate::Operator::{Percent, Caret, Divide, Factorial, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
+use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
+use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
 use crate::FunctionIdentifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Round, Sin, Sinh, Sqrt, Tan, Tanh};
@@ -25,7 +26,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       '/' => tokens.push(Token::Operator(Divide)),
       '%' => tokens.push(Token::Operator(Modulo)),
       '^' => tokens.push(Token::Operator(Caret)),
-      '!' => tokens.push(Token::Operator(Factorial)),
+      '!' => tokens.push(Token::UnaryOperator(Factorial)),
       '(' => {
         left_paren_count += 1;
         tokens.push(Token::Operator(LeftParen));
@@ -233,16 +234,20 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         match &tokens[token_index + 1] {
           Token::TextOperator(Of) => {
             // for example "10% of 1km" should be a percentage, not modulo
-            tokens[token_index] = Token::Operator(Percent);
+            tokens[token_index] = Token::UnaryOperator(Percent);
           },
           Token::Operator(operator) => {
             match operator {
               LeftParen => {},
               _ => {
                 // for example "10%*2" should be a percentage, but "10%(2)" should be modulo
-                tokens[token_index] = Token::Operator(Percent);
+                tokens[token_index] = Token::UnaryOperator(Percent);
               }
             }
+          },
+          Token::UnaryOperator(_operator) => {
+            // for example "10%!" should be a percentage, but "10%(2)" should be modulo
+            tokens[token_index] = Token::UnaryOperator(Percent);
           },
           _ => {},
         }
