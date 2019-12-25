@@ -2,8 +2,8 @@ use decimal::d128;
 use crate::Token;
 use crate::units::Unit;
 use crate::parser::AstNode;
-#[allow(unused_imports)]
-use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
+use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
+use crate::Constant::{Pi, E};
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{To, Of};
 
@@ -41,6 +41,16 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
   match token {
     Token::Number(number) => {
       Ok(Answer::new(number.clone(), Unit::NoUnit))
+    },
+    Token::Constant(constant) => {
+      match constant {
+        Pi => {
+          Ok(Answer::new(d128!(3.141592653589793238462643383279503), Unit::NoUnit))
+        },
+        E => {
+          Ok(Answer::new(d128!(2.718281828459045235360287471352662), Unit::NoUnit))
+        },
+      }
     },
     Token::Unit(unit) => {
       let child_node = children.get(0).expect("Unit has no child[0]");
