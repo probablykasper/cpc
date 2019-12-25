@@ -5,7 +5,7 @@ use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, R
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
-use crate::FunctionIdentifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Fabs, Floor, Ln, Log, Round, Sin, Sinh, Sqrt, Tan, Tanh};
+use crate::FunctionIdentifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Abs, Floor, Ln, Log, Round, Sin, Sinh, Sqrt, Tan, Tanh};
 use crate::units::Unit::*;
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
@@ -76,10 +76,10 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "ln" => tokens.push(Token::FunctionIdentifier(Ln)),
           "exp" => tokens.push(Token::FunctionIdentifier(Exp)),
 
+          "round" | "rint" => tokens.push(Token::FunctionIdentifier(Round)),
           "ceil" => tokens.push(Token::FunctionIdentifier(Ceil)),
           "floor" => tokens.push(Token::FunctionIdentifier(Floor)),
-          "round" | "rint" => tokens.push(Token::FunctionIdentifier(Round)),
-          "fabs" => tokens.push(Token::FunctionIdentifier(Fabs)),
+          "abs" | "fabs" => tokens.push(Token::FunctionIdentifier(Abs)),
 
           "sin" => tokens.push(Token::FunctionIdentifier(Sin)),
           "cos" => tokens.push(Token::FunctionIdentifier(Cos)),

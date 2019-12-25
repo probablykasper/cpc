@@ -42,10 +42,10 @@ pub enum FunctionIdentifier {
   Ln,
   Exp,
   
+  Round,
   Ceil,
   Floor,
-  Round,
-  Fabs,
+  Abs,
 
   Sin,
   Cos,

@@ -83,10 +83,32 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
             return Err(format!("exp() only accepts UnitType::NoUnit").to_string())
           }
         },
-        // Ceil
-        // Floor
-        // Round
-        // Fabs,
+        Round => {
+          // .quantize() rounds .5 to nearest even integer, so we correct that
+          let mut result = child_answer.value.quantize(d128!(1));
+          let rounding_change = result - child_answer.value;
+          // If the result was rounded down by 0.5, correct by +1
+          if rounding_change == d128!(-0.5) { result += d128!(1); }
+          return Ok(Answer::new(result, child_answer.unit))
+        },
+        Ceil => {
+          let mut result = child_answer.value.quantize(d128!(1));
+          let rounding_change = result - child_answer.value;
+          if rounding_change.is_negative() { result += d128!(1); }
+          return Ok(Answer::new(result, child_answer.unit))
+        },
+        Floor => {
+          let mut result = child_answer.value.quantize(d128!(1));
+          let rounding_change = result - child_answer.value;
+          if !rounding_change.is_negative() { result -= d128!(1); }
+          return Ok(Answer::new(result, child_answer.unit))
+        },
+        Abs => {
+          let mut result = child_answer.value.abs();
+          let rounding_change = result - child_answer.value;
+          if rounding_change == d128!(-0.5) { result += d128!(1); }
+          return Ok(Answer::new(result, child_answer.unit))
+        },
 
         // Sin,
         // Cos,
