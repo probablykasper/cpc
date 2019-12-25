@@ -117,6 +117,11 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
       let child_answer = evaluate_node(child_node)?;
       Ok(Answer::new(child_answer.value, unit.clone()))
     },
+    Token::Negative => {
+      let child_node = children.get(0).expect("Negative has no child[0]");
+      let child_answer = evaluate_node(child_node)?;
+      Ok(Answer::new(-child_answer.value, child_answer.unit))
+    },
     Token::Paren => {
       let child_node = children.get(0).expect("Paren has no child[0]");
       return evaluate_node(child_node)
@@ -247,9 +252,6 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
           Err(format!("Unexpected operator {:?}", operator))
         }
       }
-    },
-    _ => {
-      Err(format!("Unexpected ast node {:?}", token))
     },
   }
 }
