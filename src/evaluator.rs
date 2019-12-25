@@ -1,11 +1,12 @@
 use decimal::d128;
 use crate::Token;
-use crate::units::Unit;
+use crate::units::{Unit, UnitType};
 use crate::parser::AstNode;
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::Constant::{Pi, E};
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{To, Of};
+use crate::FunctionIdentifier::*;
 
 #[derive(Clone, Debug)]
 pub struct Answer {
@@ -52,6 +53,65 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         },
       }
     },
+    Token::FunctionIdentifier(function) => {
+      let child_node = children.get(0).expect("Paren has no child[0]");
+      let child_answer = evaluate_node(child_node)?;
+      match function {
+        // Sqrt,
+        // Cbrt,
+        Log => {
+          if child_answer.unit.category() == UnitType::NoUnit {
+            let result = child_answer.value.log10();
+            return Ok(Answer::new(result, child_answer.unit))
+          } else {
+            return Err(format!("log() only accepts UnitType::NoUnit").to_string())
+          }
+        },
+        Ln => {
+          if child_answer.unit.category() == UnitType::NoUnit {
+            let result = child_answer.value.ln();
+            return Ok(Answer::new(result, child_answer.unit))
+          } else {
+            return Err(format!("ln() only accepts UnitType::NoUnit").to_string())
+          }
+        },
+        Exp => {
+          if child_answer.unit.category() == UnitType::NoUnit {
+            let result = child_answer.value.exp(child_answer.value);
+            return Ok(Answer::new(result, child_answer.unit))
+          } else {
+            return Err(format!("exp() only accepts UnitType::NoUnit").to_string())
+          }
+        },
+        // Ceil
+        // Floor
+        // Round
+        // Fabs,
+
+        // Sin,
+        // Cos,
+        // Tan,
+        // Asin,
+        // Acos,
+        // Atan,
+        // Sinh,
+        // Cosh,
+        // Tanh,
+        // Asinh,
+        // Acosh,
+        // Atanh,
+        // Ceil
+        // Floor
+        // Sin
+        // Sinh
+        // Sqrt
+        // Tan
+        // Tanh
+        _ => {
+          return Err(format!("EVAL UNSUPPORTED FUNC").to_string())
+        },
+      }
+    }
     Token::Unit(unit) => {
       let child_node = children.get(0).expect("Unit has no child[0]");
       let child_answer = evaluate_node(child_node)?;
