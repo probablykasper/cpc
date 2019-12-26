@@ -36,6 +36,24 @@ fn factorial(n: d128) -> d128 {
     }
 }
 
+fn sqrt(input: d128) -> d128 {
+  let mut n = d128!(1);
+  for _ in 0..10 {
+    n = (n + input/n) * d128!(0.5);
+  }
+  return n
+}
+
+fn cbrt(input: d128) -> d128 {
+  let mut n: d128 = input;
+  // hope that 20 iterations makes it accurate enough
+  for _ in 0..20 {
+    let z2 = n*n;
+    n = n - ((n*z2 - input) / (d128!(3)*z2));
+  }
+  return n
+}
+
 fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
   let token = &ast_node.token;
   let children = &ast_node.children;
@@ -57,8 +75,22 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
       let child_node = children.get(0).expect("Paren has no child[0]");
       let child_answer = evaluate_node(child_node)?;
       match function {
-        // Sqrt,
-        // Cbrt,
+        Cbrt => {
+          if child_answer.unit.category() == UnitType::NoUnit {
+            let result = cbrt(child_answer.value);
+            return Ok(Answer::new(result, child_answer.unit))
+          } else {
+            return Err(format!("log() only accepts UnitType::NoUnit").to_string())
+          }
+        },
+        Sqrt => {
+          if child_answer.unit.category() == UnitType::NoUnit {
+            let result = sqrt(child_answer.value);
+            return Ok(Answer::new(result, child_answer.unit))
+          } else {
+            return Err(format!("log() only accepts UnitType::NoUnit").to_string())
+          }
+        },
         Log => {
           if child_answer.unit.category() == UnitType::NoUnit {
             let result = child_answer.value.log10();
@@ -122,11 +154,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         // Asinh,
         // Acosh,
         // Atanh,
-        // Ceil
-        // Floor
         // Sin
         // Sinh
-        // Sqrt
         // Tan
         // Tanh
         _ => {
