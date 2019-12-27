@@ -28,18 +28,19 @@ pub fn evaluate(ast: &AstNode) -> Result<Answer, String> {
   Ok(answer)
 }
 
-fn factorial(n: d128) -> d128 {
-    if n < d128!(2) {
-        d128!(1)
+fn factorial(n: d128, one: d128, two: d128) -> d128 {
+    if n < two {
+        one
     } else {
-        n * factorial(n - d128!(1))
+        n * factorial(n - one, one, two)
     }
 }
 
 fn sqrt(input: d128) -> d128 {
   let mut n = d128!(1);
+  let half = d128!(0.5);
   for _ in 0..10 {
-    n = (n + input/n) * d128!(0.5);
+    n = (n + input/n) * half;
   }
   return n
 }
@@ -47,9 +48,10 @@ fn sqrt(input: d128) -> d128 {
 fn cbrt(input: d128) -> d128 {
   let mut n: d128 = input;
   // hope that 20 iterations makes it accurate enough
+  let three = d128!(3);
   for _ in 0..20 {
     let z2 = n*n;
-    n = n - ((n*z2 - input) / (d128!(3)*z2));
+    n = n - ((n*z2 - input) / (three*z2));
   }
   return n
 }
@@ -190,7 +192,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
           } else if child_answer.value > d128!(1000) {
             Err("Cannot perform factorial of numbers above 1000".to_string())
           } else {
-            Ok(Answer::new(factorial(child_answer.value), child_answer.unit))
+            Ok(Answer::new(factorial(child_answer.value, d128!(1), d128!(2)), child_answer.unit))
           }
         },
       }
