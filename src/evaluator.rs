@@ -7,6 +7,7 @@ use crate::Constant::{Pi, E};
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{To, Of};
 use crate::FunctionIdentifier::*;
+use crate::lookup::lookup_factorial;
 
 #[derive(Clone, Debug)]
 pub struct Answer {
@@ -28,12 +29,8 @@ pub fn evaluate(ast: &AstNode) -> Result<Answer, String> {
   Ok(answer)
 }
 
-fn factorial(n: d128, one: d128, two: d128) -> d128 {
-    if n < two {
-        one
-    } else {
-        n * factorial(n - one, one, two)
-    }
+fn factorial(input: d128) -> d128 {
+  return lookup_factorial(input.into());
 }
 
 fn sqrt(input: d128) -> d128 {
@@ -78,7 +75,7 @@ fn sin(mut input: d128) -> d128 {
   for i_int in 0..precision {
     let i = d128::from(i_int);
     let calc_result = two*i+one;
-    result += neg_one.pow(i) * (input.pow(calc_result) / factorial(calc_result, one, two));
+    result += neg_one.pow(i) * (input.pow(calc_result) / factorial(calc_result));
   }
 
   return negative_correction * result;
@@ -217,13 +214,11 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
           Ok(Answer::new(child_answer.value / d128!(100), child_answer.unit))
         },
         Factorial => {
-          if child_answer.value.is_negative() || child_answer.value.is_signed() {
-            Err("Cannot perform factorial of floats or negative".to_string())
-          } else if child_answer.value > d128!(1000) {
-            Err("Cannot perform factorial of numbers above 1000".to_string())
-          } else {
-            Ok(Answer::new(factorial(child_answer.value, d128!(1), d128!(2)), child_answer.unit))
+          let result = factorial(child_answer.value);
+          if result.is_nan() {
+            return Err("Can only perform factorial on integers from 0 to 1000".to_string());
           }
+          Ok(Answer::new(result, child_answer.unit))
         },
       }
     },

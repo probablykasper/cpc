@@ -72,6 +72,7 @@ pub type TokenVector = Vec<Token>;
 mod lexer;
 mod parser;
 mod evaluator;
+mod lookup;
 
 fn main() {
   let lex_start = Instant::now();
