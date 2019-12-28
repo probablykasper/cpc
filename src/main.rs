@@ -50,15 +50,6 @@ pub enum FunctionIdentifier {
   Sin,
   Cos,
   Tan,
-  Asin,
-  Acos,
-  Atan,
-  Sinh,
-  Cosh,
-  Tanh,
-  Asinh,
-  Acosh,
-  Atanh,
 }
 
 mod units;

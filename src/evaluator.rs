@@ -10,8 +10,8 @@ use crate::FunctionIdentifier::*;
 
 #[derive(Clone, Debug)]
 pub struct Answer {
-  value: d128,
-  unit: Unit,
+  pub value: d128,
+  pub unit: Unit,
 }
 
 impl Answer {
@@ -54,6 +54,44 @@ fn cbrt(input: d128) -> d128 {
     n = n - ((n*z2 - input) / (three*z2));
   }
   return n
+}
+
+fn sin(mut input: d128) -> d128 {
+  let pi = d128!(3.141592653589793238462643383279503);
+  let pi2 = d128!(6.283185307179586476925286766559006);
+
+  input %= pi2;
+
+  let negative_correction = if input.is_negative() {
+    input -= pi;
+    d128!(-1)
+  } else {
+    d128!(1)
+  };
+
+  let one = d128!(1);
+  let two = d128!(2);
+  let neg_one = -one;
+
+  let precision = 37;
+  let mut result = d128!(0);
+  for i_int in 0..precision {
+    let i = d128::from(i_int);
+    let calc_result = two*i+one;
+    result += neg_one.pow(i) * (input.pow(calc_result) / factorial(calc_result, one, two));
+  }
+
+  return negative_correction * result;
+  
+}
+
+fn cos(input: d128) -> d128 {
+  let half_pi = d128!(1.570796326794896619231321691639751);
+  return sin(half_pi - input);
+}
+
+fn tan(input: d128) -> d128 {
+  return sin(input) / cos(input);
 }
 
 fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
@@ -143,25 +181,17 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
           if rounding_change == d128!(-0.5) { result += d128!(1); }
           return Ok(Answer::new(result, child_answer.unit))
         },
-
-        // Sin,
-        // Cos,
-        // Tan,
-        // Asin,
-        // Acos,
-        // Atan,
-        // Sinh,
-        // Cosh,
-        // Tanh,
-        // Asinh,
-        // Acosh,
-        // Atanh,
-        // Sin
-        // Sinh
-        // Tan
-        // Tanh
-        _ => {
-          return Err(format!("EVAL UNSUPPORTED FUNC").to_string())
+        Sin => {
+          let result = sin(child_answer.value);
+          return Ok(Answer::new(result, child_answer.unit))
+        },
+        Cos => {
+          let result = cos(child_answer.value);
+          return Ok(Answer::new(result, child_answer.unit))
+        },
+        Tan => {
+          let result = tan(child_answer.value);
+          return Ok(Answer::new(result, child_answer.unit))
         },
       }
     }

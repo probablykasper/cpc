@@ -5,7 +5,7 @@ use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, R
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
-use crate::FunctionIdentifier::{Acos, Acosh, Asin, Asinh, Atan, Atanh, Cbrt, Ceil, Cos, Cosh, Exp, Abs, Floor, Ln, Log, Round, Sin, Sinh, Sqrt, Tan, Tanh};
+use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
 use crate::units::Unit::*;
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
@@ -84,15 +84,6 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "sin" => tokens.push(Token::FunctionIdentifier(Sin)),
           "cos" => tokens.push(Token::FunctionIdentifier(Cos)),
           "tan" => tokens.push(Token::FunctionIdentifier(Tan)),
-          "asin" => tokens.push(Token::FunctionIdentifier(Asin)),
-          "acos" => tokens.push(Token::FunctionIdentifier(Acos)),
-          "atan" => tokens.push(Token::FunctionIdentifier(Atan)),
-          "sinh" => tokens.push(Token::FunctionIdentifier(Sinh)),
-          "cosh" => tokens.push(Token::FunctionIdentifier(Cosh)),
-          "tanh" => tokens.push(Token::FunctionIdentifier(Tanh)),
-          "asinh" => tokens.push(Token::FunctionIdentifier(Asinh)),
-          "acosh" => tokens.push(Token::FunctionIdentifier(Acosh)),
-          "atanh" => tokens.push(Token::FunctionIdentifier(Atanh)),
 
           "ns" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
           "μs" | "us" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
