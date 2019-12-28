@@ -293,10 +293,10 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Caret => {
           if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
             // 3 ^ 2
-            return Ok(Answer::new(left.value ^ right.value, left.unit))
+            return Ok(Answer::new(left.value.pow(right.value), left.unit))
           } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
             // 1 km ^ 3
-            return Ok(Answer::new(left.value ^ right.value, left.unit))
+            return Ok(Answer::new(left.value.pow(right.value), left.unit))
           } else {
             return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
           }
