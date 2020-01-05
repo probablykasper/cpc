@@ -116,9 +116,35 @@ fn parse_level_4(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
   }
 }
 
-// level 5 precedence: !, percent
+// level 5 precedence: - (as in -5, but not 4-5)
 fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
-  let (mut node, mut pos) = parse_level_6(tokens, pos, None)?;
+  // Here we parse the negative unary operator. If the current token
+  // is a minus, we wrap the right_node inside a Negative AstNode.
+  // 
+  // Why doesn't this parse 4-5? First, we will first get a 4.
+  // In which case, we just return the result of parse_level_6(), which will
+  // include the pos of +. This will then go down to level 2 and be parsed as
+  // a normal minus operator.
+  // The difference is that in other levels, we parse higher priorities
+  // immediately, while in this one we instead check if the current token
+  // is a minus, and if not, we then return the higher priority as normal.
+  let token = tokens.get(pos);
+  match token {
+    Some(&Token::Operator(Minus)) => {
+      let (right_node, next_pos) = parse_level_6(tokens, pos + 1)?;
+      let mut new_node = AstNode::new(Token::Negative);
+      new_node.children.push(right_node);
+      return Ok((new_node, next_pos));
+    },
+    _ => {
+      return Ok(parse_level_6(tokens, pos)?);
+    }
+  }
+}
+
+// level 6 precedence: !, percent
+fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+  let (mut node, mut pos) = parse_level_7(tokens, pos)?;
   loop {
     let token = tokens.get(pos);
     match token {
@@ -147,21 +173,10 @@ fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
   }
 }
 
-// level 6 precedence: numbers, parens
-fn parse_level_6(tokens: &TokenVector, pos: usize, last_token: Option<Token>) -> Result<(AstNode, usize), String> {
+// level 7 precedence: numbers, parens
+fn parse_level_7(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let token: &Token = tokens.get(pos).expect(&format!("Unexpected end of input at {}", pos));
   match token {
-    Token::Operator(Minus) => {
-      if let None = last_token {
-        let (right_node, next_pos) = parse_level_6(tokens, pos + 1, Some(Token::Operator(Minus)))?;
-        let mut new_node = AstNode::new(Token::Negative);
-        new_node.children.push(right_node);
-        Ok((new_node, next_pos))
-      } else {
-        // 3-1 might end up here?
-        return Err(format!("Unexpected unary operator {0:?} at {1}", token, pos));
-      }
-    },
     &Token::Number(_number) => {
       let node = AstNode::new(token.clone());
       Ok((node, pos + 1))
