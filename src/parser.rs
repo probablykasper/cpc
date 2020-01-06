@@ -77,6 +77,7 @@ fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 // level 3 precedence: *, /, modulo
 fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_4(tokens, pos)?;
+
   loop {
     let token = tokens.get(pos);
     match token {
@@ -87,6 +88,84 @@ fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
         new_node.children.push(right_node);
         node = new_node;
         pos = next_pos;
+      },
+
+      // Below is implicative multiplication, for example '2pi'. Constants and
+      // such will only end up here if they were unable to be parsed as part of
+      // other operators.
+      // Note that this match statement matches an AstNode token, but the
+      // matches nested inside check the TokenVector. That's why we for example
+      // match a FunctionIdentifier, and inside that, a RightParen.
+
+      // pi2, )2
+      Some(&Token::Number(_)) => {
+        let last_token = tokens.get(pos - 1);
+        match last_token {
+          Some(&Token::Constant(_)) | Some(&Token::Operator(RightParen)) => {
+            let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+            let mut new_node = AstNode::new(Token::Operator(Multiply));
+            new_node.children.push(node);
+            new_node.children.push(right_node);
+            node = new_node;
+            pos = next_pos;
+          },
+          _ => {
+            return Ok((node, pos));
+          },
+        }
+      },
+      // 2pi, )pi
+      Some(&Token::Constant(_)) => {
+        let last_token = tokens.get(pos - 1);
+        match last_token {
+          Some(&Token::Number(_)) | Some(&Token::Operator(RightParen)) => {
+            let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+            let mut new_node = AstNode::new(Token::Operator(Multiply));
+            new_node.children.push(node);
+            new_node.children.push(right_node);
+            node = new_node;
+            pos = next_pos;
+          },
+          _ => {
+            return Ok((node, pos));
+          },
+        }
+      },
+      // 2log(1), )log(1)
+      Some(&Token::FunctionIdentifier(_)) => {
+        let last_token = tokens.get(pos - 1);
+        match last_token {
+          Some(&Token::Number(_)) | Some(&Token::Operator(RightParen)) => {
+            let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+            let mut new_node = AstNode::new(Token::Operator(Multiply));
+            new_node.children.push(node);
+            new_node.children.push(right_node);
+            node = new_node;
+            pos = next_pos;
+          },
+          _ => {
+            return Ok((node, pos));
+          },
+        }
+      },
+      // 2(3), pi(3), )(3)
+      Some(&Token::Operator(LeftParen)) => {
+        let last_token = tokens.get(pos - 1);
+        println!("{:?}", token);
+        println!("{:?}", last_token);
+        match last_token {
+          Some(&Token::Number(_)) | Some(&Token::Constant(_)) | Some(&Token::Operator(RightParen)) => {
+            let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+            let mut new_node = AstNode::new(Token::Operator(Multiply));
+            new_node.children.push(node);
+            new_node.children.push(right_node);
+            node = new_node;
+            pos = next_pos;
+          },
+          _ => {
+            return Ok((node, pos));
+          },
+        }
       },
       _ => {
         return Ok((node, pos));
@@ -121,10 +200,10 @@ fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
   // Here we parse the negative unary operator. If the current token
   // is a minus, we wrap the right_node inside a Negative AstNode.
   // 
-  // Why doesn't this parse 4-5? First, we will first get a 4.
-  // In which case, we just return the result of parse_level_6(), which will
-  // include the pos of +. This will then go down to level 2 and be parsed as
-  // a normal minus operator.
+  // Why doesn't this parse 4-5? First, we will first get a 4. In which case,
+  // we just return the result of parse_level_6(), which will include the pos
+  // of +. This will then go down to level 2 and be parsed as a normal minus
+  // operator.
   // The difference is that in other levels, we parse higher priorities
   // immediately, while in this one we instead check if the current token
   // is a minus, and if not, we then return the higher priority as normal.
@@ -215,9 +294,9 @@ fn parse_level_7(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
     Token::Operator(LeftParen) => {
       parse_level_1(tokens, pos + 1).and_then(|(node, next_pos)| {
         if let Some(&Token::Operator(RightParen)) = tokens.get(next_pos) {
-          let mut paren = AstNode::new(Token::Paren);
-          paren.children.push(node);
-          Ok((paren, next_pos + 1))
+          let mut paren_node = AstNode::new(Token::Paren);
+          paren_node.children.push(node);
+          Ok((paren_node, next_pos + 1))
         } else {
           Err(format!("Expected closing paren at {} but found {:?}", next_pos, tokens.get(next_pos)))
         }

@@ -9,8 +9,6 @@ pub enum Operator {
   Divide,
   Modulo,
   Caret,
-  // Percent,
-  // Factorial,
   LeftParen, // lexer only
   RightParen, // lexer only
 }
@@ -84,20 +82,22 @@ fn main() {
   match lexer::lex(s) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
-      // println!("Lexed TokenVector: {:?}", tokens);
 
       let parse_start = Instant::now();
       match parser::parse(&tokens) {
         Ok(ast) => {
           let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
-          // println!("Parsed AstNode: {:#?}", ast);
 
           let eval_start = Instant::now();
           match evaluator::evaluate(&ast) {
             Ok(answer) => {
               let eval_time = Instant::now().duration_since(eval_start).as_nanos() as f32;
-              println!("Evaluated answer: {:#?}", answer);
 
+              println!("Lexed TokenVector: {:?}", tokens);
+              println!("Parsed AstNode: {:#?}", ast);
+              
+              println!("Evaluated value: {} {:?}", answer.value, answer.unit);
+              
               println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
               println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
               println!("\u{23f1}  {:.3}ms evaluation", eval_time/1000.0/1000.0);
@@ -108,6 +108,7 @@ fn main() {
         },
         Err(e) => println!("Parsing error: {}", e),
       }
+
     },
     Err(e) => println!("Lexing error: {}", e),
   }
