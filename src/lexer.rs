@@ -110,6 +110,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "yd" | "yard" | "yards" => tokens.push(Token::Unit(Yard)),
           "mi" | "mile" | "miles" => tokens.push(Token::Unit(Mile)),
           "nmi" => tokens.push(Token::Unit(NauticalMile)),
+          "lightyear" => tokens.push(Token::Unit(LightYear)),
 
           // two word unit
           "nautical" | "square" | "cubic" => {
