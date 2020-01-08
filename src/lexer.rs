@@ -214,10 +214,6 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
     }
   }
 
-  // wrap in parentheses acting as start and end for parsing.
-  tokens.push(Token::Operator(RightParen));
-  tokens.insert(0, Token::Operator(LeftParen));
-
   // the lexer parses percentages as modulo, so here modulos become percentages
   let mut token_index = 0;
   for _i in 1..tokens.len() {
