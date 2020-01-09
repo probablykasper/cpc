@@ -8,6 +8,7 @@ pub enum UnitType {
   Area,
   Volume,
   Mass,
+  Temperature,
 }
 use UnitType::*;
 
@@ -104,6 +105,9 @@ create_units!(
   Pound:              (Mass, d128!(453.59237)),
   ShortTon:           (Mass, d128!(907184.74)),
   LongTon:            (Mass, d128!(1016046.9088)),
+  Kelvin:             (Temperature, d128!(0)),
+  Celcius:            (Temperature, d128!(0)),
+  Fahrenheit:         (Temperature, d128!(0)),
 );
 
 impl Unit {
@@ -120,8 +124,23 @@ fn get_convertion_factor(unit: Unit, to_unit: Unit) -> d128 {
 }
 
 pub fn convert(value: d128, unit: Unit, to_unit: Unit) -> Result<d128, String> {
-  let convertion_factor = get_convertion_factor(unit, to_unit);
-  Ok(value * convertion_factor)
+  if unit.category() == UnitType::Temperature {
+    match (unit, to_unit) {
+      (Kelvin, Kelvin) => Ok(value),
+      (Kelvin, Celcius) => Ok(value-d128!(273.15)),
+      (Kelvin, Fahrenheit) => Ok(value*d128!(1.8)-d128!(459.67)),
+      (Celcius, Celcius) => Ok(value),
+      (Celcius, Kelvin) => Ok(value+d128!(273.15)),
+      (Celcius, Fahrenheit) => Ok(value*d128!(1.8)+d128!(32)),
+      (Fahrenheit, Fahrenheit) => Ok(value),
+      (Fahrenheit, Kelvin) => Ok((value+d128!(459.67))*d128!(5)/d128!(9)),
+      (Fahrenheit, Celcius) => Ok((value-d128!(32))/d128!(1.8)),
+      _ => Err(format!("Error converting temperature {:?} to {:?}", unit, to_unit)),
+    }
+  } else {
+    let convertion_factor = get_convertion_factor(unit, to_unit);
+    Ok(value * convertion_factor)
+  }
 }
 
 #[cfg(test)]
@@ -220,5 +239,12 @@ mod tests {
     assert_eq!(convert_test(16.0, Ounce, Pound), 1.0);
     assert_eq!(convert_test(2000.0, Pound, ShortTon), 1.0);
     assert_eq!(convert_test(2240.0, Pound, LongTon), 1.0);
+
+    assert_eq!(convert_test(274.15, Kelvin, Celcius), 1.0);
+    assert_eq!(convert_test(300.0, Kelvin, Fahrenheit), 80.33);
+    assert_eq!(convert_test(-272.15, Celcius, Kelvin), 1.0);
+    assert_eq!(convert_test(-15.0, Celcius, Fahrenheit), 5.0);
+    assert_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
+    assert_eq!(convert_test(5.0, Fahrenheit, Celcius), -15.0);
   }
 }
