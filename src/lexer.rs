@@ -12,7 +12,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
 
   let mut chars = input.chars().enumerate().peekable();
   let mut tokens: TokenVector = vec![];
-  let max_word_length = 12;
+  let max_word_length = 30;
   
   let mut left_paren_count = 0;
   let mut right_paren_count = 0;
@@ -44,14 +44,29 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         let mut end_index = byte_index;
         while let Some((_index, current_char)) = chars.peek() {
           // don't loop more than max_word_length:
-          if end_index >= start_index + max_word_length - 1 { break; }
+          if end_index >= start_index + max_word_length - 1 {
+            let string = &input[start_index..=end_index];
+            return Err(format!("Invalid string starting with: {}", string));
+          }
 
           if current_char.is_alphabetic() {
             byte_index += current_char.len_utf8();
             chars.next();
             end_index += 1;
           } else {
-            break;
+            let string = &input[start_index..=end_index];
+            match string.trim_end() {
+              // allow for two-word units
+              "nautical" | "square" | "cubic" => {
+                println!("xx {}", string);
+                byte_index += current_char.len_utf8();
+                chars.next();
+                end_index += 1;
+              },
+              _ => {
+                break;
+              },
+            }
           }
         }
 
@@ -109,51 +124,12 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "ft" | "foot" | "feet" => tokens.push(Token::Unit(Foot)),
           "yd" | "yard" | "yards" => tokens.push(Token::Unit(Yard)),
           "mi" | "mile" | "miles" => tokens.push(Token::Unit(Mile)),
-          "nmi" => tokens.push(Token::Unit(NauticalMile)),
+          "nmi" | "nautical mile" => tokens.push(Token::Unit(NauticalMile)),
           "lightyear" => tokens.push(Token::Unit(LightYear)),
-
-          // two word unit
-          "nautical" | "square" | "cubic" => {
-            // skip past whitespace
-            if let Some((_index, current_char)) = chars.peek() {
-              if current_char.is_whitespace() {
-                byte_index += current_char.len_utf8();
-                chars.next();
-              }
-            }
-            // prevent off-by-one error causing string to be " mile"
-            byte_index += current_char.len_utf8();
-            chars.next();
-
-            let start_index = byte_index;
-            let mut end_index = byte_index;
-            while let Some((_index, current_char)) = chars.peek() {
-              // don't loop more than max_word_length:
-              if end_index >= start_index + max_word_length - 1 { break; }
-
-              if current_char.is_alphabetic() {
-                byte_index += current_char.len_utf8();
-                end_index += 1;
-                chars.next();
-              } else {
-                break;
-              }
-            }
-
-            let second_string = &input[start_index..=end_index];
-            let full_string = format!("{} {}", string, second_string);
-            match full_string.as_str() {
-              "nautical mile" => tokens.push(Token::Unit(NauticalMile)),
-              
-              "square meter" | "square meters" => tokens.push(Token::Unit(SquareMeter)),
-
-              "cubic meter" | "cubic meters" => tokens.push(Token::Unit(CubicMeter)),
-
-              _ => {
-                return Err(format!("Invalid string: {}", string));
-              }
-            }
-          }
+          
+          "square meter" | "square meters" => tokens.push(Token::Unit(SquareMeter)),
+          
+          "cubic meter" | "cubic meters" => tokens.push(Token::Unit(CubicMeter)),
 
           _ => {
             return Err(format!("Invalid string: {}", string));

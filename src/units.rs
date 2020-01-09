@@ -20,11 +20,20 @@ macro_rules! create_units {
     }
     use Unit::*;
 
-    fn get_info(unit: &Unit) -> (UnitType, d128) {
-      match unit {
-        $(
-          Unit::$variant => $properties
-        ),*
+    impl Unit {
+      pub fn category(&self) -> UnitType {
+        match self {
+          $(
+            Unit::$variant => $properties.0
+          ),*
+        }
+      }
+      pub fn weight(&self) -> d128 {
+        match self {
+          $(
+            Unit::$variant => $properties.1
+          ),*
+        }
       }
     }
   }
@@ -105,19 +114,11 @@ create_units!(
   Pound:              (Mass, d128!(453.59237)),
   ShortTon:           (Mass, d128!(907184.74)),
   LongTon:            (Mass, d128!(1016046.9088)),
+
   Kelvin:             (Temperature, d128!(0)),
   Celcius:            (Temperature, d128!(0)),
   Fahrenheit:         (Temperature, d128!(0)),
 );
-
-impl Unit {
-  pub fn category(&self) -> UnitType {
-    return get_info(self).0
-  }
-  pub fn weight(&self) -> d128 {
-    return get_info(self).1
-  }
-}
 
 #[derive(Clone, Debug)]
 pub struct Number {
