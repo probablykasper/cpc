@@ -13,17 +13,17 @@ pub enum UnitType {
 use UnitType::*;
 
 macro_rules! create_units {
-  ( $( $x:ident : $y:expr ),*, ) => {
+  ( $( $variant:ident : $properties:expr ),*, ) => {
     #[derive(Clone, Copy, PartialEq, Debug)]
     pub enum Unit {
-      $($x),*  
+      $($variant),*
     }
     use Unit::*;
 
     fn get_info(unit: &Unit) -> (UnitType, d128) {
       match unit {
         $(
-          Unit::$x => $y
+          Unit::$variant => $properties
         ),*
       }
     }
@@ -119,27 +119,46 @@ impl Unit {
   }
 }
 
+#[derive(Clone, Debug)]
+pub struct Number {
+  pub value: d128,
+  pub unit: Unit,
+}
+
+impl Number {
+  pub fn new(value: d128, unit: Unit) -> Number {
+    Number {
+      value: value,
+      unit: unit,
+    }
+  }
+}
+
 fn get_convertion_factor(unit: Unit, to_unit: Unit) -> d128 {
   return unit.weight() / to_unit.weight();
 }
 
-pub fn convert(value: d128, unit: Unit, to_unit: Unit) -> Result<d128, String> {
-  if unit.category() == UnitType::Temperature {
-    match (unit, to_unit) {
-      (Kelvin, Kelvin) => Ok(value),
-      (Kelvin, Celcius) => Ok(value-d128!(273.15)),
-      (Kelvin, Fahrenheit) => Ok(value*d128!(1.8)-d128!(459.67)),
-      (Celcius, Celcius) => Ok(value),
-      (Celcius, Kelvin) => Ok(value+d128!(273.15)),
-      (Celcius, Fahrenheit) => Ok(value*d128!(1.8)+d128!(32)),
-      (Fahrenheit, Fahrenheit) => Ok(value),
-      (Fahrenheit, Kelvin) => Ok((value+d128!(459.67))*d128!(5)/d128!(9)),
-      (Fahrenheit, Celcius) => Ok((value-d128!(32))/d128!(1.8)),
-      _ => Err(format!("Error converting temperature {:?} to {:?}", unit, to_unit)),
+pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
+  let value = number.value;
+  let ok = |new_value| {
+    Ok(Number::new(new_value, to_unit))
+  };
+  if number.unit.category() == UnitType::Temperature {
+    match (number.unit, to_unit) {
+      (Kelvin, Kelvin)         => ok(value),
+      (Kelvin, Celcius)        => ok(value-d128!(273.15)),
+      (Kelvin, Fahrenheit)     => ok(value*d128!(1.8)-d128!(459.67)),
+      (Celcius, Celcius)       => ok(value),
+      (Celcius, Kelvin)        => ok(value+d128!(273.15)),
+      (Celcius, Fahrenheit)    => ok(value*d128!(1.8)+d128!(32)),
+      (Fahrenheit, Fahrenheit) => ok(value),
+      (Fahrenheit, Kelvin)     => ok((value+d128!(459.67))*d128!(5)/d128!(9)),
+      (Fahrenheit, Celcius)    => ok((value-d128!(32))/d128!(1.8)),
+      _ => Err(format!("Error converting temperature {:?} to {:?}", number.unit, to_unit)),
     }
   } else {
-    let convertion_factor = get_convertion_factor(unit, to_unit);
-    Ok(value * convertion_factor)
+    let convertion_factor = get_convertion_factor(number.unit, to_unit);
+    ok(number.value * convertion_factor)
   }
 }
 
@@ -154,9 +173,10 @@ mod tests {
 
       let value_string = &value.to_string();
       let value_d128 = d128::from_str(value_string).unwrap();
+      let number = Number::new(value_d128, unit);
       
-      let result = convert(value_d128, unit, to_unit);
-      let string_result = &result.unwrap().to_string();
+      let result = convert(number, to_unit);
+      let string_result = &result.unwrap().value.to_string();
       let float_result = f64::from_str(string_result).unwrap();
 
       return float_result;

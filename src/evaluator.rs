@@ -1,6 +1,6 @@
 use decimal::d128;
 use crate::Token;
-use crate::units::{Unit, UnitType};
+use crate::units::{Unit, UnitType, Number, convert};
 use crate::parser::AstNode;
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::Constant::{Pi, E};
@@ -9,22 +9,7 @@ use crate::TextOperator::{To, Of};
 use crate::FunctionIdentifier::*;
 use crate::lookup::lookup_factorial;
 
-#[derive(Clone, Debug)]
-pub struct Answer {
-  pub value: d128,
-  pub unit: Unit,
-}
-
-impl Answer {
-  pub fn new(value: d128, unit: Unit) -> Answer {
-    Answer {
-      value: value,
-      unit: unit,
-    }
-  }
-}
-
-pub fn evaluate(ast: &AstNode) -> Result<Answer, String> {
+pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
   let answer = evaluate_node(ast)?;
   Ok(answer)
 }
@@ -91,20 +76,20 @@ fn tan(input: d128) -> d128 {
   return sin(input) / cos(input);
 }
 
-fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
+fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
   let token = &ast_node.token;
   let children = &ast_node.children;
   match token {
     Token::Number(number) => {
-      Ok(Answer::new(number.clone(), Unit::NoUnit))
+      Ok(Number::new(number.clone(), Unit::NoUnit))
     },
     Token::Constant(constant) => {
       match constant {
         Pi => {
-          Ok(Answer::new(d128!(3.141592653589793238462643383279503), Unit::NoUnit))
+          Ok(Number::new(d128!(3.141592653589793238462643383279503), Unit::NoUnit))
         },
         E => {
-          Ok(Answer::new(d128!(2.718281828459045235360287471352662), Unit::NoUnit))
+          Ok(Number::new(d128!(2.718281828459045235360287471352662), Unit::NoUnit))
         },
       }
     },
@@ -115,7 +100,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Cbrt => {
           if child_answer.unit.category() == UnitType::NoUnit {
             let result = cbrt(child_answer.value);
-            return Ok(Answer::new(result, child_answer.unit))
+            return Ok(Number::new(result, child_answer.unit))
           } else {
             return Err(format!("log() only accepts UnitType::NoUnit").to_string())
           }
@@ -123,7 +108,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Sqrt => {
           if child_answer.unit.category() == UnitType::NoUnit {
             let result = sqrt(child_answer.value);
-            return Ok(Answer::new(result, child_answer.unit))
+            return Ok(Number::new(result, child_answer.unit))
           } else {
             return Err(format!("log() only accepts UnitType::NoUnit").to_string())
           }
@@ -131,7 +116,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Log => {
           if child_answer.unit.category() == UnitType::NoUnit {
             let result = child_answer.value.log10();
-            return Ok(Answer::new(result, child_answer.unit))
+            return Ok(Number::new(result, child_answer.unit))
           } else {
             return Err(format!("log() only accepts UnitType::NoUnit").to_string())
           }
@@ -139,7 +124,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Ln => {
           if child_answer.unit.category() == UnitType::NoUnit {
             let result = child_answer.value.ln();
-            return Ok(Answer::new(result, child_answer.unit))
+            return Ok(Number::new(result, child_answer.unit))
           } else {
             return Err(format!("ln() only accepts UnitType::NoUnit").to_string())
           }
@@ -147,7 +132,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Exp => {
           if child_answer.unit.category() == UnitType::NoUnit {
             let result = child_answer.value.exp(child_answer.value);
-            return Ok(Answer::new(result, child_answer.unit))
+            return Ok(Number::new(result, child_answer.unit))
           } else {
             return Err(format!("exp() only accepts UnitType::NoUnit").to_string())
           }
@@ -158,49 +143,49 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
           let rounding_change = result - child_answer.value;
           // If the result was rounded down by 0.5, correct by +1
           if rounding_change == d128!(-0.5) { result += d128!(1); }
-          return Ok(Answer::new(result, child_answer.unit))
+          return Ok(Number::new(result, child_answer.unit))
         },
         Ceil => {
           let mut result = child_answer.value.quantize(d128!(1));
           let rounding_change = result - child_answer.value;
           if rounding_change.is_negative() { result += d128!(1); }
-          return Ok(Answer::new(result, child_answer.unit))
+          return Ok(Number::new(result, child_answer.unit))
         },
         Floor => {
           let mut result = child_answer.value.quantize(d128!(1));
           let rounding_change = result - child_answer.value;
           if !rounding_change.is_negative() { result -= d128!(1); }
-          return Ok(Answer::new(result, child_answer.unit))
+          return Ok(Number::new(result, child_answer.unit))
         },
         Abs => {
           let mut result = child_answer.value.abs();
           let rounding_change = result - child_answer.value;
           if rounding_change == d128!(-0.5) { result += d128!(1); }
-          return Ok(Answer::new(result, child_answer.unit))
+          return Ok(Number::new(result, child_answer.unit))
         },
         Sin => {
           let result = sin(child_answer.value);
-          return Ok(Answer::new(result, child_answer.unit))
+          return Ok(Number::new(result, child_answer.unit))
         },
         Cos => {
           let result = cos(child_answer.value);
-          return Ok(Answer::new(result, child_answer.unit))
+          return Ok(Number::new(result, child_answer.unit))
         },
         Tan => {
           let result = tan(child_answer.value);
-          return Ok(Answer::new(result, child_answer.unit))
+          return Ok(Number::new(result, child_answer.unit))
         },
       }
     }
     Token::Unit(unit) => {
       let child_node = children.get(0).expect("Unit has no child[0]");
       let child_answer = evaluate_node(child_node)?;
-      Ok(Answer::new(child_answer.value, unit.clone()))
+      Ok(Number::new(child_answer.value, unit.clone()))
     },
     Token::Negative => {
       let child_node = children.get(0).expect("Negative has no child[0]");
       let child_answer = evaluate_node(child_node)?;
-      Ok(Answer::new(-child_answer.value, child_answer.unit))
+      Ok(Number::new(-child_answer.value, child_answer.unit))
     },
     Token::Paren => {
       let child_node = children.get(0).expect("Paren has no child[0]");
@@ -211,14 +196,14 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
       let child_answer = evaluate_node(child_node)?;
       match operator {
         Percent => {
-          Ok(Answer::new(child_answer.value / d128!(100), child_answer.unit))
+          Ok(Number::new(child_answer.value / d128!(100), child_answer.unit))
         },
         Factorial => {
           let result = factorial(child_answer.value);
           if result.is_nan() {
             return Err("Can only perform factorial on integers from 0 to 1000".to_string());
           }
-          Ok(Answer::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
       }
     },
@@ -231,10 +216,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
           if let Token::Unit(right_unit) = right_child.token {
             let left = evaluate_node(left_child)?;
             if left.unit.category() == right_unit.category() {
-              let left_weight = left.unit.weight();
-              let right_weight = right_unit.weight();
-              let result = left.value * left_weight / right_weight;
-              return Ok(Answer::new(result, right_unit))
+              let result = convert(left, right_unit)?;
+              return Ok(result)
             } else {
               return Err(format!("Cannot convert from {:?} to {:?}", left.unit, right_unit))
             }
@@ -246,7 +229,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
           let left = evaluate_node(left_child)?;
           let right = evaluate_node(right_child)?;
           if left.unit == Unit::NoUnit {
-            return Ok(Answer::new(left.value * right.value, right.unit))
+            return Ok(Number::new(left.value * right.value, right.unit))
           } else {
             return Err("child[0] of the Of operator must be NoUnit".to_string())
           }
@@ -261,20 +244,20 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
       match operator {
         Plus => {
           if left.unit == right.unit {
-            Ok(Answer::new(left.value + right.value, left.unit))
+            Ok(Number::new(left.value + right.value, left.unit))
           } else if left.unit.category() == right.unit.category() {
             let result = left.value * left.unit.weight() + right.value * right.unit.weight();
-            Ok(Answer::new(result, Unit::Millimeter))
+            Ok(Number::new(result, Unit::Millimeter))
           } else {
             return Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
           }
         },
         Minus => {
           if left.unit == right.unit {
-            Ok(Answer::new(left.value - right.value, left.unit))
+            Ok(Number::new(left.value - right.value, left.unit))
           } else if left.unit.category() == right.unit.category() {
             let result = left.value * left.unit.weight() - right.value * right.unit.weight();
-            Ok(Answer::new(result, Unit::Millimeter))
+            Ok(Number::new(result, Unit::Millimeter))
           } else {
             return Err(format!("Cannot subtract {:?} by {:?}", left.unit, right.unit))
           }
@@ -282,13 +265,13 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Multiply => {
           if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
             // 3 * 2
-            return Ok(Answer::new(left.value * right.value, left.unit))
+            return Ok(Number::new(left.value * right.value, left.unit))
           } else if left.unit == Unit::NoUnit && right.unit != Unit::NoUnit {
             // 3 * 1 km
-            return Ok(Answer::new(left.value * right.value, right.unit))
+            return Ok(Number::new(left.value * right.value, right.unit))
           } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
             // 1 km * 3
-            return Ok(Answer::new(left.value * right.value, left.unit))
+            return Ok(Number::new(left.value * right.value, left.unit))
           } else {
             return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
           }
@@ -296,10 +279,10 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Divide => {
           if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
             // 3 / 2
-            return Ok(Answer::new(left.value / right.value, left.unit))
+            return Ok(Number::new(left.value / right.value, left.unit))
           } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
             // 1 km / 2
-            return Ok(Answer::new(left.value / right.value, right.unit))
+            return Ok(Number::new(left.value / right.value, right.unit))
           } else {
             return Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
           }
@@ -307,10 +290,10 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Modulo => {
           if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
             // 3 / 2
-            return Ok(Answer::new(left.value % right.value, left.unit))
+            return Ok(Number::new(left.value % right.value, left.unit))
           } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
             // 1 km / 2
-            return Ok(Answer::new(left.value % right.value, right.unit))
+            return Ok(Number::new(left.value % right.value, right.unit))
           } else {
             return Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
           }
@@ -318,10 +301,10 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Answer, String> {
         Caret => {
           if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
             // 3 ^ 2
-            return Ok(Answer::new(left.value.pow(right.value), left.unit))
+            return Ok(Number::new(left.value.pow(right.value), left.unit))
           } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
             // 1 km ^ 3
-            return Ok(Answer::new(left.value.pow(right.value), left.unit))
+            return Ok(Number::new(left.value.pow(right.value), left.unit))
           } else {
             return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
           }
