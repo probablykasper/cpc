@@ -268,6 +268,7 @@ mod tests {
     assert_eq!(convert_test(1760.0, Yard, Mile), 1.0);
     assert_eq!(convert_test(1852.0, Meter, NauticalMile), 1.0);
     assert_eq!(convert_test(9460730472580800.0, Meter, LightYear), 1.0);
+    assert_eq!(convert_test(299792458.0, Meter, LightSecond), 1.0);
     
     assert_eq!(convert_test(100.0, SquareMillimeter, SquareCentimeter), 1.0);
     assert_eq!(convert_test(100.0, SquareCentimeter, SquareDecimeter), 1.0);

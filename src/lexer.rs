@@ -57,7 +57,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
             let string = &input[start_index..=end_index];
             match string.trim_end() {
               // allow for two-word units
-              "nautical" | "light" | "sq" | "square" | "cubic" => {
+              "nautical" | "light" | "sq" | "square" | "cubic" | "metric" => {
                 byte_index += current_char.len_utf8();
                 chars.next();
                 end_index += 1;
@@ -126,7 +126,8 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "yd" | "yard" | "yards" => tokens.push(Token::Unit(Yard)),
           "mi" | "mile" | "miles" => tokens.push(Token::Unit(Mile)),
           "nmi" | "nautical mile" | "nautical miles" => tokens.push(Token::Unit(NauticalMile)),
-          "lightyear" | "lightyears" | "light year" | "light years" => tokens.push(Token::Unit(LightYear)),
+          "ly" | "lightyear" | "lightyears" | "light yr" | "light yrs" | "light year" | "light years" => tokens.push(Token::Unit(LightYear)),
+          "lightsec" | "lightsecs" | "lightsecond" | "lightseconds" | "light sec" | "light secs" | "light second" | "light seconds" => tokens.push(Token::Unit(LightYear)),
           
           "sqmm" | "sq mm" | "sq millimeter" | "sq millimeters" => tokens.push(Token::Unit(SquareMillimeter)),
           "sqcm" | "sq cm" | "sq centimeter" | "sq centimeters" => tokens.push(Token::Unit(SquareCentimeter)),
