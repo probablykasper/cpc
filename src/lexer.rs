@@ -57,8 +57,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
             let string = &input[start_index..=end_index];
             match string.trim_end() {
               // allow for two-word units
-              "nautical" | "square" | "cubic" => {
-                println!("xx {}", string);
+              "nautical" | "light" | "sq" | "square" | "cubic" => {
                 byte_index += current_char.len_utf8();
                 chars.next();
                 end_index += 1;
@@ -71,6 +70,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         }
 
         let string = &input[start_index..=end_index];
+        let string: &str = &string.replacen("square", "sq", 1);
         match string {
           
           // MAKE SURE max_word_length IS EQUAL TO THE
@@ -100,17 +100,18 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "cos" => tokens.push(Token::FunctionIdentifier(Cos)),
           "tan" => tokens.push(Token::FunctionIdentifier(Tan)),
 
-          "ns" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
-          "μs" | "us" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
-          "ms" | "millisecond" | "milliseconds" => tokens.push(Token::Unit(Millisecond)),
-          "s" | "sec" | "second" | "seconds" => tokens.push(Token::Unit(Second)),
-          "min" | "minute" | "minutes" => tokens.push(Token::Unit(Minute)),
-          "h" | "hour" | "hours" => tokens.push(Token::Unit(Hour)),
+          "ns" | "nanosec" | "nanosecs" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
+          "μs" | "microsec" | "microsecs" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
+          "ms" | "millisec" | "millisecs" | "millisecond" | "milliseconds" => tokens.push(Token::Unit(Millisecond)),
+          "s" | "sec" | "secs" | "second" | "seconds" => tokens.push(Token::Unit(Second)),
+          "min" | "mins" | "minute" | "minutes" => tokens.push(Token::Unit(Minute)),
+          "h" | "hr" | "hrs" | "hour" | "hours" => tokens.push(Token::Unit(Hour)),
           "day" | "days" => tokens.push(Token::Unit(Day)),
-          "week" | "weeks" => tokens.push(Token::Unit(Week)),
-          "mo" | "month" | "months" => tokens.push(Token::Unit(Month)),
+          "wk" | "wks" | "week" | "weeks" => tokens.push(Token::Unit(Week)),
+          "mo" | "mos" | "month" | "months" => tokens.push(Token::Unit(Month)),
+
           "q" | "quater" | "quaters" => tokens.push(Token::Unit(Month)),
-          "yr" | "year" | "years" => tokens.push(Token::Unit(Year)),
+          "yr" | "yrs" | "year" | "years" => tokens.push(Token::Unit(Year)),
           "decade" | "decades" => tokens.push(Token::Unit(Decade)),
           "century" | "centuries" => tokens.push(Token::Unit(Century)),
           "millenium" | "millenia" | "milleniums" => tokens.push(Token::Unit(Millenium)),
@@ -124,12 +125,93 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "ft" | "foot" | "feet" => tokens.push(Token::Unit(Foot)),
           "yd" | "yard" | "yards" => tokens.push(Token::Unit(Yard)),
           "mi" | "mile" | "miles" => tokens.push(Token::Unit(Mile)),
-          "nmi" | "nautical mile" => tokens.push(Token::Unit(NauticalMile)),
-          "lightyear" => tokens.push(Token::Unit(LightYear)),
+          "nmi" | "nautical mile" | "nautical miles" => tokens.push(Token::Unit(NauticalMile)),
+          "lightyear" | "lightyears" | "light year" | "light years" => tokens.push(Token::Unit(LightYear)),
           
-          "square meter" | "square meters" => tokens.push(Token::Unit(SquareMeter)),
+          "sqmm" | "sq mm" | "sq millimeter" | "sq millimeters" => tokens.push(Token::Unit(SquareMillimeter)),
+          "sqcm" | "sq cm" | "sq centimeter" | "sq centimeters" => tokens.push(Token::Unit(SquareCentimeter)),
+          "sqdm" | "sq dm" | "sq decimeter" | "sq decimeters" => tokens.push(Token::Unit(SquareDecimeter)),
+          "sqm" | "sq m" | "sq meter" | "sq meters" => tokens.push(Token::Unit(SquareMeter)),
+          "sqkm" | "sq km" | "sq kilometer" | "sq kilometers" => tokens.push(Token::Unit(SquareKilometer)),
+          "sqin" | "sq in" | "sq inch" | "sq inches" => tokens.push(Token::Unit(SquareInch)),
+          "sqft" | "sq ft" | "sq foot" | "sq feet" => tokens.push(Token::Unit(SquareFoot)),
+          "sqyd" | "sq yd" | "sq yard" | "sq yards" => tokens.push(Token::Unit(SquareYard)),
+          "sqmi" | "sq mi" | "sq mile" | "sq miles" => tokens.push(Token::Unit(SquareMile)),
+          "are" | "ares" => tokens.push(Token::Unit(Are)),
+          "decare" | "decares" => tokens.push(Token::Unit(Decare)),
+          "ha" | "hectare" | "hectares" => tokens.push(Token::Unit(Hectare)),
+          "acre" | "acres" => tokens.push(Token::Unit(Acre)),
           
+          "cubic millimeter" | "cubic millimeters" => tokens.push(Token::Unit(CubicMillimeter)),
+          "cubic centimeter" | "cubic centimeters" => tokens.push(Token::Unit(CubicCentimeter)),
+          "cubic decimeter" | "cubic decimeters" => tokens.push(Token::Unit(CubicDecimeter)),
           "cubic meter" | "cubic meters" => tokens.push(Token::Unit(CubicMeter)),
+          "cubic kilometer" | "cubic kilometers" => tokens.push(Token::Unit(CubicKilometer)),
+          "cubic inch" | "cubic inches" => tokens.push(Token::Unit(CubicInch)),
+          "cubic foot" | "cubic feet" => tokens.push(Token::Unit(CubicFoot)),
+          "cubic yard" | "cubic yards" => tokens.push(Token::Unit(CubicYard)),
+          "cubic mile" | "cubic miles" => tokens.push(Token::Unit(CubicMile)),
+          "ml" | "milliliter" | "milliliters" => tokens.push(Token::Unit(Milliliter)),
+          "cl" | "centiliter" | "centiliters" => tokens.push(Token::Unit(Centiliter)),
+          "dl" | "deciliter" | "deciliters" => tokens.push(Token::Unit(Deciliter)),
+          "l" | "liter" | "liters" => tokens.push(Token::Unit(Liter)),
+          "ts" | "tsp" | "tspn" | "tspns" | "teaspoon" | "teaspoons" => tokens.push(Token::Unit(Teaspoon)),
+          "tbs" | "tbsp" | "tablespoon" | "tablespoons" => tokens.push(Token::Unit(Tablespoon)),
+          "floz" | "fl oz" | "fl ounce" | "fl ounces" | "fluid oz" | "fluid ounce" | "fluid ounces" => tokens.push(Token::Unit(FluidOunce)),
+          "cup" | "cups" => tokens.push(Token::Unit(Cup)),
+          "pt" | "pint" | "pints" => tokens.push(Token::Unit(Pint)),
+          "qt" | "quart" | "quarts" => tokens.push(Token::Unit(Quart)),
+          "gal" | "gallon" | "gallons" => tokens.push(Token::Unit(Gallon)),
+          "bbl" | "oil barrel" | "oil barrels" => tokens.push(Token::Unit(OilBarrel)),
+          
+          "mg" | "milligram" | "milligrams" => tokens.push(Token::Unit(Milligram)),
+          "g" | "gram" | "grams" => tokens.push(Token::Unit(Gram)),
+          "hg" | "hectogram" | "hectograms" => tokens.push(Token::Unit(Hectogram)),
+          "kg" | "kilo" | "kilos" | "kilogram" | "kilograms" => tokens.push(Token::Unit(Kilogram)),
+          "t" | "tonne" | "tonnes" | "metric ton" | "metric tons" | "metric tonne" | "metric tonnes" => tokens.push(Token::Unit(MetricTon)),
+          "oz" | "ounces" => tokens.push(Token::Unit(Ounce)),
+          "lb" | "lbs" | "pound" | "pounds" => tokens.push(Token::Unit(Pound)),
+          "st" | "ton" | "tons" | "short ton" | "short tons" | "short tonne" | "short tonnes" => tokens.push(Token::Unit(ShortTon)),
+          "lt" | "long ton" | "long tons" | "long tonne" | "long tonnes" => tokens.push(Token::Unit(LongTon)),
+
+          "bit" | "bits" => tokens.push(Token::Unit(Bit)),
+          "kbit" | "kilobit" | "kilobits" => tokens.push(Token::Unit(Kilobit)),
+          "mbit" | "megabit" | "megabits" => tokens.push(Token::Unit(Megabit)),
+          "gbit" | "gigabit" | "gigabits" => tokens.push(Token::Unit(Gigabit)),
+          "tbit" | "terabit" | "terabits" => tokens.push(Token::Unit(Terabit)),
+          "pbit" | "petabit" | "petabits" => tokens.push(Token::Unit(Petabit)),
+          "ebit" | "exabit" | "exabits" => tokens.push(Token::Unit(Exabit)),
+          "zbit" | "zettabit" | "zettabits" => tokens.push(Token::Unit(Zettabit)),
+          "ybit" | "yottabit" | "yottabits" => tokens.push(Token::Unit(Yottabit)),
+          "kibit" | "kibibit" | "kibibits" => tokens.push(Token::Unit(Kibibit)),
+          "mibit" | "mebibit" | "mebibits" => tokens.push(Token::Unit(Mebibit)),
+          "gibit" | "gibibit" | "gibibits" => tokens.push(Token::Unit(Gibibit)),
+          "tibit" | "tebibit" | "tebibits" => tokens.push(Token::Unit(Tebibit)),
+          "pibit" | "pebibit" | "pebibits" => tokens.push(Token::Unit(Pebibit)),
+          "eibit" | "exbibit" | "exbibits" => tokens.push(Token::Unit(Exbibit)),
+          "zibit" | "zebibit" | "zebibits" => tokens.push(Token::Unit(Zebibit)),
+          "yibit" | "yobibit" | "yobibits" => tokens.push(Token::Unit(Yobibit)),
+          "byte" | "bytes" => tokens.push(Token::Unit(Byte)),
+          "kb" | "kilobyte" | "kilobytes" => tokens.push(Token::Unit(Kilobyte)),
+          "mb" | "megabyte" | "megabytes" => tokens.push(Token::Unit(Megabyte)),
+          "gb" | "gigabyte" | "gigabytes" => tokens.push(Token::Unit(Gigabyte)),
+          "tb" | "terabyte" | "terabytes" => tokens.push(Token::Unit(Terabyte)),
+          "pb" | "petabyte" | "petabytes" => tokens.push(Token::Unit(Petabyte)),
+          "eb" | "exabyte" | "exabytes" => tokens.push(Token::Unit(Exabyte)),
+          "zb" | "zettabyte" | "zettabytes" => tokens.push(Token::Unit(Zettabyte)),
+          "yb" | "yottabyte" | "yottabytes" => tokens.push(Token::Unit(Yottabyte)),
+          "kib" | "kibibyte" | "kibibytes" => tokens.push(Token::Unit(Kibibyte)),
+          "mib" | "mebibyte" | "mebibytes" => tokens.push(Token::Unit(Mebibyte)),
+          "gib" | "gibibyte" | "gibibytes" => tokens.push(Token::Unit(Gibibyte)),
+          "tib" | "tebibyte" | "tebibytes" => tokens.push(Token::Unit(Tebibyte)),
+          "pib" | "pebibyte" | "pebibytes" => tokens.push(Token::Unit(Pebibyte)),
+          "eib" | "exbibyte" | "exbibytes" => tokens.push(Token::Unit(Exbibyte)),
+          "zib" | "zebibyte" | "zebibytes" => tokens.push(Token::Unit(Zebibyte)),
+          "yib" | "yobibyte" | "yobibytes" => tokens.push(Token::Unit(Yobibyte)),
+
+          "k" | "kelvin" | "kelvins" => tokens.push(Token::Unit(Kelvin)),
+          "c" | "celcius" => tokens.push(Token::Unit(Celcius)),
+          "f" | "fahrenheit" | "fahrenheits" => tokens.push(Token::Unit(Fahrenheit)),
 
           _ => {
             return Err(format!("Invalid string: {}", string));
