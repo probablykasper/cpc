@@ -160,9 +160,9 @@ create_units!(
   Megajoule:          (Energy, d128!(1000000)),
   Gigajoule:          (Energy, d128!(1000000000)),
   Terajoule:          (Energy, d128!(1000000000000)),
-  Calorie:            (Energy, d128!(4.184)),
-  KiloCalorie:        (Energy, d128!(4184)),
-  BritishThermalUnit: (Energy, d128!(1055.056)),
+  Calorie:            (Energy, d128!(4.1868)), // "IT" type
+  KiloCalorie:        (Energy, d128!(4186.8)), // "IT" type
+  BritishThermalUnit: (Energy, d128!(1055.05585262)), // "IT" type, might not be 100% accurate
   WattHour:           (Energy, d128!(3600)),
   KilowattHour:       (Energy, d128!(3600000)),
   MegawattHour:       (Energy, d128!(3600000000)),
@@ -351,9 +351,9 @@ mod tests {
     assert_eq!(convert_test(1000.0, Kilojoule, Megajoule), 1.0);
     assert_eq!(convert_test(1000.0, Megajoule, Gigajoule), 1.0);
     assert_eq!(convert_test(1000.0, Gigajoule, Terajoule), 1.0);
-    assert_eq!(convert_test(4.184, Joule, Calorie), 1.0);
+    assert_eq!(convert_test(4.1868, Joule, Calorie), 1.0);
     assert_eq!(convert_test(1000.0, Calorie, KiloCalorie), 1.0);
-    assert_eq!(convert_test(1055.056, Joule, BritishThermalUnit), 1.0);
+    assert_eq!(convert_test(1055.05585262, Joule, BritishThermalUnit), 1.0);
     assert_eq!(convert_test(3600.0, Joule, WattHour), 1.0);
     assert_eq!(convert_test(1000.0, WattHour, KilowattHour), 1.0);
     assert_eq!(convert_test(1000.0, KilowattHour, MegawattHour), 1.0);
