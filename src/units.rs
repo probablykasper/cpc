@@ -8,6 +8,9 @@ pub enum UnitType {
   Area,
   Volume,
   Mass,
+  Information,
+  Energy,
+  Speed,
   Temperature,
 }
 use UnitType::*;
@@ -57,31 +60,32 @@ create_units!(
   Century:            (Time, d128!(3155695200000000000)),
   Millenium:          (Time, d128!(31556952000000000000)),
 
-  Millimeter:         (Length, d128!(10)),
-  Centimeter:         (Length, d128!(100)),
-  Decimeter:          (Length, d128!(1000)),
-  Meter:              (Length, d128!(10000)),
-  Kilometer:          (Length, d128!(10000000)),
-  Inch:               (Length, d128!(254)),
-  Foot:               (Length, d128!(3048)),
-  Yard:               (Length, d128!(9144)),
-  Mile:               (Length, d128!(16093440)),
-  NauticalMile:       (Length, d128!(18520000)),
-  LightYear:          (Length, d128!(94607304725808000000)),
+  Millimeter:         (Length, d128!(1)),
+  Centimeter:         (Length, d128!(10)),
+  Decimeter:          (Length, d128!(100)),
+  Meter:              (Length, d128!(1000)),
+  Kilometer:          (Length, d128!(1000000)),
+  Inch:               (Length, d128!(25.4)),
+  Foot:               (Length, d128!(304.8)),
+  Yard:               (Length, d128!(914.4)),
+  Mile:               (Length, d128!(1609344)),
+  NauticalMile:       (Length, d128!(1852000)),
+  LightYear:          (Length, d128!(9460730472580800000)),
+  LightSecond:        (Length, d128!(299792458000)),
 
-  SquareMillimeter:   (Area, d128!(100)),
-  SquareCentimeter:   (Area, d128!(10000)),
-  SquareDecimeter:    (Area, d128!(1000000)),
-  SquareMeter:        (Area, d128!(100000000)),
-  SquareKilometer:    (Area, d128!(100000000000000)),
-  SquareInch:         (Area, d128!(64516)),
-  SquareFoot:         (Area, d128!(9290304)),
-  SquareYard:         (Area, d128!(83612736)),
-  SquareMile:         (Area, d128!(258998811033600)),
-  Are:                (Area, d128!(10000000000)),
-  Decare:             (Area, d128!(100000000000)),
-  Hectare:            (Area, d128!(1000000000000)),
-  Acre:               (Area, d128!(404685642240)),
+  SquareMillimeter:   (Area, d128!(1)),
+  SquareCentimeter:   (Area, d128!(100)),
+  SquareDecimeter:    (Area, d128!(10000)),
+  SquareMeter:        (Area, d128!(1000000)),
+  SquareKilometer:    (Area, d128!(1000000000000)),
+  SquareInch:         (Area, d128!(645.16)),
+  SquareFoot:         (Area, d128!(92903.04)),
+  SquareYard:         (Area, d128!(836127.36)),
+  SquareMile:         (Area, d128!(2589988110336.00)),
+  Are:                (Area, d128!(100000000)),
+  Decare:             (Area, d128!(1000000000)),
+  Hectare:            (Area, d128!(10000000000)),
+  Acre:               (Area, d128!(4046856422.40)),
 
   CubicMillimeter:    (Volume, d128!(1)),
   CubicCentimeter:    (Volume, d128!(1000)),
@@ -114,6 +118,63 @@ create_units!(
   Pound:              (Mass, d128!(453.59237)),
   ShortTon:           (Mass, d128!(907184.74)),
   LongTon:            (Mass, d128!(1016046.9088)),
+
+  Bit:                (Information, d128!(1)),
+  Kilobit:            (Information, d128!(1000)),
+  Megabit:            (Information, d128!(1000000)),
+  Gigabit:            (Information, d128!(1000000000)),
+  Terabit:            (Information, d128!(1000000000000)),
+  Petabit:            (Information, d128!(1000000000000000)),
+  Exabit:             (Information, d128!(1000000000000000000)),
+  Zettabit:           (Information, d128!(1000000000000000000000)),
+  Yottabit:           (Information, d128!(1000000000000000000000000)),
+  Kibibit:            (Information, d128!(1024)),
+  Mebibit:            (Information, d128!(1048576)),
+  Gibibit:            (Information, d128!(1073741824)),
+  Tebibit:            (Information, d128!(1099511627776)),
+  Pebibit:            (Information, d128!(1125899906842624)),
+  Exbibit:            (Information, d128!(1152921504606846976)),
+  Zebibit:            (Information, d128!(1180591620717411303424)),
+  Yobibit:            (Information, d128!(1208925819614629174706176)),
+  Byte:               (Information, d128!(8)),
+  Kilobyte:           (Information, d128!(8000)),
+  Megabyte:           (Information, d128!(8000000)),
+  Gigabyte:           (Information, d128!(8000000000)),
+  Terabyte:           (Information, d128!(8000000000000)),
+  Petabyte:           (Information, d128!(8000000000000000)),
+  Exabyte:            (Information, d128!(8000000000000000000)),
+  Zettabyte:          (Information, d128!(8000000000000000000000)),
+  Yottabyte:          (Information, d128!(8000000000000000000000000)),
+  Kibibyte:           (Information, d128!(8192)),
+  Mebibyte:           (Information, d128!(8388608)),
+  Gibibyte:           (Information, d128!(8589934592)),
+  Tebibyte:           (Information, d128!(8796093022208)),
+  Pebibyte:           (Information, d128!(9007199254740992)),
+  Exbibyte:           (Information, d128!(9223372036854775808)),
+  Zebibyte:           (Information, d128!(9444732965739290427392)),
+  Yobibyte:           (Information, d128!(9671406556917033397649408)),
+
+  Millijoule:         (Energy, d128!(0.001)),
+  Joule:              (Energy, d128!(1)),
+  Kilojoule:          (Energy, d128!(1000)),
+  Megajoule:          (Energy, d128!(1000000)),
+  Gigajoule:          (Energy, d128!(1000000000)),
+  Terajoule:          (Energy, d128!(1000000000000)),
+  Calorie:            (Energy, d128!(4.184)),
+  KiloCalorie:        (Energy, d128!(4184)),
+  BritishThermalUnit: (Energy, d128!(1055.056)),
+  WattHour:           (Energy, d128!(3600)),
+  KilowattHour:       (Energy, d128!(3600000)),
+  MegawattHour:       (Energy, d128!(3600000000)),
+  GigawattHour:       (Energy, d128!(3600000000000)),
+  TerawattHour:       (Energy, d128!(3600000000000000)),
+  PetawattHour:       (Energy, d128!(3600000000000000000)),
+
+  KilometersPerHour:  (Speed, d128!(1)),
+  MetersPerSecond:    (Speed, d128!(3.6)),
+  MilesPerHour:       (Speed, d128!(1.609344)),
+  FeetPerSecond:      (Speed, d128!(1.09728)),
+  Knot:               (Speed, d128!(1.852)),
 
   Kelvin:             (Temperature, d128!(0)),
   Celcius:            (Temperature, d128!(0)),
@@ -208,17 +269,6 @@ mod tests {
     assert_eq!(convert_test(1852.0, Meter, NauticalMile), 1.0);
     assert_eq!(convert_test(9460730472580800.0, Meter, LightYear), 1.0);
     
-    assert_eq!(convert_test(10.0, Millimeter, Centimeter), 1.0);
-    assert_eq!(convert_test(10.0, Centimeter, Decimeter), 1.0);
-    assert_eq!(convert_test(10.0, Decimeter, Meter), 1.0);
-    assert_eq!(convert_test(1000.0, Meter, Kilometer), 1.0);
-    assert_eq!(convert_test(2.54, Centimeter, Inch), 1.0);
-    assert_eq!(convert_test(12.0, Inch, Foot), 1.0);
-    assert_eq!(convert_test(3.0, Foot, Yard), 1.0);
-    assert_eq!(convert_test(1760.0, Yard, Mile), 1.0);
-    assert_eq!(convert_test(1852.0, Meter, NauticalMile), 1.0);
-    assert_eq!(convert_test(9460730472580800.0, Meter, LightYear), 1.0);
-    
     assert_eq!(convert_test(100.0, SquareMillimeter, SquareCentimeter), 1.0);
     assert_eq!(convert_test(100.0, SquareCentimeter, SquareDecimeter), 1.0);
     assert_eq!(convert_test(100.0, SquareDecimeter, SquareMeter), 1.0);
@@ -260,6 +310,60 @@ mod tests {
     assert_eq!(convert_test(16.0, Ounce, Pound), 1.0);
     assert_eq!(convert_test(2000.0, Pound, ShortTon), 1.0);
     assert_eq!(convert_test(2240.0, Pound, LongTon), 1.0);
+
+    assert_eq!(convert_test(1000.0, Bit, Kilobit), 1.0);
+    assert_eq!(convert_test(1000.0, Kilobit, Megabit), 1.0);
+    assert_eq!(convert_test(1000.0, Megabit, Gigabit), 1.0);
+    assert_eq!(convert_test(1000.0, Gigabit, Terabit), 1.0);
+    assert_eq!(convert_test(1000.0, Terabit, Petabit), 1.0);
+    assert_eq!(convert_test(1000.0, Petabit, Exabit), 1.0);
+    assert_eq!(convert_test(1000.0, Exabit, Zettabit), 1.0);
+    assert_eq!(convert_test(1000.0, Zettabit, Yottabit), 1.0);
+    assert_eq!(convert_test(1024.0, Bit, Kibibit), 1.0);
+    assert_eq!(convert_test(1024.0, Kibibit, Mebibit), 1.0);
+    assert_eq!(convert_test(1024.0, Mebibit, Gibibit), 1.0);
+    assert_eq!(convert_test(1024.0, Gibibit, Tebibit), 1.0);
+    assert_eq!(convert_test(1024.0, Tebibit, Pebibit), 1.0);
+    assert_eq!(convert_test(1024.0, Pebibit, Exbibit), 1.0);
+    assert_eq!(convert_test(1024.0, Exbibit, Zebibit), 1.0);
+    assert_eq!(convert_test(1024.0, Zebibit, Yobibit), 1.0);
+    assert_eq!(convert_test(8.0, Bit, Byte), 1.0);
+    assert_eq!(convert_test(1000.0, Byte, Kilobyte), 1.0);
+    assert_eq!(convert_test(1000.0, Kilobyte, Megabyte), 1.0);
+    assert_eq!(convert_test(1000.0, Megabyte, Gigabyte), 1.0);
+    assert_eq!(convert_test(1000.0, Gigabyte, Terabyte), 1.0);
+    assert_eq!(convert_test(1000.0, Terabyte, Petabyte), 1.0);
+    assert_eq!(convert_test(1000.0, Petabyte, Exabyte), 1.0);
+    assert_eq!(convert_test(1000.0, Exabyte, Zettabyte), 1.0);
+    assert_eq!(convert_test(1000.0, Zettabyte, Yottabyte), 1.0);
+    assert_eq!(convert_test(1024.0, Kibibyte, Mebibyte), 1.0);
+    assert_eq!(convert_test(1024.0, Mebibyte, Gibibyte), 1.0);
+    assert_eq!(convert_test(1024.0, Gibibyte, Tebibyte), 1.0);
+    assert_eq!(convert_test(1024.0, Tebibyte, Pebibyte), 1.0);
+    assert_eq!(convert_test(1024.0, Pebibyte, Exbibyte), 1.0);
+    assert_eq!(convert_test(1024.0, Exbibyte, Zebibyte), 1.0);
+    assert_eq!(convert_test(1024.0, Zebibyte, Yobibyte), 1.0);
+
+
+    assert_eq!(convert_test(1000.0, Millijoule, Joule), 1.0);
+    assert_eq!(convert_test(1000.0, Joule, Kilojoule), 1.0);
+    assert_eq!(convert_test(1000.0, Kilojoule, Megajoule), 1.0);
+    assert_eq!(convert_test(1000.0, Megajoule, Gigajoule), 1.0);
+    assert_eq!(convert_test(1000.0, Gigajoule, Terajoule), 1.0);
+    assert_eq!(convert_test(4.184, Joule, Calorie), 1.0);
+    assert_eq!(convert_test(1000.0, Calorie, KiloCalorie), 1.0);
+    assert_eq!(convert_test(1055.056, Joule, BritishThermalUnit), 1.0);
+    assert_eq!(convert_test(3600.0, Joule, WattHour), 1.0);
+    assert_eq!(convert_test(1000.0, WattHour, KilowattHour), 1.0);
+    assert_eq!(convert_test(1000.0, KilowattHour, MegawattHour), 1.0);
+    assert_eq!(convert_test(1000.0, MegawattHour, GigawattHour), 1.0);
+    assert_eq!(convert_test(1000.0, GigawattHour, TerawattHour), 1.0);
+    assert_eq!(convert_test(1000.0, TerawattHour, PetawattHour), 1.0);
+
+    assert_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
+    assert_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);
+    assert_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
+    assert_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
 
     assert_eq!(convert_test(274.15, Kelvin, Celcius), 1.0);
     assert_eq!(convert_test(300.0, Kelvin, Fahrenheit), 80.33);
