@@ -10,6 +10,7 @@ use crate::units::Unit::*;
 
 pub fn lex(input: &str) -> Result<TokenVector, String> {
 
+  let input = input.replace(",", "");
   let mut chars = input.chars().enumerate().peekable();
   let mut tokens: TokenVector = vec![];
   let max_word_length = 30;
@@ -36,7 +37,6 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         tokens.push(Token::Operator(RightParen));
       },
       'π' => tokens.push(Token::Constant(Pi)),
-      ',' => {},
       value if value.is_whitespace() => {},
       value if value.is_alphabetic() => {
 
