@@ -314,5 +314,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
         }
       }
     },
+    _ => {
+      Err(format!("Unexpected token {:?}", token))
+    }
   }
 }

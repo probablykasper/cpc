@@ -60,6 +60,7 @@ pub enum Token {
   FunctionIdentifier(FunctionIdentifier),
   Constant(Constant),
   Paren, // parser only
+  Per, // lexer only
   TextOperator(TextOperator),
   Negative, // parser only
   Unit(units::Unit),

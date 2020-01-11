@@ -100,6 +100,8 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "cos" => tokens.push(Token::FunctionIdentifier(Cos)),
           "tan" => tokens.push(Token::FunctionIdentifier(Tan)),
 
+          "per" => tokens.push(Token::Per),
+
           "ns" | "nanosec" | "nanosecs" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
           "μs" | "microsec" | "microsecs" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
           "ms" | "millisec" | "millisecs" | "millisecond" | "milliseconds" => tokens.push(Token::Unit(Millisecond)),
@@ -109,7 +111,6 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "day" | "days" => tokens.push(Token::Unit(Day)),
           "wk" | "wks" | "week" | "weeks" => tokens.push(Token::Unit(Week)),
           "mo" | "mos" | "month" | "months" => tokens.push(Token::Unit(Month)),
-
           "q" | "quater" | "quaters" => tokens.push(Token::Unit(Month)),
           "yr" | "yrs" | "year" | "years" => tokens.push(Token::Unit(Year)),
           "decade" | "decades" => tokens.push(Token::Unit(Decade)),
@@ -210,6 +211,28 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "zib" | "zebibyte" | "zebibytes" => tokens.push(Token::Unit(Zebibyte)),
           "yib" | "yobibyte" | "yobibytes" => tokens.push(Token::Unit(Yobibyte)),
 
+          "millijoule" | "millijoules" => tokens.push(Token::Unit(Millijoule)),
+          "j"| "joule" | "joules" => tokens.push(Token::Unit(Joule)),
+          "kj" | "kilojoule" | "kilojoules" => tokens.push(Token::Unit(Kilojoule)),
+          "mj" | "megajoule" | "megajoules" => tokens.push(Token::Unit(Megajoule)),
+          "gj" | "gigajoule" | "gigajoules" => tokens.push(Token::Unit(Gigajoule)),
+          "tj" | "terajoule" | "terajoules" => tokens.push(Token::Unit(Terajoule)),
+          "cal" | "calorie" | "calories" => tokens.push(Token::Unit(Calorie)),
+          "kcal" | "kilocalorie" | "kilocalories" => tokens.push(Token::Unit(KiloCalorie)),
+          "btu" | "british thermal unit" | "british thermal units" => tokens.push(Token::Unit(BritishThermalUnit)),
+          "wh" | "watt hour" | "watt hours" => tokens.push(Token::Unit(WattHour)),
+          "kwh" | "kilowatt hour" | "kilowatt hours" => tokens.push(Token::Unit(KilowattHour)),
+          "mwh" | "megawatt hour" | "megawatt hours" => tokens.push(Token::Unit(MegawattHour)),
+          "gwh" | "gigawatt hour" | "gigawatt hours" => tokens.push(Token::Unit(GigawattHour)),
+          "twh" | "terawatt hour" | "terawatt hours" => tokens.push(Token::Unit(TerawattHour)),
+          "pwh" | "petawatt hour" | "petawatt hours" => tokens.push(Token::Unit(PetawattHour)),
+
+          "kph" | "kmh" => tokens.push(Token::Unit(KilometersPerHour)),
+          "mps" => tokens.push(Token::Unit(MetersPerSecond)),
+          "mph" => tokens.push(Token::Unit(MilesPerHour)),
+          "fps" => tokens.push(Token::Unit(FeetPerSecond)),
+          "kn" | "kt" | "knot" | "knots" => tokens.push(Token::Unit(Knot)),
+
           "k" | "kelvin" | "kelvins" => tokens.push(Token::Unit(Kelvin)),
           "c" | "celcius" => tokens.push(Token::Unit(Celcius)),
           "f" | "fahrenheit" | "fahrenheits" => tokens.push(Token::Unit(Fahrenheit)),
@@ -273,9 +296,9 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
     }
   }
 
-  // the lexer parses percentages as modulo, so here modulos become percentages
   let mut token_index = 0;
   for _i in 1..tokens.len() {
+    // the lexer parses percentages as modulo, so here modulos become percentages
     match tokens[token_index] {
       Token::Operator(Modulo) => {
         match &tokens[token_index + 1] {
@@ -302,7 +325,41 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       _ => {},
     }
     token_index += 1;
+    // parse units like km per h
+    if token_index >= 2 {
+      let token1 = &tokens[token_index-2];
+      let token2 = match &tokens[token_index-1] {
+        // treat km/h the same as km per h
+        Token::Operator(Divide) => &Token::Per,
+        _ => &tokens[token_index-1],
+      };
+      let token3 = &tokens[token_index];
+      let mut replaced = true;
+      match (token1, token2, token3) {
+        (Token::Unit(Kilometer), Token::Per, Token::Unit(Hour)) => {
+          tokens[token_index-2] = Token::Unit(KilometersPerHour);
+        },
+        (Token::Unit(Mile), Token::Per, Token::Unit(Hour)) => {
+          tokens[token_index-2] = Token::Unit(MilesPerHour);
+        },
+        (Token::Unit(Meter), Token::Per, Token::Unit(Second)) => {
+          tokens[token_index-2] = Token::Unit(MetersPerSecond);
+        },
+        (Token::Unit(Foot), Token::Per, Token::Unit(Second)) => {
+          tokens[token_index-2] = Token::Unit(FeetPerSecond);
+        },
+        _ => {
+          replaced = false;
+        },
+      }
+      if replaced {
+        tokens.remove(token_index);
+        tokens.remove(token_index-1);
+        token_index -= 2;
+      }
+    }
   }
+  println!("XKXK {:?}", tokens);
 
   Ok(tokens)
 }
