@@ -157,6 +157,7 @@ create_units!(
 
   Millijoule:         (Energy, d128!(0.001)),
   Joule:              (Energy, d128!(1)),
+  NewtonMeter:        (Energy, d128!(1)),
   Kilojoule:          (Energy, d128!(1000)),
   Megajoule:          (Energy, d128!(1000000)),
   Gigajoule:          (Energy, d128!(1000000000)),
@@ -361,6 +362,7 @@ mod tests {
 
     assert_eq!(convert_test(1000.0, Millijoule, Joule), 1.0);
     assert_eq!(convert_test(1000.0, Joule, Kilojoule), 1.0);
+    assert_eq!(convert_test(1.0, NewtonMeter, Joule), 1.0);
     assert_eq!(convert_test(1000.0, Kilojoule, Megajoule), 1.0);
     assert_eq!(convert_test(1000.0, Megajoule, Gigajoule), 1.0);
     assert_eq!(convert_test(1000.0, Gigajoule, Terajoule), 1.0);

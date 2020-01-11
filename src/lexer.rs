@@ -57,7 +57,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
             let string = &input[start_index..=end_index];
             match string.trim_end() {
               // allow for two-word units
-              "nautical" | "light" | "sq" | "square" | "cubic" | "metric" => {
+              "nautical" | "light" | "sq" | "square" | "cubic" | "metric" | "newton" => {
                 byte_index += current_char.len_utf8();
                 chars.next();
                 end_index += 1;
@@ -213,6 +213,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
 
           "millijoule" | "millijoules" => tokens.push(Token::Unit(Millijoule)),
           "j"| "joule" | "joules" => tokens.push(Token::Unit(Joule)),
+          "nm" | "newton meter" | "newton meters" | "newton-meter" | "newton-meters" => tokens.push(Token::Unit(NewtonMeter)),
           "kj" | "kilojoule" | "kilojoules" => tokens.push(Token::Unit(Kilojoule)),
           "mj" | "megajoule" | "megajoules" => tokens.push(Token::Unit(Megajoule)),
           "gj" | "gigajoule" | "gigajoules" => tokens.push(Token::Unit(Gigajoule)),
