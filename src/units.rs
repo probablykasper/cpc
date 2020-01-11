@@ -10,6 +10,7 @@ pub enum UnitType {
   Mass,
   Information,
   Energy,
+  Power,
   Speed,
   Temperature,
 }
@@ -169,6 +170,18 @@ create_units!(
   GigawattHour:       (Energy, d128!(3600000000000)),
   TerawattHour:       (Energy, d128!(3600000000000000)),
   PetawattHour:       (Energy, d128!(3600000000000000000)),
+
+  Milliwatt:                    (Power, d128!(0.001)),
+  Watt:                         (Power, d128!(1)),
+  Kilowatt:                     (Power, d128!(1000)),
+  Megawatt:                     (Power, d128!(1000000)),
+  Gigawatt:                     (Power, d128!(1000000000)),
+  Terawatt:                     (Power, d128!(1000000000000)),
+  Petawatt:                     (Power, d128!(1000000000000000)),
+  BritishThermalUnitsPerMinute: (Power, d128!(0.0568690272188)), // probably inexact
+  BritishThermalUnitsPerHour:   (Power, d128!(3.412141633128)), // probably inexact
+  Horsepower:                   (Power, d128!(745.69987158227022)), // exact according to wikipedia
+  MetricHorsepower:             (Power, d128!(735.49875)),
 
   KilometersPerHour:  (Speed, d128!(1)),
   MetersPerSecond:    (Speed, d128!(3.6)),
@@ -360,6 +373,16 @@ mod tests {
     assert_eq!(convert_test(1000.0, MegawattHour, GigawattHour), 1.0);
     assert_eq!(convert_test(1000.0, GigawattHour, TerawattHour), 1.0);
     assert_eq!(convert_test(1000.0, TerawattHour, PetawattHour), 1.0);
+
+    assert_eq!(convert_test(1000.0, Watt, Kilowatt), 1.0);
+    assert_eq!(convert_test(1000.0, Kilowatt, Megawatt), 1.0);
+    assert_eq!(convert_test(1000.0, Megawatt, Gigawatt), 1.0);
+    assert_eq!(convert_test(1000.0, Gigawatt, Terawatt), 1.0);
+    assert_eq!(convert_test(1000.0, Terawatt, Petawatt), 1.0);
+    assert_eq!(convert_test(0.0568690272188, Watt, BritishThermalUnitsPerMinute), 1.0);
+    assert_eq!(convert_test(60.0, BritishThermalUnitsPerMinute, BritishThermalUnitsPerHour), 1.0);
+    assert_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
+    assert_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
 
     assert_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
     assert_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);

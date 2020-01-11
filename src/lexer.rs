@@ -227,6 +227,16 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "twh" | "terawatt hour" | "terawatt hours" => tokens.push(Token::Unit(TerawattHour)),
           "pwh" | "petawatt hour" | "petawatt hours" => tokens.push(Token::Unit(PetawattHour)),
 
+          "milliwatt" | "milliwatts" => tokens.push(Token::Unit(Milliwatt)),
+          "w" | "watt" | "watts" => tokens.push(Token::Unit(Watt)),
+          "kw" | "kilowatt" | "kilowatts" => tokens.push(Token::Unit(Kilowatt)),
+          "mw" | "megawatt" | "megawatts" => tokens.push(Token::Unit(Megawatt)),
+          "gw" | "gigawatt" | "gigawatts" => tokens.push(Token::Unit(Gigawatt)),
+          "tw" | "terawatt" | "terawatts" => tokens.push(Token::Unit(Terawatt)),
+          "pw" | "petawatt" | "petawatts" => tokens.push(Token::Unit(Petawatt)),
+          "hp" | "hps" | "horsepower" | "horsepowers" => tokens.push(Token::Unit(Horsepower)),
+          "mhp" | "hpm" | "metric hp" | "metric hps" | "metric horsepower" | "metric horsepowers" => tokens.push(Token::Unit(MetricHorsepower)),
+
           "kph" | "kmh" => tokens.push(Token::Unit(KilometersPerHour)),
           "mps" => tokens.push(Token::Unit(MetersPerSecond)),
           "mph" => tokens.push(Token::Unit(MilesPerHour)),
@@ -347,6 +357,12 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         },
         (Token::Unit(Foot), Token::Per, Token::Unit(Second)) => {
           tokens[token_index-2] = Token::Unit(FeetPerSecond);
+        },
+        (Token::Unit(BritishThermalUnit), Token::Per, Token::Unit(Minute)) => {
+          tokens[token_index-2] = Token::Unit(BritishThermalUnitsPerMinute);
+        },
+        (Token::Unit(BritishThermalUnit), Token::Per, Token::Unit(Hour)) => {
+          tokens[token_index-2] = Token::Unit(BritishThermalUnitsPerHour);
         },
         _ => {
           replaced = false;
