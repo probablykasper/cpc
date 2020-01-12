@@ -11,6 +11,7 @@ pub enum UnitType {
   Information,
   Energy,
   Power,
+  Pressure,
   Speed,
   Temperature,
 }
@@ -183,6 +184,15 @@ create_units!(
   BritishThermalUnitsPerHour:   (Power, d128!(3.412141633128)), // probably inexact
   Horsepower:                   (Power, d128!(745.69987158227022)), // exact according to wikipedia
   MetricHorsepower:             (Power, d128!(735.49875)),
+
+  Pascal:                       (Pressure, d128!(1)),
+  Kilopascal:                   (Pressure, d128!(1000)),
+  Atmosphere:                   (Pressure, d128!(101325)),
+  Millibar:                     (Pressure, d128!(100)),
+  Bar:                          (Pressure, d128!(100000)),
+  InchOfMercury:                (Pressure, d128!(3386.389)),
+  PoundsPerSquareInch:          (Pressure, d128!(6894.757293168361)), // inexact
+  Torr:                         (Pressure, d128!(162.12)),
 
   KilometersPerHour:  (Speed, d128!(1)),
   MetersPerSecond:    (Speed, d128!(3.6)),
@@ -385,6 +395,14 @@ mod tests {
     assert_eq!(convert_test(60.0, BritishThermalUnitsPerMinute, BritishThermalUnitsPerHour), 1.0);
     assert_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
     assert_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
+
+    assert_eq!(convert_test(1000.0, Pascal, Kilopascal), 1.0);
+    assert_eq!(convert_test(101325.0, Pascal, Atmosphere), 1.0);
+    assert_eq!(convert_test(100.0, Pascal, Millibar), 1.0);
+    assert_eq!(convert_test(1000.0, Millibar, Bar), 1.0);
+    assert_eq!(convert_test(3386.389, Pascal, InchOfMercury), 1.0);
+    assert_eq!(convert_test(6894.757293168361, Pascal, PoundsPerSquareInch), 1.0);
+    assert_eq!(convert_test(162.12, Pascal, Torr), 1.0);
 
     assert_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
     assert_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);

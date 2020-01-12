@@ -38,7 +38,7 @@ create_units!(
 
 The number associated with a unit is it's "weight". For example, if a second's weight is `1`, then a minute's weight is `1000`.
 
-I have found [translatorscafe.com](https://www.translatorscafe.com/unit-converter) to be a good website for accurate and comprehensive unit convertion. Wikipedia is worth looking at as well.
+I have found [translatorscafe.com](https://www.translatorscafe.com/unit-converter) and [calculateme.com](https://www.calculateme.com/) to be good websites for unit convertion. Wikipedia is worth looking at as well.
 
 ### 2. Add a test for the unit
 Make sure to also add a test for each unit. The tests look like this:

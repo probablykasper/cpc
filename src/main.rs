@@ -55,6 +55,12 @@ pub enum LexerKeyword {
   Per,
   PercentChar,
   In,
+  DoubleQuotes,
+  Mercury,
+  Hg,
+  PoundForce,
+  PoundWord,
+  Force,
 }
 
 mod units;

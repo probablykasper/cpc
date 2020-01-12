@@ -5,7 +5,7 @@ use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, R
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
-use crate::LexerKeyword::{In, PercentChar, Per};
+use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, PoundWord, Force, DoubleQuotes};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
 use crate::units::Unit::*;
 
@@ -38,6 +38,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         tokens.push(Token::Operator(RightParen));
       },
       'π' => tokens.push(Token::Constant(Pi)),
+      '"' | '“' | '”' | '″' => tokens.push(Token::LexerKeyword(DoubleQuotes)),
       value if value.is_whitespace() => {},
       value if value.is_alphabetic() => {
 
@@ -102,6 +103,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "tan" => tokens.push(Token::FunctionIdentifier(Tan)),
 
           "per" => tokens.push(Token::LexerKeyword(Per)),
+          "hg" => tokens.push(Token::LexerKeyword(Hg)), // can be hectogram or mercury
 
           "ns" | "nanosec" | "nanosecs" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
           "μs" | "microsec" | "microsecs" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
@@ -170,11 +172,12 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           
           "mg" | "milligram" | "milligrams" => tokens.push(Token::Unit(Milligram)),
           "g" | "gram" | "grams" => tokens.push(Token::Unit(Gram)),
-          "hg" | "hectogram" | "hectograms" => tokens.push(Token::Unit(Hectogram)),
+          "hectogram" | "hectograms" => tokens.push(Token::Unit(Hectogram)),
           "kg" | "kilo" | "kilos" | "kilogram" | "kilograms" => tokens.push(Token::Unit(Kilogram)),
           "t" | "tonne" | "tonnes" | "metric ton" | "metric tons" | "metric tonne" | "metric tonnes" => tokens.push(Token::Unit(MetricTon)),
           "oz" | "ounces" => tokens.push(Token::Unit(Ounce)),
-          "lb" | "lbs" | "pound" | "pounds" => tokens.push(Token::Unit(Pound)),
+          "lb" | "lbs" | "pounds" => tokens.push(Token::Unit(Pound)),
+          "pound" => tokens.push(Token::LexerKeyword(PoundWord)),
           "st" | "ton" | "tons" | "short ton" | "short tons" | "short tonne" | "short tonnes" => tokens.push(Token::Unit(ShortTon)),
           "lt" | "long ton" | "long tons" | "long tonne" | "long tonnes" => tokens.push(Token::Unit(LongTon)),
 
@@ -239,6 +242,20 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "pw" | "petawatt" | "petawatts" => tokens.push(Token::Unit(Petawatt)),
           "hp" | "hps" | "horsepower" | "horsepowers" => tokens.push(Token::Unit(Horsepower)),
           "mhp" | "hpm" | "metric hp" | "metric hps" | "metric horsepower" | "metric horsepowers" => tokens.push(Token::Unit(MetricHorsepower)),
+
+          // for pound-force per square inch
+          "lbf" => tokens.push(Token::LexerKeyword(PoundForce)),
+          "force" => tokens.push(Token::LexerKeyword(Force)),
+          
+          "pa" | "pascal" | "pascals" => tokens.push(Token::Unit(Pascal)),
+          "kpa" | "kilopascal" | "kilopascals" => tokens.push(Token::Unit(Kilopascal)),
+          "atm" | "atms" | "atmosphere" | "atmospheres" => tokens.push(Token::Unit(Atmosphere)),
+          "mbar" | "mbars" | "millibar" | "millibars" => tokens.push(Token::Unit(Millibar)),
+          "bar" | "bars" => tokens.push(Token::Unit(Bar)),
+          "inhg" => tokens.push(Token::Unit(InchOfMercury)),
+          "mercury" => tokens.push(Token::LexerKeyword(Mercury)),
+          "psi" => tokens.push(Token::Unit(PoundsPerSquareInch)),
+          "torr" | "torrs" => tokens.push(Token::Unit(Torr)),
 
           "kph" | "kmh" => tokens.push(Token::Unit(KilometersPerHour)),
           "mps" => tokens.push(Token::Unit(MetersPerSecond)),
@@ -310,16 +327,16 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
   }
 
   let mut token_index = 0;
-  for _i in 1..tokens.len() {
-    // decide if % is percent or modulo
+  loop {
     match tokens[token_index] {
+      // decide if % is percent or modulo
       Token::LexerKeyword(PercentChar) => {
-        match &tokens[token_index + 1] {
-          Token::TextOperator(Of) => {
+        match tokens.get(token_index + 1) {
+          Some(Token::TextOperator(Of)) => {
             // "10% of 1km" should be percentage
             tokens[token_index] = Token::UnaryOperator(Percent);
           },
-          Token::Operator(operator) => {
+          Some(Token::Operator(operator)) => {
             match operator {
               LeftParen => {
                 // "10%(2)" should be modulo
@@ -331,30 +348,55 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
               }
             }
           },
-          Token::UnaryOperator(_operator) => {
+          Some(Token::UnaryOperator(_operator)) => {
             // "10%!" should be a percentage
             tokens[token_index] = Token::UnaryOperator(Percent);
           },
+          None => {
+            // percent if there's no element afterwards
+            tokens[token_index] = Token::UnaryOperator(Percent);
+          },
           _ => {
-            // "10%2" should be modulo
+            // everything else should be modulo, for example if the % is
+            // before a number, function or constants
             tokens[token_index] = Token::Operator(Modulo);
           },
         }
       },
+      // decide if " is inch of inch of mercury
+      Token::LexerKeyword(DoubleQuotes) => {
+        match tokens.get(token_index + 1) {
+          Some(Token::LexerKeyword(Hg)) => {
+            // "hg should be inch of mercury
+            tokens[token_index] = Token::Unit(InchOfMercury);
+            tokens.remove(token_index + 1);
+          },
+          _ => {
+            // otherwise, Inch
+            tokens[token_index] = Token::Unit(InchOfMercury);
+          },
+        }
+      },
+      // if hg wasn't already turned into inch of mercury, it's hectogram
+      Token::LexerKeyword(Hg) => {
+        tokens[token_index] = Token::Unit(Hectogram);
+      },
+      // decide if "in" is Inch or To
       Token::LexerKeyword(In) => {
-        match &tokens[token_index + 1] {
-          Token::Unit(_) => {
+        match tokens.get(token_index + 1) {
+          Some(Token::Unit(_)) => {
+            // "in" should be To
             tokens[token_index] = Token::TextOperator(To);
           },
           _ => {
+            // otherwise, Inch
             tokens[token_index] = Token::Unit(Inch);
           },
         }
-      }
+      },
       _ => {},
     }
-    token_index += 1;
-    // parse units like km/h, km per h
+    // parse units like km/h, lbf per square inch
     if token_index >= 2 {
       let token1 = &tokens[token_index-2];
       let token2 = match &tokens[token_index-1] {
@@ -365,23 +407,41 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       let token3 = &tokens[token_index];
       let mut replaced = true;
       match (token1, token2, token3) {
+        // km/h
         (Token::Unit(Kilometer), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
           tokens[token_index-2] = Token::Unit(KilometersPerHour);
         },
+        // mi/h
         (Token::Unit(Mile), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
           tokens[token_index-2] = Token::Unit(MilesPerHour);
         },
+        // m/s
         (Token::Unit(Meter), Token::LexerKeyword(Per), Token::Unit(Second)) => {
           tokens[token_index-2] = Token::Unit(MetersPerSecond);
         },
+        // ft/s
         (Token::Unit(Foot), Token::LexerKeyword(Per), Token::Unit(Second)) => {
           tokens[token_index-2] = Token::Unit(FeetPerSecond);
         },
+        // btu/min
         (Token::Unit(BritishThermalUnit), Token::LexerKeyword(Per), Token::Unit(Minute)) => {
           tokens[token_index-2] = Token::Unit(BritishThermalUnitsPerMinute);
         },
+        // btu/h
         (Token::Unit(BritishThermalUnit), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
           tokens[token_index-2] = Token::Unit(BritishThermalUnitsPerHour);
+        },
+        // pound-force
+        (Token::LexerKeyword(PoundWord), Token::Operator(Minus), Token::LexerKeyword(Force)) => {
+          tokens[token_index-2] = Token::LexerKeyword(PoundForce);
+        },
+        // lbs/sqin
+        (Token::LexerKeyword(PoundForce), Token::LexerKeyword(Per), Token::Unit(SquareInch)) => {
+          tokens[token_index-2] = Token::Unit(PoundsPerSquareInch);
+        },
+        // inch of mercury
+        (Token::Unit(Inch), Token::TextOperator(Of), Token::LexerKeyword(Mercury)) => {
+          tokens[token_index-2] = Token::Unit(InchOfMercury);
         },
         _ => {
           replaced = false;
@@ -393,8 +453,13 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         token_index -= 2;
       }
     }
+    if token_index == tokens.len()-1 {
+      break;
+    } else {
+      token_index += 1;
+    }
   }
-  println!("XKXK {:?}", tokens);
+  println!("TOKENS {:?}", tokens);
 
   Ok(tokens)
 }
