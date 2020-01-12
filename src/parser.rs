@@ -263,7 +263,7 @@ fn parse_level_7(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
     &Token::Unit(_unit) => {
       let node = AstNode::new(token.clone());
       Ok((node, pos + 1))
-    }
+    },
     Token::Constant(_constant) => {
       let node = AstNode::new(token.clone());
       Ok((node, pos + 1))

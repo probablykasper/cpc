@@ -50,6 +50,13 @@ pub enum FunctionIdentifier {
   Tan,
 }
 
+#[derive(Clone, Debug)]
+pub enum LexerKeyword {
+  Per,
+  PercentChar,
+  In,
+}
+
 mod units;
 
 #[derive(Clone, Debug)]
@@ -61,6 +68,7 @@ pub enum Token {
   Constant(Constant),
   Paren, // parser only
   Per, // lexer only
+  LexerKeyword(LexerKeyword),
   TextOperator(TextOperator),
   Negative, // parser only
   Unit(units::Unit),

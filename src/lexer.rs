@@ -5,6 +5,7 @@ use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, R
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
+use crate::LexerKeyword::{In, PercentChar, Per};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
 use crate::units::Unit::*;
 
@@ -25,7 +26,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       '-' => tokens.push(Token::Operator(Minus)),
       '*' => tokens.push(Token::Operator(Multiply)),
       '/' => tokens.push(Token::Operator(Divide)),
-      '%' => tokens.push(Token::Operator(Modulo)),
+      '%' => tokens.push(Token::LexerKeyword(PercentChar)),
       '^' => tokens.push(Token::Operator(Caret)),
       '!' => tokens.push(Token::UnaryOperator(Factorial)),
       '(' => {
@@ -100,7 +101,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "cos" => tokens.push(Token::FunctionIdentifier(Cos)),
           "tan" => tokens.push(Token::FunctionIdentifier(Tan)),
 
-          "per" => tokens.push(Token::Per),
+          "per" => tokens.push(Token::LexerKeyword(Per)),
 
           "ns" | "nanosec" | "nanosecs" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
           "μs" | "microsec" | "microsecs" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
@@ -122,7 +123,8 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           "dm" | "decimeter" | "decimeters" => tokens.push(Token::Unit(Centimeter)),
           "m" | "meter" | "meters" => tokens.push(Token::Unit(Meter)),
           "km" | "kilometer" | "kilometers" => tokens.push(Token::Unit(Kilometer)),
-          "in" | "inch" | "inches" => tokens.push(Token::Unit(Inch)),
+          "in" => tokens.push(Token::LexerKeyword(In)),
+          "inch" | "inches" => tokens.push(Token::Unit(Inch)),
           "ft" | "foot" | "feet" => tokens.push(Token::Unit(Foot)),
           "yd" | "yard" | "yards" => tokens.push(Token::Unit(Yard)),
           "mi" | "mile" | "miles" => tokens.push(Token::Unit(Mile)),
@@ -309,60 +311,76 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
 
   let mut token_index = 0;
   for _i in 1..tokens.len() {
-    // the lexer parses percentages as modulo, so here modulos become percentages
+    // decide if % is percent or modulo
     match tokens[token_index] {
-      Token::Operator(Modulo) => {
+      Token::LexerKeyword(PercentChar) => {
         match &tokens[token_index + 1] {
           Token::TextOperator(Of) => {
-            // for example "10% of 1km" should be a percentage, not modulo
+            // "10% of 1km" should be percentage
             tokens[token_index] = Token::UnaryOperator(Percent);
           },
           Token::Operator(operator) => {
             match operator {
-              LeftParen => {},
+              LeftParen => {
+                // "10%(2)" should be modulo
+                tokens[token_index] = Token::Operator(Modulo);
+              },
               _ => {
-                // for example "10%*2" should be a percentage, but "10%(2)" should be modulo
+                // "10%*2" should be a percentage
                 tokens[token_index] = Token::UnaryOperator(Percent);
               }
             }
           },
           Token::UnaryOperator(_operator) => {
-            // for example "10%!" should be a percentage, but "10%(2)" should be modulo
+            // "10%!" should be a percentage
             tokens[token_index] = Token::UnaryOperator(Percent);
           },
-          _ => {},
+          _ => {
+            // "10%2" should be modulo
+            tokens[token_index] = Token::Operator(Modulo);
+          },
+        }
+      },
+      Token::LexerKeyword(In) => {
+        match &tokens[token_index + 1] {
+          Token::Unit(_) => {
+            tokens[token_index] = Token::TextOperator(To);
+          },
+          _ => {
+            tokens[token_index] = Token::Unit(Inch);
+          },
         }
       }
       _ => {},
     }
     token_index += 1;
-    // parse units like km per h
+    // parse units like km/h, km per h
     if token_index >= 2 {
       let token1 = &tokens[token_index-2];
       let token2 = match &tokens[token_index-1] {
         // treat km/h the same as km per h
-        Token::Operator(Divide) => &Token::Per,
+        Token::Operator(Divide) => &Token::LexerKeyword(Per),
         _ => &tokens[token_index-1],
       };
       let token3 = &tokens[token_index];
       let mut replaced = true;
       match (token1, token2, token3) {
-        (Token::Unit(Kilometer), Token::Per, Token::Unit(Hour)) => {
+        (Token::Unit(Kilometer), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
           tokens[token_index-2] = Token::Unit(KilometersPerHour);
         },
-        (Token::Unit(Mile), Token::Per, Token::Unit(Hour)) => {
+        (Token::Unit(Mile), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
           tokens[token_index-2] = Token::Unit(MilesPerHour);
         },
-        (Token::Unit(Meter), Token::Per, Token::Unit(Second)) => {
+        (Token::Unit(Meter), Token::LexerKeyword(Per), Token::Unit(Second)) => {
           tokens[token_index-2] = Token::Unit(MetersPerSecond);
         },
-        (Token::Unit(Foot), Token::Per, Token::Unit(Second)) => {
+        (Token::Unit(Foot), Token::LexerKeyword(Per), Token::Unit(Second)) => {
           tokens[token_index-2] = Token::Unit(FeetPerSecond);
         },
-        (Token::Unit(BritishThermalUnit), Token::Per, Token::Unit(Minute)) => {
+        (Token::Unit(BritishThermalUnit), Token::LexerKeyword(Per), Token::Unit(Minute)) => {
           tokens[token_index-2] = Token::Unit(BritishThermalUnitsPerMinute);
         },
-        (Token::Unit(BritishThermalUnit), Token::Per, Token::Unit(Hour)) => {
+        (Token::Unit(BritishThermalUnit), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
           tokens[token_index-2] = Token::Unit(BritishThermalUnitsPerHour);
         },
         _ => {
