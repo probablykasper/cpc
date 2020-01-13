@@ -2,6 +2,7 @@ use crate::{Token, TokenVector};
 use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{To, Of};
+use crate::units::Unit::{Foot, Inch};
 
 #[derive(Debug)]
 pub struct AstNode {
@@ -66,6 +67,20 @@ fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
         new_node.children.push(right_node);
         node = new_node;
         pos = next_pos;
+      },
+      Some(&Token::Number(_)) => {
+        // parse 6'4"
+        let (right_node, next_pos) = parse_level_3(tokens, pos)?;
+        if let Token::Unit(Foot) = node.token {
+          if let Token::Unit(Inch) = right_node.token {
+            let mut new_node = AstNode::new(Token::Operator(Plus));
+            new_node.children.push(node);
+            new_node.children.push(right_node);
+            node = new_node;
+            pos = next_pos;
+          }
+        }
+        return Ok((node, pos));
       },
       _ => {
         return Ok((node, pos));
@@ -151,8 +166,6 @@ fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
       // 2(3), pi(3), )(3)
       Some(&Token::Operator(LeftParen)) => {
         let last_token = tokens.get(pos - 1);
-        println!("{:?}", token);
-        println!("{:?}", last_token);
         match last_token {
           Some(&Token::Number(_)) | Some(&Token::Constant(_)) | Some(&Token::Operator(RightParen)) => {
             let (right_node, next_pos) = parse_level_4(tokens, pos)?;

@@ -38,6 +38,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
         tokens.push(Token::Operator(RightParen));
       },
       'π' => tokens.push(Token::Constant(Pi)),
+      '\'' => tokens.push(Token::Unit(Foot)),
       '"' | '“' | '”' | '″' => tokens.push(Token::LexerKeyword(DoubleQuotes)),
       value if value.is_whitespace() => {},
       value if value.is_alphabetic() => {
@@ -459,7 +460,6 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       token_index += 1;
     }
   }
-  println!("TOKENS {:?}", tokens);
 
   Ok(tokens)
 }
