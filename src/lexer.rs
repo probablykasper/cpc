@@ -12,7 +12,7 @@ use crate::units::Unit::*;
 pub fn lex(input: &str) -> Result<TokenVector, String> {
 
   let input = input.replace(",", "");
-  let mut chars = input.chars().enumerate().peekable();
+  let mut chars = input.chars().peekable();
   let mut tokens: TokenVector = vec![];
   let max_word_length = 30;
   
@@ -20,7 +20,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
   let mut right_paren_count = 0;
 
   let mut byte_index = 0;
-  while let Some((_index, current_char)) = chars.next() {
+  while let Some(current_char) = chars.next() {
     match current_char {
       '+' => tokens.push(Token::Operator(Plus)),
       '-' => tokens.push(Token::Operator(Minus)),
@@ -45,7 +45,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
 
         let start_index = byte_index;
         let mut end_index = byte_index;
-        while let Some((_index, current_char)) = chars.peek() {
+        while let Some(current_char) = chars.peek() {
           // don't loop more than max_word_length:
           if end_index >= start_index + max_word_length - 1 {
             let string = &input[start_index..=end_index];
@@ -278,7 +278,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
 
         let start_index = byte_index;
         let mut end_index = byte_index;
-        while let Some((_index, current_char)) = chars.peek() {
+        while let Some(current_char) = chars.peek() {
           if current_char == &'.' || current_char.is_digit(10) {
             byte_index += current_char.len_utf8();
             chars.next();
