@@ -1,6 +1,6 @@
 use decimal::d128;
 use crate::Token;
-use crate::units::{Unit, UnitType, Number, convert};
+use crate::units::{Unit, UnitType, Number, convert, add, subtract};
 use crate::parser::AstNode;
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::Constant::{Pi, E};
@@ -215,12 +215,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
         To => {
           if let Token::Unit(right_unit) = right_child.token {
             let left = evaluate_node(left_child)?;
-            if left.unit.category() == right_unit.category() {
-              let result = convert(left, right_unit)?;
-              return Ok(result)
-            } else {
-              return Err(format!("Cannot convert from {:?} to {:?}", left.unit, right_unit))
-            }
+            let result = convert(left, right_unit)?;
+            return Ok(result)
           } else {
             return Err("Right side of To operator needs to be a unit".to_string())
           }
@@ -231,7 +227,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
           if left.unit == Unit::NoUnit {
             return Ok(Number::new(left.value * right.value, right.unit))
           } else {
-            return Err("child[0] of the Of operator must be NoUnit".to_string())
+            return Err("Left side of the Of operator must be NoUnit".to_string())
           }
         },
       }
@@ -243,24 +239,10 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
       let right = evaluate_node(right_child)?;
       match operator {
         Plus => {
-          if left.unit == right.unit {
-            Ok(Number::new(left.value + right.value, left.unit))
-          } else if left.unit.category() == right.unit.category() {
-            let result = left.value * left.unit.weight() + right.value * right.unit.weight();
-            Ok(Number::new(result, Unit::Millimeter))
-          } else {
-            return Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
-          }
+          Ok(add(left, right)?)
         },
         Minus => {
-          if left.unit == right.unit {
-            Ok(Number::new(left.value - right.value, left.unit))
-          } else if left.unit.category() == right.unit.category() {
-            let result = left.value * left.unit.weight() - right.value * right.unit.weight();
-            Ok(Number::new(result, Unit::Millimeter))
-          } else {
-            return Err(format!("Cannot subtract {:?} by {:?}", left.unit, right.unit))
-          }
+          Ok(subtract(left, right)?)
         },
         Multiply => {
           if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {

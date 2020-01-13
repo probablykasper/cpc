@@ -228,6 +228,9 @@ fn get_convertion_factor(unit: Unit, to_unit: Unit) -> d128 {
 }
 
 pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
+  if number.unit.category() != to_unit.category() {
+    return Err(format!("Cannot convert from {:?} to {:?}", number.unit, to_unit));
+  }
   let value = number.value;
   let ok = |new_value| {
     Ok(Number::new(new_value, to_unit))
@@ -248,6 +251,38 @@ pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
   } else {
     let convertion_factor = get_convertion_factor(number.unit, to_unit);
     ok(number.value * convertion_factor)
+  }
+}
+
+pub fn add(left: Number, right: Number) -> Result<Number, String> {
+  if left.unit == right.unit {
+    Ok(Number::new(left.value + right.value, left.unit))
+  } else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+    if left.unit.weight() > right.unit.weight() {
+      let left_converted = convert(left, right.unit)?;
+      Ok(Number::new(left_converted.value + right.value, right.unit))
+    } else {
+      let right_converted = convert(right, left.unit)?;
+      Ok(Number::new(right_converted.value + left.value, left.unit))
+    }
+  } else {
+    return Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
+  }
+}
+
+pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
+  if left.unit == right.unit {
+    Ok(Number::new(left.value - right.value, left.unit))
+  } else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+    if left.unit.weight() > right.unit.weight() {
+      let left_converted = convert(left, right.unit)?;
+      Ok(Number::new(left_converted.value - right.value, right.unit))
+    } else {
+      let right_converted = convert(right, left.unit)?;
+      Ok(Number::new(right_converted.value - left.value, left.unit))
+    }
+  } else {
+    return Err(format!("Cannot subtract {:?} by {:?}", left.unit, right.unit))
   }
 }
 
