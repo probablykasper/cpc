@@ -373,7 +373,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
           },
           _ => {
             // otherwise, Inch
-            tokens[token_index] = Token::Unit(InchOfMercury);
+            tokens[token_index] = Token::Unit(Inch);
           },
         }
       },
