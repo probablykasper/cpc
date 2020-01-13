@@ -71,6 +71,7 @@ create_units!(
   Foot:               (Length, d128!(304.8)),
   Yard:               (Length, d128!(914.4)),
   Mile:               (Length, d128!(1609344)),
+  // 1-dimensional only:
   NauticalMile:       (Length, d128!(1852000)),
   LightYear:          (Length, d128!(9460730472580800000)),
   LightSecond:        (Length, d128!(299792458000)),
@@ -84,6 +85,7 @@ create_units!(
   SquareFoot:         (Area, d128!(92903.04)),
   SquareYard:         (Area, d128!(836127.36)),
   SquareMile:         (Area, d128!(2589988110336.00)),
+  // 2-dimensional only
   Are:                (Area, d128!(100000000)),
   Decare:             (Area, d128!(1000000000)),
   Hectare:            (Area, d128!(10000000000)),
@@ -98,6 +100,7 @@ create_units!(
   CubicFoot:          (Volume, d128!(28316846.592)),
   CubicYard:          (Volume, d128!(764554857.984)),
   CubicMile:          (Volume, d128!(4168181825440579584)),
+  // 3-dimensional only
   Milliliter:         (Volume, d128!(1000)),
   Centiliter:         (Volume, d128!(10000)),
   Deciliter:          (Volume, d128!(100000)),

@@ -88,12 +88,13 @@ mod evaluator;
 mod lookup;
 
 fn main() {
-  let lex_start = Instant::now();
   
   use std::env;
   let args: Vec<String> = env::args().collect();
   let s = if args.len() >= 2 { &args[1] } else { "0.1" };
 
+  let lex_start = Instant::now();
+  
   match lexer::lex(s) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;

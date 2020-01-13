@@ -41,7 +41,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
       '\'' => tokens.push(Token::Unit(Foot)),
       '"' | '“' | '”' | '″' => tokens.push(Token::LexerKeyword(DoubleQuotes)),
       value if value.is_whitespace() => {},
-      value if value.is_alphabetic() => {
+      value if value.is_ascii_alphabetic() => {
 
         let start_index = byte_index;
         let mut end_index = byte_index;
@@ -52,7 +52,7 @@ pub fn lex(input: &str) -> Result<TokenVector, String> {
             return Err(format!("Invalid string starting with: {}", string));
           }
 
-          if current_char.is_alphabetic() {
+          if current_char.is_ascii_alphabetic() {
             byte_index += current_char.len_utf8();
             chars.next();
             end_index += 1;
