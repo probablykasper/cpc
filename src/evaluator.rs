@@ -98,43 +98,43 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
       let child_answer = evaluate_node(child_node)?;
       match function {
         Cbrt => {
-          if child_answer.unit.category() == UnitType::NoUnit {
+          if child_answer.unit.category() == UnitType::NoType {
             let result = cbrt(child_answer.value);
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("log() only accepts UnitType::NoUnit").to_string())
+            return Err(format!("log() only accepts UnitType::NoType").to_string())
           }
         },
         Sqrt => {
-          if child_answer.unit.category() == UnitType::NoUnit {
+          if child_answer.unit.category() == UnitType::NoType {
             let result = sqrt(child_answer.value);
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("log() only accepts UnitType::NoUnit").to_string())
+            return Err(format!("log() only accepts UnitType::NoType").to_string())
           }
         },
         Log => {
-          if child_answer.unit.category() == UnitType::NoUnit {
+          if child_answer.unit.category() == UnitType::NoType {
             let result = child_answer.value.log10();
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("log() only accepts UnitType::NoUnit").to_string())
+            return Err(format!("log() only accepts UnitType::NoType").to_string())
           }
         },
         Ln => {
-          if child_answer.unit.category() == UnitType::NoUnit {
+          if child_answer.unit.category() == UnitType::NoType {
             let result = child_answer.value.ln();
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("ln() only accepts UnitType::NoUnit").to_string())
+            return Err(format!("ln() only accepts UnitType::NoType").to_string())
           }
         },
         Exp => {
-          if child_answer.unit.category() == UnitType::NoUnit {
+          if child_answer.unit.category() == UnitType::NoType {
             let result = child_answer.value.exp(child_answer.value);
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("exp() only accepts UnitType::NoUnit").to_string())
+            return Err(format!("exp() only accepts UnitType::NoType").to_string())
           }
         },
         Round => {

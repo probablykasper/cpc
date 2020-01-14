@@ -2,7 +2,7 @@ use decimal::d128;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum UnitType {
-  NoUnit,
+  NoType,
   Time,
   Length,
   Area,
@@ -45,7 +45,7 @@ macro_rules! create_units {
 }
 
 create_units!(
-  NoUnit:             (UnitType::NoUnit, d128!(1)),
+  NoUnit:             (NoType, d128!(1)),
 
   Nanosecond:         (Time, d128!(1)),
   Microsecond:        (Time, d128!(1000)),
@@ -289,16 +289,16 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 }
 
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
+  if left.unit == NoUnit && right.unit == NoUnit {
     // 3 * 2
     return Ok(Number::new(left.value * right.value, left.unit))
   } else if left.unit.category() == Temperature || right.unit.category() == Temperature {
     // if temperature
     return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
-  } else if left.unit == Unit::NoUnit && right.unit != Unit::NoUnit {
+  } else if left.unit == NoUnit && right.unit != NoUnit {
     // 3 * 1 km
     return Ok(Number::new(left.value * right.value, right.unit))
-  } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
+  } else if right.unit == NoUnit && left.unit != NoUnit {
     // 1 km * 3
     return Ok(Number::new(left.value * right.value, left.unit))
   } else {
@@ -307,19 +307,19 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 }
 
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
+  if left.unit == NoUnit && right.unit == NoUnit {
     // 3 / 2
     Ok(Number::new(left.value / right.value, left.unit))
   } else if left.unit.category() == Temperature || right.unit.category() == Temperature {
     // if temperature
     return Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
-  } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
+  } else if left.unit != NoUnit && right.unit == NoUnit {
     // 1 km / 2
     Ok(Number::new(left.value / right.value, right.unit))
   } else if left.unit.category() == right.unit.category() {
     // 1 km / 1 km
     let (left, right) = convert_to_lowest(left, right)?;
-    Ok(Number::new(left.value * right.value, Unit::NoUnit))
+    Ok(Number::new(left.value * right.value, NoUnit))
   } else {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   }
@@ -339,10 +339,10 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 }
 
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
+  if left.unit == NoUnit && right.unit == NoUnit {
     // 3 ^ 2
     return Ok(Number::new(left.value.pow(right.value), left.unit))
-  } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
+  } else if right.unit == NoUnit && left.unit != NoUnit {
     // 1 km ^ 3
     return Ok(Number::new(left.value.pow(right.value), left.unit))
   } else {
