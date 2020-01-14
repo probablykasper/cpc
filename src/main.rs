@@ -88,14 +88,20 @@ mod evaluator;
 mod lookup;
 
 fn main() {
-  
   use std::env;
   let args: Vec<String> = env::args().collect();
-  let s = if args.len() >= 2 { &args[1] } else { "0.1" };
+  if args.len() >= 2 {
+    eval(&args[1], true);
+  } else {
+    println!("No argument supplied");
+  }
+}
+
+pub fn eval(input: &str, allow_trailing_operators: bool) {
 
   let lex_start = Instant::now();
   
-  match lexer::lex(s) {
+  match lexer::lex(input, allow_trailing_operators) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
 

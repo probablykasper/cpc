@@ -9,9 +9,19 @@ use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, PoundWo
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
 use crate::units::Unit::*;
 
-pub fn lex(input: &str) -> Result<TokenVector, String> {
+pub fn lex(input: &str, allow_trailing_operators: bool) -> Result<TokenVector, String> {
 
-  let input = input.replace(",", "");
+  let mut input = input.replace(",", ""); // ignore commas
+
+  if allow_trailing_operators {
+    match &input.chars().last().unwrap_or('x') {
+      '+' | '-' | '*' | '/' | '%' | '^' | '(' => {
+        input.pop();
+      },
+      _ => {},
+    }
+  }
+
   let mut chars = input.chars().peekable();
   let mut tokens: TokenVector = vec![];
   let max_word_length = 30;
