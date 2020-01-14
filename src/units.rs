@@ -254,35 +254,94 @@ pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
   }
 }
 
+pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number), String> {
+  if left.unit.weight() == right.unit.weight() {
+    Ok((left, right))
+  } else if left.unit.weight() > right.unit.weight() {
+    let left_converted = convert(left, right.unit)?;
+    Ok((left_converted, right))
+  } else {
+    let right_converted = convert(right, left.unit)?;
+    Ok((left, right_converted))
+  }
+}
+
 pub fn add(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit == right.unit {
+  if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+    let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value + right.value, left.unit))
-  } else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
-    if left.unit.weight() > right.unit.weight() {
-      let left_converted = convert(left, right.unit)?;
-      Ok(Number::new(left_converted.value + right.value, right.unit))
-    } else {
-      let right_converted = convert(right, left.unit)?;
-      Ok(Number::new(right_converted.value + left.value, left.unit))
-    }
   } else {
     return Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
   }
 }
 
 pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit == right.unit {
+  if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+    let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value - right.value, left.unit))
-  } else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
-    if left.unit.weight() > right.unit.weight() {
-      let left_converted = convert(left, right.unit)?;
-      Ok(Number::new(left_converted.value - right.value, right.unit))
-    } else {
-      let right_converted = convert(right, left.unit)?;
-      Ok(Number::new(right_converted.value - left.value, left.unit))
-    }
   } else {
     return Err(format!("Cannot subtract {:?} by {:?}", left.unit, right.unit))
+  }
+}
+
+pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
+  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
+    // 3 * 2
+    return Ok(Number::new(left.value * right.value, left.unit))
+  } else if left.unit.category() == Temperature || right.unit.category() == Temperature {
+    // if temperature
+    return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+  } else if left.unit == Unit::NoUnit && right.unit != Unit::NoUnit {
+    // 3 * 1 km
+    return Ok(Number::new(left.value * right.value, right.unit))
+  } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
+    // 1 km * 3
+    return Ok(Number::new(left.value * right.value, left.unit))
+  } else {
+    return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+  }
+}
+
+pub fn divide(left: Number, right: Number) -> Result<Number, String> {
+  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
+    // 3 / 2
+    Ok(Number::new(left.value / right.value, left.unit))
+  } else if left.unit.category() == Temperature || right.unit.category() == Temperature {
+    // if temperature
+    return Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
+  } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
+    // 1 km / 2
+    Ok(Number::new(left.value / right.value, right.unit))
+  } else if left.unit.category() == right.unit.category() {
+    // 1 km / 1 km
+    let (left, right) = convert_to_lowest(left, right)?;
+    Ok(Number::new(left.value * right.value, Unit::NoUnit))
+  } else {
+    Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
+  }
+}
+
+pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
+  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
+    // 3 / 2
+    return Ok(Number::new(left.value % right.value, left.unit))
+  } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
+    // 1 km / 2
+    return Ok(Number::new(left.value % right.value, right.unit))
+  } else {
+    return Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+  }
+}
+
+pub fn pow(left: Number, right: Number) -> Result<Number, String> {
+  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
+    // 3 ^ 2
+    return Ok(Number::new(left.value.pow(right.value), left.unit))
+  } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
+    // 1 km ^ 3
+    return Ok(Number::new(left.value.pow(right.value), left.unit))
+  } else {
+    return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
   }
 }
 

@@ -1,6 +1,6 @@
 use decimal::d128;
 use crate::Token;
-use crate::units::{Unit, UnitType, Number, convert, add, subtract};
+use crate::units::{Unit, UnitType, Number, convert, add, subtract, multiply, divide, modulo, pow};
 use crate::parser::AstNode;
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::Constant::{Pi, E};
@@ -245,51 +245,20 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
           Ok(subtract(left, right)?)
         },
         Multiply => {
-          if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
-            // 3 * 2
-            return Ok(Number::new(left.value * right.value, left.unit))
-          } else if left.unit == Unit::NoUnit && right.unit != Unit::NoUnit {
-            // 3 * 1 km
-            return Ok(Number::new(left.value * right.value, right.unit))
-          } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
-            // 1 km * 3
-            return Ok(Number::new(left.value * right.value, left.unit))
-          } else {
-            return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
-          }
+          Ok(multiply(left, right)?)
+          // }
         },
         Divide => {
-          if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
-            // 3 / 2
-            return Ok(Number::new(left.value / right.value, left.unit))
-          } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
-            // 1 km / 2
-            return Ok(Number::new(left.value / right.value, right.unit))
-          } else {
-            return Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
-          }
+          Ok(divide(left, right)?)
+          // }
         },
         Modulo => {
-          if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
-            // 3 / 2
-            return Ok(Number::new(left.value % right.value, left.unit))
-          } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
-            // 1 km / 2
-            return Ok(Number::new(left.value % right.value, right.unit))
-          } else {
-            return Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
-          }
+          Ok(modulo(left, right)?)
+          // }
         },
         Caret => {
-          if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
-            // 3 ^ 2
-            return Ok(Number::new(left.value.pow(right.value), left.unit))
-          } else if right.unit == Unit::NoUnit && left.unit != Unit::NoUnit {
-            // 1 km ^ 3
-            return Ok(Number::new(left.value.pow(right.value), left.unit))
-          } else {
-            return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
-          }
+          Ok(pow(left, right)?)
+          // }
         },
         _ => {
           Err(format!("Unexpected operator {:?}", operator))
