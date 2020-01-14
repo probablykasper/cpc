@@ -267,7 +267,9 @@ pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number)
 }
 
 pub fn add(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+  if left.unit == right.unit {
+    Ok(Number::new(left.value + right.value, left.unit))
+  } else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
     let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value + right.value, left.unit))
   } else {
@@ -276,7 +278,9 @@ pub fn add(left: Number, right: Number) -> Result<Number, String> {
 }
 
 pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+  if left.unit == right.unit {
+    Ok(Number::new(left.value - right.value, left.unit))
+  } else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
     let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value - right.value, left.unit))
   } else {
