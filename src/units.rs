@@ -322,12 +322,13 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 }
 
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
-  if left.unit == Unit::NoUnit && right.unit == Unit::NoUnit {
-    // 3 / 2
+  if left.unit.category() == Temperature || right.unit.category() == Temperature {
+    // if temperature
+    return Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+  } else if left.unit.category() == right.unit.category() {
+    // 5 km % 3 m
+    let (left, right) = convert_to_lowest(left, right)?;
     return Ok(Number::new(left.value % right.value, left.unit))
-  } else if left.unit != Unit::NoUnit && right.unit == Unit::NoUnit {
-    // 1 km / 2
-    return Ok(Number::new(left.value % right.value, right.unit))
   } else {
     return Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
   }
