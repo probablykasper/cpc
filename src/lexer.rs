@@ -7,9 +7,10 @@ use crate::TextOperator::{Of, To};
 use crate::Constant::{E, Pi};
 use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, PoundWord, Force, DoubleQuotes};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
+use crate::units::Unit;
 use crate::units::Unit::*;
 
-pub fn lex(input: &str, allow_trailing_operators: bool) -> Result<TokenVector, String> {
+pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
 
   let mut input = input.replace(",", ""); // ignore commas
 
@@ -25,7 +26,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool) -> Result<TokenVector, S
   let mut chars = input.chars().peekable();
   let mut tokens: TokenVector = vec![];
   let max_word_length = 30;
-  
+
   let mut left_paren_count = 0;
   let mut right_paren_count = 0;
 
@@ -321,6 +322,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool) -> Result<TokenVector, S
             "k" | "kelvin" | "kelvins" => tokens.push(Token::Unit(Kelvin)),
             "c" | "celcius" => tokens.push(Token::Unit(Celcius)),
             "f" | "fahrenheit" | "fahrenheits" => tokens.push(Token::Unit(Fahrenheit)),
+            "deg" | "degree" | "degrees" => tokens.push(Token::Unit(default_degree)),
 
             _ => {
               return Err(format!("Invalid string: {}", string));

@@ -1,3 +1,4 @@
+use crate::units::Unit;
 use std::time::{Instant};
 use decimal::d128;
 
@@ -91,17 +92,17 @@ fn main() {
   use std::env;
   let args: Vec<String> = env::args().collect();
   if args.len() >= 2 {
-    eval(&args[1], true);
+    eval(&args[1], true, Unit::Celcius);
   } else {
     println!("No argument supplied");
   }
 }
 
-pub fn eval(input: &str, allow_trailing_operators: bool) {
+pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit) {
 
   let lex_start = Instant::now();
-  
-  match lexer::lex(input, allow_trailing_operators) {
+
+  match lexer::lex(input, allow_trailing_operators, default_degree) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
 
