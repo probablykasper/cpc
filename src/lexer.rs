@@ -90,15 +90,8 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
           Some('2') | Some('3') => {
             byte_index += '2'.len_utf8();
             chars.next();
-            // match chars.peek().unwrap_or(&'-') {
-              // ...and if the 2 or 3 isn't part of a different number
-              // '.' | '0'..='9' => {
-              //   is_multidimensional = false;
-              // },
-              // we allow everything else and let the parser throw errors
-              // for things like km2pi
-              // _ => {}
-            // }
+            // we dont validate what comes after because it will be caught
+            // by the parser anyway (for example 3m35)
           },
           _ => is_multidimensional = false,
         }

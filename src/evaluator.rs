@@ -94,7 +94,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
       }
     },
     Token::FunctionIdentifier(function) => {
-      let child_node = children.get(0).expect("Paren has no child[0]");
+      let child_node = children.get(0).ok_or("Paren has no child[0]")?;
       let child_answer = evaluate_node(child_node)?;
       match function {
         Cbrt => {
@@ -178,21 +178,21 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
       }
     }
     Token::Unit(unit) => {
-      let child_node = children.get(0).expect("Unit has no child[0]");
+      let child_node = children.get(0).ok_or("Unit has no child[0]")?;
       let child_answer = evaluate_node(child_node)?;
       Ok(Number::new(child_answer.value, unit.clone()))
     },
     Token::Negative => {
-      let child_node = children.get(0).expect("Negative has no child[0]");
+      let child_node = children.get(0).ok_or("Negative has no child[0]")?;
       let child_answer = evaluate_node(child_node)?;
       Ok(Number::new(-child_answer.value, child_answer.unit))
     },
     Token::Paren => {
-      let child_node = children.get(0).expect("Paren has no child[0]");
+      let child_node = children.get(0).ok_or("Paren has no child[0]")?;
       return evaluate_node(child_node)
     },
     Token::UnaryOperator(operator) => {
-      let child_node = children.get(0).expect(format!("Token {:?} has no child[0]", token).as_str());
+      let child_node = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
       let child_answer = evaluate_node(child_node)?;
       match operator {
         Percent => {
@@ -208,8 +208,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
       }
     },
     Token::TextOperator(operator) => {
-      let left_child = children.get(0).expect(format!("Token {:?} has no child[0]", token).as_str());
-      let right_child = children.get(1).expect(format!("Token {:?} has no child[1]", token).as_str());
+      let left_child = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
+      let right_child = children.get(1).ok_or(format!("Token {:?} has no child[1]", token))?;
       
       match operator {
         To => {
@@ -233,8 +233,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
       }
     },
     Token::Operator(operator) => {
-      let left_child = children.get(0).expect(format!("Token {:?} has no child[0]", token).as_str());
-      let right_child = children.get(1).expect(format!("Token {:?} has no child[1]", token).as_str());
+      let left_child = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
+      let right_child = children.get(1).ok_or(format!("Token {:?} has no child[1]", token))?;
       let left = evaluate_node(left_child)?;
       let right = evaluate_node(right_child)?;
       match operator {

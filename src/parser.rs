@@ -267,7 +267,7 @@ fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 
 // level 7 precedence: numbers, parens
 fn parse_level_7(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
-  let token: &Token = tokens.get(pos).expect(&format!("Unexpected end of input at {}", pos));
+  let token: &Token = tokens.get(pos).ok_or(format!("Unexpected end of input at {}", pos))?;
   match token {
     &Token::Number(_number) => {
       let node = AstNode::new(token.clone());
