@@ -353,8 +353,23 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
     // length * area, area * length
     let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
     Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
+  } else if lcat == Speed && rcat == Time {
+    // 1 km/h * 1h
+    let kph_value = left.value * left.unit.weight();
+    let hours = convert(right, Hour)?;
+    let result = kph_value * hours.value;
+    let final_unit = match left.unit {
+      KilometersPerHour => Kilometer,
+      MetersPerSecond => Meter,
+      MilesPerHour => Mile,
+      FeetPerSecond => Foot,
+      Knot => NauticalMile,
+      _ => Meter,
+    };
+    let kilometers = Number::new(result, Kilometer);
+    Ok(convert(kilometers, final_unit)?)
   } else {
-    return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+    Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
   }
 }
 
@@ -375,11 +390,27 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value * right.value, NoUnit))
   } else if (lcat == Area && rcat == Length) || (lcat == Volume && rcat == Area) {
+    // 1 km2 / 1 km, 1 km3 / 1 km2
     let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
     Ok(to_ideal_unit(Number::new(result, Millimeter)))
   } else if lcat == Volume && rcat == Length {
+    // 1 km3 / 1 km
     let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
     Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
+  } else if lcat == Length && rcat == Time {
+    // 1 km / 2s
+    let final_unit = match (left.unit, right.unit) {
+      (Kilometer, Hour) => KilometersPerHour,
+      (Meter, Second) => MetersPerSecond,
+      (Mile, Hour) => MilesPerHour,
+      (Foot, Second) => FeetPerSecond,
+      (NauticalMile, Hour) => Knot,
+      _ => KilometersPerHour,
+    };
+    let kilometers = convert(left, Kilometer)?;
+    let hours = convert(right, Hour)?;
+    let kph = Number::new(kilometers.value / hours.value, KilometersPerHour);
+    Ok(convert(kph, final_unit)?)
   } else {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   }
