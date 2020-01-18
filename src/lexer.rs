@@ -97,7 +97,6 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
         }
         if is_multidimensional {
           let string_plus_one_character = &input[start_index..=end_index+1];
-          println!("YUP {}", string_plus_one_character);
           match string_plus_one_character {
             "mm2" | "millimeter2" | "millimeters2" => tokens.push(Token::Unit(SquareMillimeter)),
             "cm2" | "centimeter2" | "centimeters2" => tokens.push(Token::Unit(SquareCentimeter)),

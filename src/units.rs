@@ -388,25 +388,45 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
   if left.unit.category() == Temperature || right.unit.category() == Temperature {
     // if temperature
-    return Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+    Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
   } else if left.unit.category() == right.unit.category() {
     // 5 km % 3 m
     let (left, right) = convert_to_lowest(left, right)?;
-    return Ok(Number::new(left.value % right.value, left.unit))
+    Ok(Number::new(left.value % right.value, left.unit))
   } else {
-    return Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+    Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
   }
 }
 
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
+  let lcat = left.unit.category();
+  let rcat = left.unit.category();
   if left.unit == NoUnit && right.unit == NoUnit {
     // 3 ^ 2
-    return Ok(Number::new(left.value.pow(right.value), left.unit))
-  } else if right.unit == NoUnit && left.unit != NoUnit {
-    // 1 km ^ 3
-    return Ok(Number::new(left.value.pow(right.value), left.unit))
+    Ok(Number::new(left.value.pow(right.value), left.unit))
+  } else if right.value == d128!(1) && right.unit == NoUnit {
+    Ok(left)
+  } else if lcat == Length && right.unit == NoUnit && right.value == d128!(2) {
+    // x km ^ 2
+    let result = (left.value * left.unit.weight()).pow(right.value);
+    Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
+  } else if lcat == Length && right.unit == NoUnit && right.value == d128!(3) {
+    // x km ^ 3
+    let result = (left.value * left.unit.weight()).pow(right.value);
+    Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
+  } else if lcat == Length && rcat == Length && right.value == d128!(1) {
+    // x km ^ 1 km
+    Ok(multiply(left, right)?)
+  } else if lcat == Length && rcat == Length && right.value == d128!(2) {
+    // x km ^ 2 km
+    let pow2 = multiply(left, Number::new(d128!(1), right.unit))?;
+    let pow3 = multiply(pow2, Number::new(d128!(1), right.unit))?;
+    Ok(pow3)
+  } else if lcat == Length && rcat == Area && right.value == d128!(1) {
+    // x km ^ km2
+    Ok(multiply(left, Number::new(d128!(1), right.unit))?)
   } else {
-    return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+    Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
   }
 }
 
