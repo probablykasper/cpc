@@ -288,38 +288,98 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
+pub fn to_ideal_unit(number: Number) -> Number {
+  let value = number.value * number.unit.weight();
+  if number.unit.category() == Length {
+    if value >= d128!(1000000000000000000) { // ≈ 0.1 light years
+      return Number::new(value/Kilometer.weight(), Kilometer)
+    } else if value >= d128!(1000000) { // 1 km
+      return Number::new(value/Kilometer.weight(), Kilometer)
+    } else if value >= d128!(1000) { // 1 m
+      return Number::new(value/Meter.weight(), Meter)
+    } else if value >= d128!(10) { // 1 cm
+      return Number::new(value/Centimeter.weight(), Centimeter)
+    } else {
+      return Number::new(value, Millimeter)
+    }
+  } else if number.unit.category() == Area {
+    if value >= d128!(1000000000000) { // 1 km2
+      return Number::new(value/SquareKilometer.weight(), SquareKilometer)
+    } else if value >= d128!(10000000000) { // 1 hectare
+      return Number::new(value/Hectare.weight(), Hectare)
+    } else if value >= d128!(1000000) { // 1 m2
+      return Number::new(value/SquareMeter.weight(), SquareMeter)
+    } else if value >= d128!(100) { // 1 cm2
+      return Number::new(value/SquareCentimeter.weight(), SquareCentimeter)
+    } else {
+      return Number::new(value, SquareMillimeter)
+    }
+  } else if number.unit.category() == Volume {
+    if value >= d128!(1000000000000000000) { // 1 km3
+      return Number::new(value/CubicKilometer.weight(), CubicKilometer)
+    } else if value >= d128!(1000000000) { // 1 m3
+      return Number::new(value/CubicMeter.weight(), CubicMeter)
+    } else if value >= d128!(1000000) { // 1 l
+      return Number::new(value/Liter.weight(), Liter)
+    } else if value >= d128!(1000) { // 1 ml
+      return Number::new(value/Milliliter.weight(), Milliliter)
+    } else {
+      return Number::new(value, CubicMillimeter)
+    }
+  }
+  number
+}
+
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
+  let lcat = left.unit.category();
+  let rcat = right.unit.category();
   if left.unit == NoUnit && right.unit == NoUnit {
     // 3 * 2
-    return Ok(Number::new(left.value * right.value, left.unit))
+    Ok(Number::new(left.value * right.value, left.unit))
   } else if left.unit.category() == Temperature || right.unit.category() == Temperature {
     // if temperature
-    return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+    Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
   } else if left.unit == NoUnit && right.unit != NoUnit {
     // 3 * 1 km
-    return Ok(Number::new(left.value * right.value, right.unit))
-  } else if right.unit == NoUnit && left.unit != NoUnit {
+    Ok(Number::new(left.value * right.value, right.unit))
+  } else if left.unit != NoUnit && right.unit == NoUnit {
     // 1 km * 3
-    return Ok(Number::new(left.value * right.value, left.unit))
+    Ok(Number::new(left.value * right.value, left.unit))
+  } else if lcat == Length && rcat == Length {
+    // length * length
+    let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
+  } else if (lcat == Length && rcat == Area) || (lcat == Area && rcat == Length) {
+    // length * area, area * length
+    let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
   } else {
     return Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
   }
 }
 
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
+  let lcat = left.unit.category();
+  let rcat = right.unit.category();
   if left.unit == NoUnit && right.unit == NoUnit {
     // 3 / 2
     Ok(Number::new(left.value / right.value, left.unit))
-  } else if left.unit.category() == Temperature || right.unit.category() == Temperature {
+  } else if lcat == Temperature || rcat == Temperature {
     // if temperature
-    return Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
+    Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   } else if left.unit != NoUnit && right.unit == NoUnit {
     // 1 km / 2
     Ok(Number::new(left.value / right.value, right.unit))
-  } else if left.unit.category() == right.unit.category() {
+  } else if lcat == rcat {
     // 1 km / 1 km
     let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value * right.value, NoUnit))
+  } else if (lcat == Area && rcat == Length) || (lcat == Volume && rcat == Area) {
+    let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, Millimeter)))
+  } else if lcat == Volume && rcat == Length {
+    let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
   } else {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   }
