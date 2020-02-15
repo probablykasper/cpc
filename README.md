@@ -1,6 +1,47 @@
+# cpc
 calculation + conversion
 
-Uses Decimal Floating Point numbers instead of Binary Coded Decimals for better accuracy.
+cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
+
+## Examples
+```
+3 + 4 * 2
+
+8 % 3
+
+(4 + 1)km to light years
+
+10m/2s * 5s
+
+1 lightyear * 0.001mm in km2
+
+1m/s + 1mi/h in kilometers per h
+
+round(sqrt(2)^4)! liters
+
+10% of abs(sin(pi)) horsepower to watts
+
+```
+
+## Supported unit types
+- Normal numbers
+- Time
+- Length
+- Area
+- Volume
+- Mass
+- Digital storage (bytes etc)
+- Energy
+- Power
+- Pressure
+- Speed
+- Temperature
+
+## Accuracy
+cpc Uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
+
+## Performance
+In my case, I can expect `eval()` to take 100-200ms, and this scales pretty alright. However, putting numbers with a lot of digits into functions result in pretty poor performance. `log(e)` is one of the worst, and takes 500ms.
 
 # Dev Instructions
 
@@ -58,3 +99,20 @@ match string {
 // ...
 ```
 
+# Potential Improvements
+### General
+- Support for math in `6'4"` syntax, like `3'+2'4"`. Currently needs to be written like `3'+3'+4"`
+- The functions in units.rs have a lot of manual if statements. This could probably be replaced with a pretty advanced macro.
+- Support for lexing words, like `one billion`
+### Potential unit types
+Nice list of units: https://support.google.com/websearch/answer/3284611
+- Currency: How would you go about dynamically updating the weights?
+- Fuel consumption
+- Data transfer rate
+- Color codes
+- Force
+- Roman numerals
+- Angles
+- Electric current, capacitance, charge, conductance, volts
+- Flow rate
+- Frequency
