@@ -5,7 +5,35 @@ cpc parses and evaluates strings of math, with support for units and conversion.
 
 cpc lets you mix units, so for example `1 km - 1m` results in `Number { value: 999, unit: Meter }`.
 
-## Usage
+## CLI Installation
+To install the CLI using `cargo`:
+```
+cargo install cpc
+```
+
+To install the CLI directly, grab the appropriate binary from [cpc's Releases page on GitHub](https://github.com/probablykasper/cpc/releases), then place it wherever you normally place binaries on your OS (On Windows, you may need to edit your PATH variable or something).
+
+
+## CLI Usage
+```
+cpc '20c to f'
+```
+
+If you installed the binary somewhere that doesn't make binaries global, you would need to specify the path:
+```sh
+/usr/local/bin/custom/cpc '10+10'
+# OR
+./cpc '1" in cm'
+```
+
+## API Installation
+To install the library as a Rust dependency, add cpc to your `Cargo.toml` like so:
+```toml
+[dependencies]
+cpc = "1.*"
+```
+
+## API Usage
 ```rs
 use cpc::{eval, Unit::*}
 
@@ -62,12 +90,11 @@ In my case, I can expect `eval()` to take 100-200ms, and this scales pretty alri
 ## Errors
 cpc returns `Result`s with basic strings as errors. Just to be safe, you may want to handle panics (You can do that using `std::panic::catch_unwind`).
 
-# Dev Instructions
+## Dev Instructions
 
-## Get started
+### Get started
 Install [Rust](https://www.rust-lang.org). This project was built in Rust 1.45.
 
-## Commands
 Run cpc with a CLI argument as input:
 ```
 cargo run -- '100ms to s'
@@ -88,8 +115,8 @@ Build:
 cargo build
 ```
 
-## Adding a unit
-### 1. Add the unit
+### Adding a unit
+#### 1. Add the unit
 In `src/units.rs`, units are specified like this:
 ```rs
 pub enum UnitType {
@@ -110,14 +137,14 @@ The number associated with a unit is it's "weight". For example, if a second's w
 
 I have found [translatorscafe.com](https://www.translatorscafe.com/unit-converter) and [calculateme.com](https://www.calculateme.com/) to be good websites for unit convertion. Wikipedia is worth looking at as well.
 
-### 2. Add a test for the unit
+#### 2. Add a test for the unit
 Make sure to also add a test for each unit. The tests look like this:
 ```rs
 assert_eq!(convert_test(1000.0, Meter, Kilometer), 1.0);
 ```
 Basically, 1000 Meter == 1 Kilometer.
 
-### 3. Add the unit to the lexer
+#### 3. Add the unit to the lexer
 Text is turned into tokens (some of which are units) in `lexer.rs`. Here's one example:
 ```rs
 // ...

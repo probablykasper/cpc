@@ -99,7 +99,7 @@ fn main() {
     match eval(&args[1], true, Unit::Celcius, debug) {
       Ok(answer) => {
         if !debug {
-          println!("Evaluated value: {} {:?}", answer.value, answer.unit)
+          println!("{} {:?}", answer.value, answer.unit)
         }
       },
       Err(e) => {
