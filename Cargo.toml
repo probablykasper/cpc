@@ -2,10 +2,13 @@
 name = "cpc"
 version = "0.1.0"
 description = "evaluates math expressions, with support for units and conversion between units"
-readme = 'README.md'
+readme = "README.md"
 authors = ["Kasper Henningsen"]
 edition = "2018"
+license = "MIT"
 repository = "https://github.com/probablykasper/cpc"
+keywords = ["cpc", "math", "expression", "string", "evaluator", "eval", "units", "convert", "conversion"]
+categories = ["mathematics", "science", "parsing", "text-processing", "value-formatting"]
 
 [dependencies]
 decimal = "2.0.4"

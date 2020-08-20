@@ -65,7 +65,7 @@ cpc returns `Result`s with basic strings as errors. Just to be safe, you may wan
 # Dev Instructions
 
 ## Get started
-Install [Rust](https://www.rust-lang.org). This project was built in Rust 1.40.
+Install [Rust](https://www.rust-lang.org). This project was built in Rust 1.45.
 
 ## Commands
 Run cpc with a CLI argument as input:
@@ -81,6 +81,11 @@ cargo run -- '100ms to s' --debug
 Run tests:
 ```
 cargo test
+```
+
+Build:
+```
+cargo build
 ```
 
 ## Adding a unit
