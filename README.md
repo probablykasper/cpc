@@ -205,4 +205,6 @@ The compiled binaries will now be available inside `target/<target>/release/`. T
         ```
         cargo publish
         ```
-6. Create GitHub release with release notes and attach binaries
+6. Publish on GitHub
+    1. Zip the binaries and rename them like `cpc-v1.0.0-darwin-x64`
+    2. Create GitHub release with release notes and attach the zipped binaries
