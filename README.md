@@ -34,6 +34,8 @@ cpc = "1.*"
 ```
 
 ## API Usage
+
+[docs.rs documentation](https://docs.rs/cpc)
 ```rs
 use cpc::{eval, Unit::*}
 
