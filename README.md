@@ -172,3 +172,19 @@ Nice list of units: https://support.google.com/websearch/answer/3284611
 - Electric current, capacitance, charge, conductance, volts
 - Flow rate
 - Frequency
+
+### Cross-compiling
+1. [Install Docker](https://docs.docker.com/get-docker/)
+2. Install `cross`:
+    ```
+    cargo install cross
+    ```
+3. Build. `<target>` is the platform you're building for:
+    ```sh
+    cross build --release --target <target>
+    ```
+    - macOS target: `x86_64-apple-darwin` (Only works on macOS)
+    - Linux target: `x86_64-unknown-linux-musl`
+    - Windows target: `x86_64-pc-windows-gnu`
+    - In case you want to compile for more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
+4. The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
