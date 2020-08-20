@@ -91,14 +91,27 @@ mod lookup;
 fn main() {
   use std::env;
   let args: Vec<String> = env::args().collect();
+  let mut debug = false;
+  if args.iter().any(|i| i=="--debug") {
+    debug = true;
+  }
   if args.len() >= 2 {
-    eval(&args[1], true, Unit::Celcius);
+    match eval(&args[1], true, Unit::Celcius, debug) {
+      Ok(answer) => {
+        if !debug {
+          println!("Evaluated value: {} {:?}", answer.value, answer.unit)
+        }
+      },
+      Err(e) => {
+        println!("{}", e)
+      },
+    }
   } else {
     println!("No argument supplied");
   }
 }
 
-pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit) {
+pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, debug: bool) -> Result<units::Number, String> {
 
   let lex_start = Instant::now();
 
@@ -116,24 +129,26 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit) {
             Ok(answer) => {
               let eval_time = Instant::now().duration_since(eval_start).as_nanos() as f32;
 
-              println!("Lexed TokenVector: {:?}", tokens);
-              println!("Parsed AstNode: {:#?}", ast);
-              
-              println!("Evaluated value: {} {:?}", answer.value, answer.unit);
-              
-              println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
-              println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
-              println!("\u{23f1}  {:.3}ms evaluation", eval_time/1000.0/1000.0);
+              if debug == true {
+                println!("Lexed TokenVector: {:?}", tokens);
+                println!("Parsed AstNode: {:#?}", ast);
+                println!("Evaluated value: {} {:?}", answer.value, answer.unit);
+                println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
+                println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
+                println!("\u{23f1}  {:.3}ms evaluation", eval_time/1000.0/1000.0);
+              }
+
+              return Ok(answer)
             },
-            Err(e) => println!("Eval error: {}", e),
+            Err(e) => Err(format!("Eval error: {}", e)),
           }
           
         },
-        Err(e) => println!("Parsing error: {}", e),
+        Err(e) => Err(format!("Parsing error: {}", e)),
       }
 
     },
-    Err(e) => println!("Lexing error: {}", e),
+    Err(e) => Err(format!("Lexing error: {}", e)),
   }
   
 }
