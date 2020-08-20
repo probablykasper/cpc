@@ -1,25 +1,44 @@
 use decimal::d128;
+use crate::Number;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
+/// An enum of all possible unit types, like `Length`, `DigitalStorage` etc.
+/// There is also a `NoType` unit type for normal numbers.
 pub enum UnitType {
+  /// A normal number, for example `5`
   NoType,
+  /// A unit of time, for example `Hour`
   Time,
+  /// A unit of length, for example `Mile`
   Length,
+  /// A unit of area, for example `SquareKilometer`
   Area,
+  /// A unit of volume, for example `Liter` or `Tablespoon`
   Volume,
+  /// A unit of mass, for example `Kilobyte`
   Mass,
+  /// A unit of digital storage, for example `Kilobyte`
   DigitalStorage,
+  /// A unit of energy, for example `Joule` or `KilowattHour`
   Energy,
+  /// A unit of power, for example `Watt`
   Power,
+  /// A unit of pressure, for example `Bar`
   Pressure,
+  /// A unit of x, for example `KilometersPerHour`
   Speed,
+  /// A unit of temperature, for example `Kelvin`
   Temperature,
 }
 use UnitType::*;
 
+// Macro for creating units. Not possible to extend/change the default units
+// with this because the default units are imported into the lexer, parser
+// and evaluator
 macro_rules! create_units {
   ( $( $variant:ident : $properties:expr ),*, ) => {
     #[derive(Clone, Copy, PartialEq, Debug)]
+    /// A Unit enum. Note that it can also be `NoUnit`.
     pub enum Unit {
       $($variant),*
     }
@@ -208,25 +227,18 @@ create_units!(
   Fahrenheit:         (Temperature, d128!(0)),
 );
 
-#[derive(Clone, Debug)]
-pub struct Number {
-  pub value: d128,
-  pub unit: Unit,
-}
-
-impl Number {
-  pub fn new(value: d128, unit: Unit) -> Number {
-    Number {
-      value: value,
-      unit: unit,
-    }
-  }
-}
-
-fn get_convertion_factor(unit: Unit, to_unit: Unit) -> d128 {
+/// Returns the conversion factor between two units.
+/// 
+/// The conversion factor is what you need to multiply `unit` with to get
+/// `to_unit`. For example, the conversion factor from 1 minute to 1 second
+/// is 60.
+/// 
+/// This is not sufficient for `Temperature` units.
+pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> d128 {
   return unit.weight() / to_unit.weight();
 }
 
+/// Convert a `Number` to `to_unit`.
 pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
   if number.unit.category() != to_unit.category() {
     return Err(format!("Cannot convert from {:?} to {:?}", number.unit, to_unit));
@@ -249,11 +261,13 @@ pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
       _ => Err(format!("Error converting temperature {:?} to {:?}", number.unit, to_unit)),
     }
   } else {
-    let convertion_factor = get_convertion_factor(number.unit, to_unit);
-    ok(number.value * convertion_factor)
+    let conversion_factor = get_conversion_factor(number.unit, to_unit);
+    ok(number.value * conversion_factor)
   }
 }
 
+/// If one of two provided `Number`s has a larger unit than the other, convert
+/// the large one to the unit of the small one.
 pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number), String> {
   if left.unit.weight() == right.unit.weight() {
     Ok((left, right))
@@ -266,6 +280,7 @@ pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number)
   }
 }
 
+/// Return the sum of `left` and `right`
 pub fn add(left: Number, right: Number) -> Result<Number, String> {
   if left.unit == right.unit {
     Ok(Number::new(left.value + right.value, left.unit))
@@ -277,6 +292,7 @@ pub fn add(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
+/// Subtract a `left` from `right`
 pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
   if left.unit == right.unit {
     Ok(Number::new(left.value - right.value, left.unit))
@@ -288,6 +304,12 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
+/// Convert `Number` to an ideal unit.
+/// 
+/// If you have 1,000,000 millimeters, this will return 1 kilometer.
+/// 
+/// This only affects units of `Length`, `Area` and `Volume`. Other units are
+/// passed through.
 pub fn to_ideal_unit(number: Number) -> Number {
   let value = number.value * number.unit.weight();
   if number.unit.category() == Length {
@@ -330,6 +352,12 @@ pub fn to_ideal_unit(number: Number) -> Number {
   number
 }
 
+/// Multiply `left` with `right`
+/// 
+/// - Temperatures don't work
+/// - If you multiple `NoType` with any other unit, the result gets that other unit
+/// - If you multiple `Length` with `Length`, the result has a unit of `Area`, etc.
+/// - If you multiple `Speed` with `Time`, the result has a unit of `Length`
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
@@ -373,6 +401,12 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
+/// Divide `left` by `right`
+/// 
+/// - Temperatures don't work
+/// - If you divide a unit by that same unit, the result has a unit of `NoType`
+/// - If you divide `Volume` by `Length`, the result has a a unit of `Area`, etc.
+/// - If you divide `Length` by `Time`, the result has a a unit of `Speed`
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
@@ -415,7 +449,9 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   }
 }
-
+/// Modulo `left` by `right`.`left` and `right` need to have the same `UnitType`, and the result will have that same `UnitType`.
+///
+/// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
   if left.unit.category() == Temperature || right.unit.category() == Temperature {
     // if temperature
@@ -429,6 +465,12 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
+/// Returns `left` to the power of `right`
+/// 
+/// - If you take `Length` to the power of `NoType`, the result has a unit of `Area`.
+/// - If you take `Length` to the power of `Length`, the result has a unit of `Area`
+/// - If you take `Length` to the power of `Area`, the result has a unit of `Volume`
+/// - etc.
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = left.unit.category();

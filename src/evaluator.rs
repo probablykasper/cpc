@@ -1,6 +1,6 @@
 use decimal::d128;
-use crate::Token;
-use crate::units::{Unit, UnitType, Number, convert, add, subtract, multiply, divide, modulo, pow};
+use crate::{Token, Number};
+use crate::units::{Unit, UnitType, convert, add, subtract, multiply, divide, modulo, pow};
 use crate::parser::AstNode;
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::Constant::{Pi, E};
@@ -14,11 +14,11 @@ pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
   Ok(answer)
 }
 
-fn factorial(input: d128) -> d128 {
+pub fn factorial(input: d128) -> d128 {
   return lookup_factorial(input.into());
 }
 
-fn sqrt(input: d128) -> d128 {
+pub fn sqrt(input: d128) -> d128 {
   let mut n = d128!(1);
   let half = d128!(0.5);
   for _ in 0..10 {
@@ -27,7 +27,7 @@ fn sqrt(input: d128) -> d128 {
   return n
 }
 
-fn cbrt(input: d128) -> d128 {
+pub fn cbrt(input: d128) -> d128 {
   let mut n: d128 = input;
   // hope that 20 iterations makes it accurate enough
   let three = d128!(3);
@@ -38,7 +38,7 @@ fn cbrt(input: d128) -> d128 {
   return n
 }
 
-fn sin(mut input: d128) -> d128 {
+pub fn sin(mut input: d128) -> d128 {
   let pi = d128!(3.141592653589793238462643383279503);
   let pi2 = d128!(6.283185307179586476925286766559006);
 
@@ -67,16 +67,16 @@ fn sin(mut input: d128) -> d128 {
   
 }
 
-fn cos(input: d128) -> d128 {
+pub fn cos(input: d128) -> d128 {
   let half_pi = d128!(1.570796326794896619231321691639751);
   return sin(half_pi - input);
 }
 
-fn tan(input: d128) -> d128 {
+pub fn tan(input: d128) -> d128 {
   return sin(input) / cos(input);
 }
 
-fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
+pub fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
   let token = &ast_node.token;
   let children = &ast_node.children;
   match token {

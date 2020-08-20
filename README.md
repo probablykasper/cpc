@@ -37,15 +37,15 @@ cpc = "1.*"
 
 [docs.rs documentation](https://docs.rs/cpc)
 ```rs
-use cpc::{eval, Unit::*}
+use cpc::{eval, Unit};
 
-match eval("3m + 1cm", true, Celcius) {
+match eval("3m + 1cm", true, Unit::Celcius, false) {
     Ok(answer) => {
         // answer: Number { value: 301, unit: Unit::cm }
         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
     },
     Err(e) => {
-        println!(e)
+        println!("{}", e)
     }
 }
 ```
@@ -137,7 +137,7 @@ create_units!(
 
 The number associated with a unit is it's "weight". For example, if a second's weight is `1`, then a minute's weight is `1000`.
 
-I have found [translatorscafe.com](https://www.translatorscafe.com/unit-converter) and [calculateme.com](https://www.calculateme.com/) to be good websites for unit convertion. Wikipedia is worth looking at as well.
+I have found [translatorscafe.com](https://www.translatorscafe.com/unit-converter) and [calculateme.com](https://www.calculateme.com/) to be good websites for unit conversion. Wikipedia is worth looking at as well.
 
 #### 2. Add a test for the unit
 Make sure to also add a test for each unit. The tests look like this:

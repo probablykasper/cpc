@@ -10,6 +10,7 @@ use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round
 use crate::units::Unit;
 use crate::units::Unit::*;
 
+/// Lex an input string and return a [`TokenVector`](../type.TokenVector.html)
 pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
 
   let mut input = input.replace(",", ""); // ignore commas

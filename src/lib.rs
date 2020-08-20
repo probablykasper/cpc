@@ -2,8 +2,43 @@ use crate::units::Unit;
 pub mod units;
 use std::time::{Instant};
 use decimal::d128;
+pub mod lexer;
+pub mod parser;
+pub mod evaluator;
+pub mod lookup;
 
 #[derive(Clone, Debug)]
+/// A number with a `Unit`.
+/// 
+/// Example:
+/// ```rust
+/// use cpc::{eval,Number};
+/// use cpc::units::Unit;
+/// use decimal::d128;
+/// 
+/// let x = Number {
+///   value: d128!(100),
+///   unit: Unit::Meter,
+/// };
+/// ```
+pub struct Number {
+  /// The number part of a `Number` struct
+  pub value: d128,
+  /// The unit of a `Number` struct. This can be `NoType`
+  pub unit: Unit,
+}
+
+impl Number {
+  pub fn new(value: d128, unit: Unit) -> Number {
+    Number {
+      value: value,
+      unit: unit,
+    }
+  }
+}
+
+#[derive(Clone, Debug)]
+/// Math operators like [`Multiply`](enum.Operator.html#variant.Multiply), parentheses, etc.
 pub enum Operator {
   Plus,
   Minus,
@@ -16,24 +51,28 @@ pub enum Operator {
 }
 
 #[derive(Clone, Debug)]
+/// Unary operators like [`Percent`](enum.UnaryOperator.html#variant.Percent) and [`Factorial`](enum.UnaryOperator.html#variant.Factorial).
 pub enum UnaryOperator {
   Percent,
   Factorial,
 }
 
 #[derive(Clone, Debug)]
+/// A Text operator like [`To`](enum.TextOperator.html#variant.To) or [`From`](enum.TextOperator.html#variant.From).
 pub enum TextOperator {
   To,
   Of,
 }
 
 #[derive(Clone, Debug)]
+/// A constants like [`Pi`](enum.Constant.html#variant.Pi) or [`E`](enum.Constant.html#variant.E).
 pub enum Constant {
   Pi,
   E,
 }
 
 #[derive(Clone, Debug)]
+/// Functions identifiers like [`Sqrt`](enum.FunctionIdentifier.html#variant.Sqrt), [`Sin`](enum.FunctionIdentifier.html#variant.Sin), [`Round`](enum.FunctionIdentifier.html#variant.Round), etc.
 pub enum FunctionIdentifier {
   Sqrt,
   Cbrt,
@@ -53,6 +92,13 @@ pub enum FunctionIdentifier {
 }
 
 #[derive(Clone, Debug)]
+/// A temporary enum used by the [`lexer`](lexer/index.html) to later determine what [`Token`](enum.Token.html) it is.
+/// 
+/// For example, when a symbol like `%` is found, the lexer turns it into a
+/// the [`PercentChar`](enum.LexerKeyword.html#variant.PercentChar) variant
+/// and then later it checks the surrounding [`Token`](enum.Token.html)s and,
+/// dependingon them, turns it into a [`Percent`](enum.UnaryOperator.html) or
+/// [`Modulo`](enum.Operator.html) [`Token`](enum.Token.html).
 pub enum LexerKeyword {
   Per,
   PercentChar,
@@ -66,28 +112,48 @@ pub enum LexerKeyword {
 }
 
 #[derive(Clone, Debug)]
+/// A token like a [`Number`](enum.Token.html#variant.Number), [`Operator`](enum.Token.html#variant.Operator), [`Unit`](enum.Token.html#variant.Unit) etc.
+/// 
+/// Strings can be divided up into these tokens by the [`lexer`](lexer/index.html), and then put into the [`parser`](parser/index.html).
 pub enum Token {
   Operator(Operator),
   UnaryOperator(UnaryOperator),
   Number(d128),
   FunctionIdentifier(FunctionIdentifier),
   Constant(Constant),
-  Paren, // parser only
-  Per, // lexer only
+  /// Used by the parser only
+  Paren,
+  /// Used by the lexer only
+  Per,
+  /// Used by the parser only
   LexerKeyword(LexerKeyword),
   TextOperator(TextOperator),
-  Negative, // parser only
+  /// Used by the parser only
+  Negative,
   Unit(units::Unit),
 }
 
+/// A vector of [`Token`](enum.Token.html)
 pub type TokenVector = Vec<Token>;
 
-mod lexer;
-mod parser;
-mod evaluator;
-mod lookup;
-
-pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, debug: bool) -> Result<units::Number, String> {
+/// Evaluates a string into a resulting [`Number`]().
+/// 
+/// Example:
+/// ```rust
+/// use cpc::{eval};
+/// use cpc::units::Unit;
+/// 
+/// match eval("3m + 1cm", true, Unit::Celcius, false) {
+///     Ok(answer) => {
+///         // answer: Number { value: 301, unit: Unit::cm }
+///         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
+///     },
+///     Err(e) => {
+///         println!("{}", e)
+///     }
+/// }
+/// ```
+pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, debug: bool) -> Result<Number, String> {
 
   let lex_start = Instant::now();
 

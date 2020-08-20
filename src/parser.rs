@@ -28,7 +28,7 @@ pub fn parse(tokens: &TokenVector) -> Result<AstNode, String> {
 }
 
 // level 1 precedence (lowest): to, of
-fn parse_level_1(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_1(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   // do higher precedences first, then come back down
   let (mut node, mut pos) = parse_level_2(tokens, pos)?;
   // now we loop through the next tokens
@@ -55,7 +55,7 @@ fn parse_level_1(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 }
 
 // level 2 precedence: +, -
-fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_3(tokens, pos)?;
   loop {
     let token = tokens.get(pos);
@@ -90,7 +90,7 @@ fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 }
 
 // level 3 precedence: *, /, modulo
-fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_4(tokens, pos)?;
 
   loop {
@@ -188,7 +188,7 @@ fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 }
 
 // level 4 precedence: ^
-fn parse_level_4(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_4(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_5(tokens, pos)?;
   loop {
     let token = tokens.get(pos);
@@ -209,7 +209,7 @@ fn parse_level_4(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 }
 
 // level 5 precedence: - (as in -5, but not 4-5)
-fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   // Here we parse the negative unary operator. If the current token
   // is a minus, we wrap the right_node inside a Negative AstNode.
   // 
@@ -235,7 +235,7 @@ fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 }
 
 // level 6 precedence: !, percent
-fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_7(tokens, pos)?;
   loop {
     let token = tokens.get(pos);
@@ -266,7 +266,7 @@ fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), S
 }
 
 // level 7 precedence: numbers, parens
-fn parse_level_7(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_7(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let token: &Token = tokens.get(pos).ok_or(format!("Unexpected end of input at {}", pos))?;
   match token {
     &Token::Number(_number) => {
