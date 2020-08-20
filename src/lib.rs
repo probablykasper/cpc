@@ -1,11 +1,39 @@
-use crate::units::Unit;
-pub mod units;
+//! calculation + conversion
+//! 
+//! cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
+//! 
+//! cpc lets you mix units, so for example 1 km - 1m results in Number { value: 999, unit: Meter }.
+//! 
+//! Check out the [list of supported units](units/enum.Unit.html)
+//! 
+//! # Example usage
+//! ```rust
+//! use cpc::{eval, Unit::*}
+//! 
+//! match eval("3m + 1cm", true, Celcius) {
+//!     Ok(answer) => {
+//!         // answer: Number { value: 301, unit: Unit::cm }
+//!         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
+//!     },
+//!     Err(e) => {
+//!         println!(e)
+//!     }
+//! }
+//! ```
+
 use std::time::{Instant};
 use decimal::d128;
+use crate::units::Unit;
+
+/// Units, and functions you can use with them
+pub mod units;
+/// Turns a string into a [`TokenVector`](type.TokenVector.html)
 pub mod lexer;
+/// Turns a [`TokenVector`](type.TokenVector.html) into an [`AstNode`](struct.AstNode.html)
 pub mod parser;
+/// Turns an [`AstNode`](struct.AstNode.html) into a [`Number`](struct.Number.html)
 pub mod evaluator;
-pub mod lookup;
+mod lookup;
 
 #[derive(Clone, Debug)]
 /// A number with a `Unit`.
@@ -128,7 +156,7 @@ pub enum Token {
   /// Used by the parser only
   LexerKeyword(LexerKeyword),
   TextOperator(TextOperator),
-  /// Used by the parser only
+  /// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
   Negative,
   Unit(units::Unit),
 }
@@ -145,7 +173,7 @@ pub type TokenVector = Vec<Token>;
 /// 
 /// match eval("3m + 1cm", true, Unit::Celcius, false) {
 ///     Ok(answer) => {
-///         // answer: Number { value: 301, unit: Unit::cm }
+///         // answer: Number { value: 301, unit: Unit::Centimeter }
 ///         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
 ///     },
 ///     Err(e) => {

@@ -238,7 +238,7 @@ pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> d128 {
   return unit.weight() / to_unit.weight();
 }
 
-/// Convert a `Number` to `to_unit`.
+/// Convert a [`Number`](struct.Number.html) to a specified [`Unit`](enum.Unit.html).
 pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
   if number.unit.category() != to_unit.category() {
     return Err(format!("Cannot convert from {:?} to {:?}", number.unit, to_unit));
@@ -266,7 +266,7 @@ pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
   }
 }
 
-/// If one of two provided `Number`s has a larger unit than the other, convert
+/// If one of two provided [`Number`](struct.Number.html)s has a larger [`Unit`](enum.Unit.html) than the other, convert
 /// the large one to the unit of the small one.
 pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number), String> {
   if left.unit.weight() == right.unit.weight() {
@@ -280,7 +280,7 @@ pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number)
   }
 }
 
-/// Return the sum of `left` and `right`
+/// Return the sum of two [`Number`](enum.Number.html)s
 pub fn add(left: Number, right: Number) -> Result<Number, String> {
   if left.unit == right.unit {
     Ok(Number::new(left.value + right.value, left.unit))
@@ -292,7 +292,7 @@ pub fn add(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
-/// Subtract a `left` from `right`
+/// Subtract a [`Number`](enum.Number.html) from another [`Number`](enum.Number.html)
 pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
   if left.unit == right.unit {
     Ok(Number::new(left.value - right.value, left.unit))
@@ -304,7 +304,7 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
-/// Convert `Number` to an ideal unit.
+/// Convert [`Number`](enum.Number.html) to an ideal unit.
 /// 
 /// If you have 1,000,000 millimeters, this will return 1 kilometer.
 /// 
@@ -352,12 +352,12 @@ pub fn to_ideal_unit(number: Number) -> Number {
   number
 }
 
-/// Multiply `left` with `right`
+/// Multiply two [`Number`](enum.Number.html)s
 /// 
 /// - Temperatures don't work
-/// - If you multiple `NoType` with any other unit, the result gets that other unit
-/// - If you multiple `Length` with `Length`, the result has a unit of `Area`, etc.
-/// - If you multiple `Speed` with `Time`, the result has a unit of `Length`
+/// - If you multiply `NoType` with any other unit, the result gets that other unit
+/// - If you multiply `Length` with `Length`, the result has a unit of `Area`, etc.
+/// - If you multiply `Speed` with `Time`, the result has a unit of `Length`
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
@@ -401,7 +401,7 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
-/// Divide `left` by `right`
+/// Divide a [`Number`](enum.Number.html) by another [`Number`](enum.Number.html)
 /// 
 /// - Temperatures don't work
 /// - If you divide a unit by that same unit, the result has a unit of `NoType`
@@ -449,7 +449,9 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   }
 }
-/// Modulo `left` by `right`.`left` and `right` need to have the same `UnitType`, and the result will have that same `UnitType`.
+/// Modulo a [`Number`](enum.Number.html) by another [`Number`](enum.Number.html).
+/// 
+/// `left` and `right` need to have the same `UnitType`, and the result will have that same `UnitType`.
 ///
 /// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
@@ -465,7 +467,7 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
   }
 }
 
-/// Returns `left` to the power of `right`
+/// Returns a [`Number`](enum.Number.html) to the power of another [`Number`](enum.Number.html)
 /// 
 /// - If you take `Length` to the power of `NoType`, the result has a unit of `Area`.
 /// - If you take `Length` to the power of `Length`, the result has a unit of `Area`

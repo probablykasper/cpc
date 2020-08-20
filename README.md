@@ -35,13 +35,13 @@ cpc = "1.*"
 
 ## API Usage
 
-[docs.rs documentation](https://docs.rs/cpc)
-```rs
-use cpc::{eval, Unit};
+```rust
+use cpc::{eval};
+use cpc::units::Unit;
 
 match eval("3m + 1cm", true, Unit::Celcius, false) {
     Ok(answer) => {
-        // answer: Number { value: 301, unit: Unit::cm }
+        // answer: Number { value: 301, unit: Unit::Centimeter }
         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
     },
     Err(e) => {

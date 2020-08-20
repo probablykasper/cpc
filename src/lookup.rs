@@ -1,5 +1,6 @@
 use decimal::d128;
 
+/// Returns the factorial of an `i32` as a [`d128`](decimal/struct.d128.html)
 pub fn lookup_factorial(n: i32) -> d128 {
   return match n {
     0 => d128!(1),
