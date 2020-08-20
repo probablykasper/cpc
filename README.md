@@ -187,4 +187,22 @@ Nice list of units: https://support.google.com/websearch/answer/3284611
     - Linux target: `x86_64-unknown-linux-musl`
     - Windows target: `x86_64-pc-windows-gnu`
     - In case you want to compile for more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
-4. The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
+The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
+
+### Releasing a new version
+
+1. Update `CHANGELOG.md`
+2. Bump the version number in `Cargo.toml` and run `cargo check`
+3. Cross-compile cpc by following [the steps above](#cross-compiling)
+4. Commit and tag in format `v1.0.0`
+5. Publish on crates.io:
+    1. Login by running `cargo login` and following the instructions
+    2. Test publish to ensure there are no issues
+        ```
+        cargo publish --dry-run
+        ```
+    3. Publish
+        ```
+        cargo publish
+        ```
+6. Create GitHub release with release notes and attach binaries

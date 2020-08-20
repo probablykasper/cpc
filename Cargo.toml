@@ -8,7 +8,7 @@ readme = "README.md"
 license = "MIT"
 homepage = "https://github.com/probablykasper/cpc#readme"
 repository = "https://github.com/probablykasper/cpc"
-keywords = ["cpc", "math", "expression", "string", "evaluator", "eval", "units", "convert", "conversion"]
+keywords = ["math", "expression", "evaluate", "units", "convert"]
 categories = ["mathematics", "science", "parsing", "text-processing", "value-formatting"]
 
 [dependencies]
