@@ -6,6 +6,7 @@ cpc parses and evaluates strings of math, with support for units and conversion.
 cpc lets you mix units, so for example `1 km - 1m` results in `Number { value: 999, unit: Meter }`.
 
 [docs.rs documentation](https://docs.rs/cpc)
+
 [List of all supported units](https://docs.rs/cpc/latest/cpc/units/enum.Unit.html)
 
 ## CLI Installation
