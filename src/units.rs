@@ -422,7 +422,7 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
   } else if lcat == rcat {
     // 1 km / 1 km
     let (left, right) = convert_to_lowest(left, right)?;
-    Ok(Number::new(left.value * right.value, NoUnit))
+    Ok(Number::new(left.value / right.value, NoUnit))
   } else if (lcat == Area && rcat == Length) || (lcat == Volume && rcat == Area) {
     // 1 km2 / 1 km, 1 km3 / 1 km2
     let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());

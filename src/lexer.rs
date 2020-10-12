@@ -163,7 +163,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "day" | "days" => tokens.push(Token::Unit(Day)),
             "wk" | "wks" | "week" | "weeks" => tokens.push(Token::Unit(Week)),
             "mo" | "mos" | "month" | "months" => tokens.push(Token::Unit(Month)),
-            "q" | "quater" | "quaters" => tokens.push(Token::Unit(Month)),
+            "q" | "quarter" | "quarters" => tokens.push(Token::Unit(Quarter)),
             "yr" | "yrs" | "year" | "years" => tokens.push(Token::Unit(Year)),
             "decade" | "decades" => tokens.push(Token::Unit(Decade)),
             "century" | "centuries" => tokens.push(Token::Unit(Century)),
