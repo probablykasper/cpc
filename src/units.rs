@@ -420,7 +420,7 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     // 1 km / 2
     Ok(Number::new(left.value / right.value, right.unit))
   } else if lcat == rcat {
-    // 1 km / 1 km
+    // 4 km / 2 km
     let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value / right.value, NoUnit))
   } else if (lcat == Area && rcat == Length) || (lcat == Volume && rcat == Area) {

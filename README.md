@@ -200,9 +200,9 @@ The compiled binaries will now be available inside `target/<target>/release/`. T
 1. Update `CHANGELOG.md`
 2. Bump the version number in `Cargo.toml` and run `cargo check`
 3. Run `cargo test`
-3. Cross-compile cpc by following [the steps above](#cross-compiling)
-4. Commit and tag in format `v1.0.0`
-5. Publish on crates.io:
+4. Cross-compile cpc by following [the steps above](#cross-compiling)
+5. Commit and tag in format `v0.0.0`
+6. Publish on crates.io:
     1. Login by running `cargo login` and following the instructions
     2. Test publish to ensure there are no issues
         ```
@@ -212,6 +212,6 @@ The compiled binaries will now be available inside `target/<target>/release/`. T
         ```
         cargo publish
         ```
-6. Publish on GitHub
+7. Publish on GitHub
     1. Zip the binaries and rename them like `cpc-v1.0.0-darwin-x64`
     2. Create GitHub release with release notes and attach the zipped binaries
