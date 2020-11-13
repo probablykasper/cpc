@@ -189,11 +189,13 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, d
   match lexer::lex(input, allow_trailing_operators, default_degree) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
+      if debug == true { println!("Lexed TokenVector: {:?}", tokens); }
 
       let parse_start = Instant::now();
       match parser::parse(&tokens) {
         Ok(ast) => {
           let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
+          if debug == true { println!("Parsed AstNode: {:#?}", ast); }
 
           let eval_start = Instant::now();
           match evaluator::evaluate(&ast) {
@@ -201,8 +203,6 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, d
               let eval_time = Instant::now().duration_since(eval_start).as_nanos() as f32;
 
               if debug == true {
-                println!("Lexed TokenVector: {:?}", tokens);
-                println!("Parsed AstNode: {:#?}", ast);
                 println!("Evaluated value: {} {:?}", answer.value, answer.unit);
                 println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
                 println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);

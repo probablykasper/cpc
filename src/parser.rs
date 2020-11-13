@@ -74,20 +74,6 @@ pub fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
         node = new_node;
         pos = next_pos;
       },
-      Some(&Token::Number(_)) => {
-        // parse 6'4"
-        let (right_node, next_pos) = parse_level_3(tokens, pos)?;
-        if let Token::Unit(Foot) = node.token {
-          if let Token::Unit(Inch) = right_node.token {
-            let mut new_node = AstNode::new(Token::Operator(Plus));
-            new_node.children.push(node);
-            new_node.children.push(right_node);
-            node = new_node;
-            pos = next_pos;
-          }
-        }
-        return Ok((node, pos));
-      },
       _ => {
         return Ok((node, pos));
       },
@@ -95,9 +81,42 @@ pub fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
   }
 }
 
-// level 3 precedence: *, /, modulo, implicative multiplication
+// level 3 precedence: *, /, modulo, implicative multiplication, foot-inch 6'4"
 /// Parse [`Multiply`](../enum.Operator.html#variant.Multiply), [`Divide`](../enum.Operator.html#variant.Divide), [`Modulo`](../enum.Operator.html#variant.Modulo) and implicative multiplication (for example`2pi`)
 pub fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
+
+  // parse foot-inch syntax 6'4"
+  let token0 = tokens.get(pos);
+  if let Some(Token::Number(_number)) = token0 {
+    let token1 = tokens.get(pos + 1);
+    if let Some(Token::Unit(Foot)) = token1 {
+      let token2 = tokens.get(pos + 2);
+      if let Some(Token::Number(_number)) = token2 {
+        let token3 = tokens.get(pos + 3);
+        if let Some(Token::Unit(Inch)) = token3 {
+          let new_node = AstNode {
+            children: vec![
+              AstNode {
+                children: vec![
+                  AstNode::new(token0.unwrap().clone()),
+                ],
+                token: Token::Unit(Foot),
+              },
+              AstNode {
+                children: vec![
+                  AstNode::new(token2.unwrap().clone()),
+                ],
+                token: Token::Unit(Inch),
+              },
+            ],
+            token: Token::Operator(Plus),
+          };
+          return Ok((new_node, pos + 4))
+        }
+      }
+    }
+  }
+  
   let (mut node, mut pos) = parse_level_4(tokens, pos)?;
 
   loop {
@@ -243,7 +262,7 @@ pub fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
   }
 }
 
-// level 6 precedence: !, percent
+// level 6 precedence: !, percent, units attached to values
 /// Parse [`Factorial`](../enum.UnaryOperator.html#variant.Factorial) and [`Percent`](../enum.UnaryOperator.html#variant.Percent)
 pub fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_7(tokens, pos)?;
@@ -275,7 +294,7 @@ pub fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
   }
 }
 
-// level 7 precedence: numbers, units, constants, functions, parens
+// level 7 precedence: numbers, standalone units, constants, functions, parens
 /// Parse [`Number`](../enum.Token.html#variant.Number),
 /// [`Unit`](../units/enum.Unit.html),
 /// [`Constant`](../enum.Constant.html),

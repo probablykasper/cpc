@@ -92,7 +92,7 @@ round(sqrt(2)^4)! liters
 cpc Uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
 
 ## Performance
-It's pretty fast and scales well. In my case, `eval()` usually runs under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.24ms.
+It's pretty fast and scales well. In my case, `eval()` usually runs under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.25ms.
 
 To see how fast it is, you can pass the `--debug` flag in CLI, or the `debug` argument to `eval()`.
 
