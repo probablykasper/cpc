@@ -91,7 +91,9 @@ round(sqrt(2)^4)! liters
 cpc Uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
 
 ## Performance
-In my case, I can expect `eval()` to take 100-200ms, and this scales pretty alright. However, putting numbers with a lot of digits into functions result in pretty poor performance. `log(e)` is one of the worst, and takes 500ms for me.
+It's pretty fast and scales well. In my case, `eval()` usually runs under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.24ms.
+
+To see how fast it is, you can pass the `--debug` flag in CLI, or the `debug` argument to `eval()`.
 
 ## Errors
 cpc returns `Result`s with basic strings as errors. Just to be safe, you may want to handle panics (You can do that using `std::panic::catch_unwind`).
