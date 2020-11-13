@@ -84,6 +84,7 @@ round(sqrt(2)^4)! liters
 - Energy
 - Power
 - Pressure
+- Frequency
 - Speed
 - Temperature
 
@@ -179,7 +180,6 @@ Nice list of units: https://support.google.com/websearch/answer/3284611
 - Angles
 - Electric current, capacitance, charge, conductance, volts
 - Flow rate
-- Frequency
 
 ### Cross-compiling
 1. [Install Docker](https://docs.docker.com/get-docker/)

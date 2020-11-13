@@ -25,6 +25,8 @@ pub enum UnitType {
   Power,
   /// A unit of pressure, for example `Bar`
   Pressure,
+  /// A unit of frequency, for example `Hertz`
+  Frequency,
   /// A unit of x, for example `KilometersPerHour`
   Speed,
   /// A unit of temperature, for example `Kelvin`
@@ -215,6 +217,14 @@ create_units!(
   InchOfMercury:                (Pressure, d128!(3386.389)),
   PoundsPerSquareInch:          (Pressure, d128!(6894.757293168361)), // inexact
   Torr:                         (Pressure, d128!(162.12)),
+
+  Hertz:                        (Frequency, d128!(1)),
+  Kilohertz:                    (Frequency, d128!(1000)),
+  Megahertz:                    (Frequency, d128!(1000000)),
+  Gigahertz:                    (Frequency, d128!(1000000000)),
+  Terahertz:                    (Frequency, d128!(1000000000000)),
+  Petahertz:                    (Frequency, d128!(1000000000000000)),
+  RevolutionsPerMinute:         (Frequency, d128!(60)),
 
   KilometersPerHour:  (Speed, d128!(1)),
   MetersPerSecond:    (Speed, d128!(3.6)),

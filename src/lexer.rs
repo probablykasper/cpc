@@ -306,6 +306,14 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "psi" => tokens.push(Token::Unit(PoundsPerSquareInch)),
             "torr" | "torrs" => tokens.push(Token::Unit(Torr)),
 
+            "hz" | "hertz" => tokens.push(Token::Unit(Hertz)),
+            "khz" | "kilohertz" => tokens.push(Token::Unit(Kilohertz)),
+            "mhz" | "megahertz" => tokens.push(Token::Unit(Megahertz)),
+            "ghz" | "gigahertz" => tokens.push(Token::Unit(Gigahertz)),
+            "thz" | "terahertz" => tokens.push(Token::Unit(Terahertz)),
+            "phz" | "petahertz" => tokens.push(Token::Unit(Petahertz)),
+            "rpm" | "r/min" | "rev/min" => tokens.push(Token::Unit(RevolutionsPerMinute)),
+
             "kph" | "kmh" => tokens.push(Token::Unit(KilometersPerHour)),
             "mps" => tokens.push(Token::Unit(MetersPerSecond)),
             "mph" => tokens.push(Token::Unit(MilesPerHour)),
