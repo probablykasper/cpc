@@ -671,6 +671,13 @@ mod tests {
     assert_eq!(convert_test(6894.757293168361, Pascal, PoundsPerSquareInch), 1.0);
     assert_eq!(convert_test(162.12, Pascal, Torr), 1.0);
 
+    assert_eq!(convert_test(1000.0, Hertz, Kilohertz), 1.0);
+    assert_eq!(convert_test(1000.0, Kilohertz, Megahertz), 1.0);
+    assert_eq!(convert_test(1000.0, Megahertz, Gigahertz), 1.0);
+    assert_eq!(convert_test(1000.0, Gigahertz, Terahertz), 1.0);
+    assert_eq!(convert_test(1000.0, Terahertz, Petahertz), 1.0);
+    assert_eq!(convert_test(60.0, Hertz, RevolutionsPerMinute), 1.0);
+
     assert_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
     assert_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);
     assert_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
