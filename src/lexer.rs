@@ -18,7 +18,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
 
   if allow_trailing_operators {
     match &input.chars().last().unwrap_or('x') {
-      '+' | '-' | '*' | '/' | '%' | '^' | '(' => {
+      '+' | '-' | '*' | '/' | '^' | '(' => {
         input.pop();
       },
       _ => {},
