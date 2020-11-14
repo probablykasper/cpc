@@ -4,6 +4,7 @@ use crate::{Token, TokenVector};
 use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
+use crate::NamedNumber::*;
 use crate::Constant::{E, Pi};
 use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, PoundWord, Force, DoubleQuotes};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
@@ -129,6 +130,31 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
 
             "to" => tokens.push(Token::TextOperator(To)),
             "of" => tokens.push(Token::TextOperator(Of)),
+
+            "hundred" => tokens.push(Token::NamedNumber(Hundred)),
+            "thousand" => tokens.push(Token::NamedNumber(Thousand)),
+            "mil" | "mill" | "million" => tokens.push(Token::NamedNumber(Million)),
+            "bil" | "bill" | "billion" => tokens.push(Token::NamedNumber(Billion)),
+            "tri" | "tril" | "trillion" => tokens.push(Token::NamedNumber(Trillion)),
+            "quadrillion" => tokens.push(Token::NamedNumber(Quadrillion)),
+            "quintillion" => tokens.push(Token::NamedNumber(Quintillion)),
+            "sextillion" => tokens.push(Token::NamedNumber(Sextillion)),
+            "septillion" => tokens.push(Token::NamedNumber(Septillion)),
+            "octillion" => tokens.push(Token::NamedNumber(Octillion)),
+            "nonillion" => tokens.push(Token::NamedNumber(Nonillion)),
+            "decillion" => tokens.push(Token::NamedNumber(Decillion)),
+            "undecillion" => tokens.push(Token::NamedNumber(Undecillion)),
+            "duodecillion" => tokens.push(Token::NamedNumber(Duodecillion)),
+            "tredecillion" => tokens.push(Token::NamedNumber(Tredecillion)),
+            "quattuordecillion" => tokens.push(Token::NamedNumber(Quattuordecillion)),
+            "quindecillion" => tokens.push(Token::NamedNumber(Quindecillion)),
+            "sexdecillion" => tokens.push(Token::NamedNumber(Sexdecillion)),
+            "septendecillion" => tokens.push(Token::NamedNumber(Septendecillion)),
+            "octodecillion" => tokens.push(Token::NamedNumber(Octodecillion)),
+            "novemdecillion" => tokens.push(Token::NamedNumber(Novemdecillion)),
+            "vigintillion" => tokens.push(Token::NamedNumber(Vigintillion)),
+            "centillion" => tokens.push(Token::NamedNumber(Centillion)),
+            "googol" => tokens.push(Token::NamedNumber(Googol)),
 
             "pi" => tokens.push(Token::Constant(Pi)),
             "e" => tokens.push(Token::Constant(E)),

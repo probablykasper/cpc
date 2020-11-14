@@ -7,7 +7,7 @@ use crate::Constant::{Pi, E};
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{To, Of};
 use crate::FunctionIdentifier::*;
-use crate::lookup::lookup_factorial;
+use crate::lookup::{lookup_factorial, lookup_named_number};
 
 /// Evaluate an [`AstNode`](struct.AstNode.html) into a [`Number`](struct.Number.html)
 pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
@@ -219,6 +219,13 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
         },
       }
     },
+    Token::NamedNumber(named_number) => {
+      let child_node = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
+      let child_answer = evaluate_node(child_node)?;
+      let named_number_value = lookup_named_number(named_number);
+      let result = child_answer.value * named_number_value;
+      Ok(Number::new(result, child_answer.unit))
+    }
     Token::TextOperator(operator) => {
       let left_child = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
       let right_child = children.get(1).ok_or(format!("Token {:?} has no child[1]", token))?;

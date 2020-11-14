@@ -1,4 +1,36 @@
+use crate::NamedNumber::*;
+use crate::NamedNumber;
 use decimal::d128;
+
+/// Returns the number of a [`NamedNumber`](decimal/struct.d128.html) [`to`](../enum.NamedNumber.html) as a [`d128`](decimal/struct.d128.html)
+pub fn lookup_named_number(named_number: &NamedNumber) -> d128 {
+  return match named_number {
+    Hundred           => d128!(100),
+    Thousand          => d128!(1000),
+    Million           => d128!(1000000),
+    Billion           => d128!(1000000000),
+    Trillion          => d128!(1000000000000),
+    Quadrillion       => d128!(1000000000000000),
+    Quintillion       => d128!(1000000000000000000),
+    Sextillion        => d128!(1000000000000000000000),
+    Septillion        => d128!(1000000000000000000000000),
+    Octillion         => d128!(1000000000000000000000000000),
+    Nonillion         => d128!(1000000000000000000000000000000),
+    Decillion         => d128!(1000000000000000000000000000000000),
+    Undecillion       => d128!(1000000000000000000000000000000000000),
+    Duodecillion      => d128!(10E+39),
+    Tredecillion      => d128!(10E+42),
+    Quattuordecillion => d128!(10E+45),
+    Quindecillion     => d128!(10E+48),
+    Sexdecillion      => d128!(10E+51),
+    Septendecillion   => d128!(10E+54),
+    Octodecillion     => d128!(10E+57),
+    Novemdecillion    => d128!(10E+60),
+    Vigintillion      => d128!(10E+63),
+    Centillion        => d128!(10E+303),
+    Googol            => d128!(10E+100),
+  }
+}
 
 /// Returns the factorial of an `i32` as a [`d128`](decimal/struct.d128.html)
 pub fn lookup_factorial(n: i32) -> d128 {

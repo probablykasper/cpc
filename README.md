@@ -166,7 +166,6 @@ match string {
 
 ### Potential Improvements
 #### General
-- Support for math in `6'4"` syntax, like `3'+2'4"`. Currently needs to be written like `3'+3'+4"`
 - The functions in units.rs have a lot of manual if statements. This could probably be replaced with a pretty advanced macro.
 - Support for lexing words, like `one billion`
 #### Potential unit types

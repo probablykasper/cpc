@@ -94,6 +94,35 @@ pub enum TextOperator {
 }
 
 #[derive(Clone, Debug)]
+/// A named number like [`Million`](enum.NamedNumber.html#variant.Million).
+pub enum NamedNumber {
+  Hundred,
+  Thousand,
+  Million,
+  Billion,
+  Trillion,
+  Quadrillion,
+  Quintillion,
+  Sextillion,
+  Septillion,
+  Octillion,
+  Nonillion,
+  Decillion,
+  Undecillion,
+  Duodecillion,
+  Tredecillion,
+  Quattuordecillion,
+  Quindecillion,
+  Sexdecillion,
+  Septendecillion,
+  Octodecillion,
+  Novemdecillion,
+  Vigintillion,
+  Centillion,
+  Googol,
+}
+
+#[derive(Clone, Debug)]
 /// A constants like [`Pi`](enum.Constant.html#variant.Pi) or [`E`](enum.Constant.html#variant.E).
 pub enum Constant {
   Pi,
@@ -157,6 +186,7 @@ pub enum Token {
   /// Used by the parser only
   LexerKeyword(LexerKeyword),
   TextOperator(TextOperator),
+  NamedNumber(NamedNumber),
   /// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
   Negative,
   Unit(units::Unit),

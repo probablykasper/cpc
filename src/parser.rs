@@ -269,7 +269,7 @@ pub fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
   loop {
     let token = tokens.get(pos);
     match token {
-      Some(&Token::UnaryOperator(Factorial)) | Some(&Token::UnaryOperator(Percent)) => {
+      Some(&Token::UnaryOperator(Factorial)) | Some(&Token::UnaryOperator(Percent)) | Some(&Token::NamedNumber(_)) => {
         // Here we are handling unary operators, aka stuff written as
         // "Number Operator" (3!) instead of "Number Operator Number" (3+3).
         // Therefore, if we find a match, we don't parse what comes after it.
