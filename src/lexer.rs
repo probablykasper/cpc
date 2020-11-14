@@ -437,6 +437,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             // "10%!" should be a percentage
             tokens[token_index] = Token::UnaryOperator(Percent);
           },
+          Some(Token::LexerKeyword(PercentChar)) => {
+            // "10%%" should be a percentage
+            tokens[token_index] = Token::UnaryOperator(Percent);
+          },
           None => {
             // percent if there's no element afterwards
             tokens[token_index] = Token::UnaryOperator(Percent);
