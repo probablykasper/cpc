@@ -62,7 +62,7 @@ match eval("3m + 1cm", true, Unit::Celcius, false) {
 
 (4 + 1)km to light years
 
-10m/2s * 5s
+10m/2s * 5 trillion s
 
 1 lightyear * 0.001mm in km2
 
@@ -165,9 +165,6 @@ match string {
 ```
 
 ### Potential Improvements
-#### General
-- The functions in units.rs have a lot of manual if statements. This could probably be replaced with a pretty advanced macro.
-- Support for lexing words, like `one billion`
 #### Potential unit types
 Nice list of units: https://support.google.com/websearch/answer/3284611
 - Currency: How would you go about dynamically updating the weights?
