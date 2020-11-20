@@ -23,6 +23,8 @@ pub enum UnitType {
   Energy,
   /// A unit of power, for example `Watt`
   Power,
+  /// A unit of electrical current, for example `Ampere`
+  ElectricCurrent,
   /// A unit of pressure, for example `Bar`
   Pressure,
   /// A unit of frequency, for example `Hertz`
@@ -208,6 +210,11 @@ create_units!(
   BritishThermalUnitsPerHour:   (Power, d128!(3.412141633128)), // probably inexact
   Horsepower:                   (Power, d128!(745.69987158227022)), // exact according to wikipedia
   MetricHorsepower:             (Power, d128!(735.49875)),
+
+  Milliampere:                  (ElectricCurrent, d128!(1)),
+  Ampere:                       (ElectricCurrent, d128!(1000)),
+  Kiloampere:                   (ElectricCurrent, d128!(1000000)),
+  Abampere:                     (ElectricCurrent, d128!(10000)),
 
   Pascal:                       (Pressure, d128!(1)),
   Kilopascal:                   (Pressure, d128!(1000)),
@@ -653,6 +660,7 @@ mod tests {
     assert_eq!(convert_test(1000.0, GigawattHour, TerawattHour), 1.0);
     assert_eq!(convert_test(1000.0, TerawattHour, PetawattHour), 1.0);
 
+    assert_eq!(convert_test(1000.0, Milliwatt, Watt), 1.0);
     assert_eq!(convert_test(1000.0, Watt, Kilowatt), 1.0);
     assert_eq!(convert_test(1000.0, Kilowatt, Megawatt), 1.0);
     assert_eq!(convert_test(1000.0, Megawatt, Gigawatt), 1.0);
@@ -662,6 +670,10 @@ mod tests {
     assert_eq!(convert_test(60.0, BritishThermalUnitsPerMinute, BritishThermalUnitsPerHour), 1.0);
     assert_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
     assert_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
+
+    assert_eq!(convert_test(1000.0, Milliampere, Ampere), 1.0);
+    assert_eq!(convert_test(1000.0, Ampere, Kiloampere), 1.0);
+    assert_eq!(convert_test(10.0, Ampere, Biot), 1.0);
 
     assert_eq!(convert_test(1000.0, Pascal, Kilopascal), 1.0);
     assert_eq!(convert_test(101325.0, Pascal, Atmosphere), 1.0);

@@ -318,6 +318,11 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "hp" | "hps" | "horsepower" | "horsepowers" => tokens.push(Token::Unit(Horsepower)),
             "mhp" | "hpm" | "metric hp" | "metric hps" | "metric horsepower" | "metric horsepowers" => tokens.push(Token::Unit(MetricHorsepower)),
 
+            "ma" | "milliamp" | "milliampere" => tokens.push(Token::Unit(Milliampere)),
+            "a" | "amp" | "ampere" => tokens.push(Token::Unit(Ampere)),
+            "ka" | "kiloamp" | "Kiloampere" => tokens.push(Token::Unit(Kiloampere)),
+            "bi" | "biot" | "biots" | "aba" | "abampere" => tokens.push(Token::Unit(Abampere)),
+
             // for pound-force per square inch
             "lbf" => tokens.push(Token::LexerKeyword(PoundForce)),
             "force" => tokens.push(Token::LexerKeyword(Force)),
