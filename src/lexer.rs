@@ -13,7 +13,7 @@ use crate::units::Unit::*;
 
 pub const fn is_alphabetic_extended(input: &char) -> bool {
   match input {
-    'A'..='Z' | 'a'..='z' | 'Ω' | 'µ' | 'μ' | 'π' => true,
+    'A'..='Z' | 'a'..='z' | 'Ω' | 'Ω' | 'µ' | 'μ' | 'π' => true,
     _ => false,
   }
 }
@@ -61,7 +61,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
       '\'' => tokens.push(Token::Unit(Foot)),
       '"' | '“' | '”' | '″' => tokens.push(Token::LexerKeyword(DoubleQuotes)),
       value if value.is_whitespace() => {},
-      'Ω' => tokens.push(Token::Unit(Ohm)),
+      'Ω' | 'Ω' => tokens.push(Token::Unit(Ohm)),
       value if is_alphabetic_extended(&value) => {
         let start_index = byte_index;
         // account for chars longer than one byte
@@ -327,14 +327,14 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "hp" | "hps" | "horsepower" | "horsepowers" => tokens.push(Token::Unit(Horsepower)),
             "mhp" | "hpm" | "metric hp" | "metric hps" | "metric horsepower" | "metric horsepowers" => tokens.push(Token::Unit(MetricHorsepower)),
 
-            "ma" | "milliamp" | "milliampere" => tokens.push(Token::Unit(Milliampere)),
-            "a" | "amp" | "ampere" => tokens.push(Token::Unit(Ampere)),
-            "ka" | "kiloamp" | "Kiloampere" => tokens.push(Token::Unit(Kiloampere)),
-            "bi" | "biot" | "biots" | "aba" | "abampere" => tokens.push(Token::Unit(Abampere)),
+            "ma" | "milliamp" | "milliamps" | "milliampere" | "milliamperes" => tokens.push(Token::Unit(Milliampere)),
+            "a" | "amp" | "amps" | "ampere" | "amperes" => tokens.push(Token::Unit(Ampere)),
+            "ka" | "kiloamp" | "kiloamps" | "kiloampere" | "kiloamperes" => tokens.push(Token::Unit(Kiloampere)),
+            "bi" | "biot" | "biots" | "aba" | "abampere" | "abamperes" => tokens.push(Token::Unit(Abampere)),
 
-            "mΩ" | "milliohm" => tokens.push(Token::Unit(Milliohm)),
-            "Ω" | "ohm" => tokens.push(Token::Unit(Ohm)),
-            "kΩ" | "kiloohm" => tokens.push(Token::Unit(Kiloohm)),
+            "mΩ" | "mΩ" | "milliohm" | "milliohms" => tokens.push(Token::Unit(Milliohm)),
+            "Ω" | "Ω" | "ohm" | "ohms" => tokens.push(Token::Unit(Ohm)),
+            "kΩ" | "kΩ" | "kiloohm" | "kiloohms" => tokens.push(Token::Unit(Kiloohm)),
 
             // for pound-force per square inch
             "lbf" => tokens.push(Token::LexerKeyword(PoundForce)),
