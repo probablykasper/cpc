@@ -679,7 +679,7 @@ mod tests {
 
     assert_eq!(convert_test(1000.0, Milliampere, Ampere), 1.0);
     assert_eq!(convert_test(1000.0, Ampere, Kiloampere), 1.0);
-    assert_eq!(convert_test(10.0, Ampere, Biot), 1.0);
+    assert_eq!(convert_test(10.0, Ampere, Abampere), 1.0);
 
     assert_eq!(convert_test(1000.0, Pascal, Kilopascal), 1.0);
     assert_eq!(convert_test(101325.0, Pascal, Atmosphere), 1.0);

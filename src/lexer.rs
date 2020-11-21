@@ -11,6 +11,13 @@ use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round
 use crate::units::Unit;
 use crate::units::Unit::*;
 
+pub const fn is_alphabetic_extended(input: &char) -> bool {
+  match input {
+    'A'..='Z' | 'a'..='z' | 'Ω' | 'µ' | 'μ' | 'π' => true,
+    _ => false,
+  }
+}
+
 /// Lex an input string and return a [`TokenVector`](../type.TokenVector.html)
 pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
 
@@ -55,9 +62,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
       '"' | '“' | '”' | '″' => tokens.push(Token::LexerKeyword(DoubleQuotes)),
       value if value.is_whitespace() => {},
       'Ω' => tokens.push(Token::Unit(Ohm)),
-      value if value.is_ascii_alphabetic() => {
+      value if is_alphabetic_extended(&value) => {
         let start_index = byte_index;
-        let mut end_index = byte_index;
+        // account for chars longer than one byte
+        let mut end_index = byte_index + current_char.len_utf8() - 1;
         while let Some(current_char) = chars.peek() {
           // don't loop more than max_word_length:
           if end_index >= start_index + max_word_length - 1 {
@@ -65,11 +73,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             return Err(format!("Invalid string starting with: {}", string));
           }
 
-          if current_char.is_ascii_alphabetic() {
-            byte_index += current_char.len_utf8();
-            end_index += 1;
-            chars.next();
-          } else if current_char == &'Ω' {
+          if is_alphabetic_extended(&current_char) {
             byte_index += current_char.len_utf8();
             end_index += current_char.len_utf8();
             chars.next();
@@ -185,7 +189,8 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "hg" => tokens.push(Token::LexerKeyword(Hg)), // can be hectogram or mercury
 
             "ns" | "nanosec" | "nanosecs" | "nanosecond" | "nanoseconds" => tokens.push(Token::Unit(Nanosecond)),
-            "μs" | "microsec" | "microsecs" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
+            // µ and μ are two different characters
+            "µs" | "μs" | "microsec" | "microsecs" | "microsecond" | "microseconds" => tokens.push(Token::Unit(Microsecond)),
             "ms" | "millisec" | "millisecs" | "millisecond" | "milliseconds" => tokens.push(Token::Unit(Millisecond)),
             "s" | "sec" | "secs" | "second" | "seconds" => tokens.push(Token::Unit(Second)),
             "min" | "mins" | "minute" | "minutes" => tokens.push(Token::Unit(Minute)),
