@@ -203,6 +203,7 @@ create_units!(
   TerawattHour:       (Energy, d128!(3600000000000000)),
   PetawattHour:       (Energy, d128!(3600000000000000000)),
 
+  // ! If updating Milliwatt, also update get_inverted_milliwatt_weight()
   Milliwatt:                    (Power, d128!(0.001)),
   Watt:                         (Power, d128!(1)),
   Kilowatt:                     (Power, d128!(1000)),
@@ -215,18 +216,21 @@ create_units!(
   Horsepower:                   (Power, d128!(745.69987158227022)), // exact according to wikipedia
   MetricHorsepower:             (Power, d128!(735.49875)),
 
-  Milliampere:                  (ElectricCurrent, d128!(1)),
-  Ampere:                       (ElectricCurrent, d128!(1000)),
-  Kiloampere:                   (ElectricCurrent, d128!(1000000)),
-  Abampere:                     (ElectricCurrent, d128!(10000)),
+  // ! If updating Milliampere, also update get_inverted_milliampere_weight()
+  Milliampere:                  (ElectricCurrent, d128!(0.001)),
+  Ampere:                       (ElectricCurrent, d128!(1)),
+  Kiloampere:                   (ElectricCurrent, d128!(1000)),
+  Abampere:                     (ElectricCurrent, d128!(10)),
 
-  Milliohm:                     (Resistance, d128!(1)),
-  Ohm:                          (Resistance, d128!(1000)),
-  Kiloohm:                      (Resistance, d128!(1000000)),
+  // ! If updating Milliohm, also update get_inverted_milliohm_weight()
+  Milliohm:                     (Resistance, d128!(0.001)),
+  Ohm:                          (Resistance, d128!(1)),
+  Kiloohm:                      (Resistance, d128!(1000)),
 
-  Millivolt:                    (Voltage, d128!(1)),
-  Volt:                         (Voltage, d128!(1000)),
-  Kilovolt:                     (Voltage, d128!(1000000)),
+  // ! If updating Millivolt, also update get_inverted_millivolt_weight()
+  Millivolt:                    (Voltage, d128!(0.001)),
+  Volt:                         (Voltage, d128!(1)),
+  Kilovolt:                     (Voltage, d128!(1000)),
 
   Pascal:                       (Pressure, d128!(1)),
   Kilopascal:                   (Pressure, d128!(1000)),
@@ -255,6 +259,21 @@ create_units!(
   Celcius:            (Temperature, d128!(0)),
   Fahrenheit:         (Temperature, d128!(0)),
 );
+
+// These functions are here to avoid dividing by small numbers like 0.01,
+// because d128 gives numbers in E notation in that case.
+fn get_inverted_milliwatt_weight() -> d128 {
+  return d128!(1000);
+}
+fn get_inverted_milliohm_weight() -> d128 {
+  return d128!(1000);
+}
+fn get_inverted_milliampere_weight() -> d128 {
+  return d128!(1000);
+}
+fn get_inverted_millivolt_weight() -> d128 {
+  return d128!(1000);
+}
 
 /// Returns the conversion factor between two units.
 /// 
@@ -377,6 +396,46 @@ pub fn to_ideal_unit(number: Number) -> Number {
     } else {
       return Number::new(value, CubicMillimeter)
     }
+  } else if number.unit.category() == Power {
+    if value >= d128!(1000000000000000) { // 1 petawatt
+      return Number::new(value/Petawatt.weight(), Petawatt)
+    } else if value >= d128!(1000000000000) { // 1 terawatt
+      return Number::new(value/Terawatt.weight(), Terawatt)
+    } else if value >= d128!(1000000000) { // 1 gigawatt
+      return Number::new(value/Gigawatt.weight(), Gigawatt)
+    } else if value >= d128!(1000000) { // megawatt
+      return Number::new(value/Megawatt.weight(), Megawatt)
+    } else if value >= d128!(1000) { // 1 kilowatt
+      return Number::new(value/Kilowatt.weight(), Kilowatt)
+    } else if value >= d128!(1) { // 1 watt
+      return Number::new(value, Watt)
+    } else {
+      return Number::new(value * get_inverted_milliwatt_weight(), Milliwatt)
+    }
+  } else if number.unit.category() == ElectricCurrent {
+    if value >= d128!(1000) { // 1 kiloampere
+      return Number::new(value/Kiloampere.weight(), Kiloampere)
+    } else if value >= d128!(1) { // 1 ampere
+      return Number::new(value, Ampere)
+    } else {
+      return Number::new(value * get_inverted_milliampere_weight(), Milliampere)
+    }
+  } else if number.unit.category() == Resistance {
+    if value >= d128!(1000) { // 1 kiloohm
+      return Number::new(value/Kiloohm.weight(), Kiloohm)
+    } else if value >= d128!(1) { // 1 ohm
+      return Number::new(value, Ohm)
+    } else {
+      return Number::new(value * get_inverted_milliohm_weight(), Milliohm)
+    }
+  } else if number.unit.category() == Voltage {
+    if value >= d128!(1000) { // 1 kilovolt
+      return Number::new(value/Kilovolt.weight(), Kilovolt)
+    } else if value >= d128!(1) { // 1 volt
+      return Number::new(value, Volt)
+    } else {
+      return Number::new(value * get_inverted_millivolt_weight(), Millivolt)
+    }
   }
   number
 }
@@ -387,6 +446,8 @@ pub fn to_ideal_unit(number: Number) -> Number {
 /// - If you multiply `NoType` with any other unit, the result gets that other unit
 /// - If you multiply `Length` with `Length`, the result has a unit of `Area`, etc.
 /// - If you multiply `Speed` with `Time`, the result has a unit of `Length`
+/// - If you multiply `Voltage` with `Current`, the result has a unit of `Power`
+/// - If you multiply `Current` with `Resistance`, the result has a unit of `Voltage`
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
   Ok(actual_multiply(left, right, false)?)
 }
@@ -401,7 +462,7 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
     // if temperature
     Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
   } else if left.unit == NoUnit && right.unit != NoUnit {
-    // 3 * 1 anyunit
+    // 3 * 2 anyunit
     Ok(Number::new(left.value * right.value, right.unit))
   } else if lcat == Length && rcat == Length {
     // length * length
@@ -426,9 +487,17 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
     };
     let kilometers = Number::new(result, Kilometer);
     Ok(convert(kilometers, final_unit)?)
+  } else if lcat == Voltage && rcat == ElectricCurrent {
+    // 1 volt * 1 ampere = 1 watt
+    let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, Watt)))
+  } else if lcat == ElectricCurrent && rcat == Resistance {
+    // 1 amp * 1 ohm = 1 volt
+    let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, Watt)))
   } else {
     if swapped == true {
-      Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+      Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
     } else {
       actual_multiply(right, left, true)
     }
@@ -439,8 +508,12 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 /// 
 /// - Temperatures don't work
 /// - If you divide a unit by that same unit, the result has a unit of `NoType`
-/// - If you divide `Volume` by `Length`, the result has a a unit of `Area`, etc.
-/// - If you divide `Length` by `Time`, the result has a a unit of `Speed`
+/// - If you divide `Volume` by `Length`, the result has a unit of `Area`, etc.
+/// - If you divide `Length` by `Time`, the result has a unit of `Speed`
+/// - If you divide `Power` by `ElectricCurrent`, the result has a unit of `Volt`
+/// - If you divide `Voltage` by `ElectricCurrent`, the result has a unit of `Ohm`
+/// - If you divide `Voltage` by `Resistance`, the result has a unit of `Ampere`
+/// - If you divide `Power` by `Voltage`, the result has a unit of `Ampere`
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
@@ -479,6 +552,22 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     let hours = convert(right, Hour)?;
     let kph = Number::new(kilometers.value / hours.value, KilometersPerHour);
     Ok(convert(kph, final_unit)?)
+  } else if lcat == Power && rcat == ElectricCurrent {
+    // 1 watt / 1 ampere = 1 volt
+    let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, Volt)))
+  } else if lcat == Voltage && rcat == ElectricCurrent {
+    // 1 volt / 1 ampere = 1 ohm
+    let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, Ohm)))
+  } else if lcat == Voltage && rcat == Resistance {
+    // 1 volt / 1 ohm = 1 amp
+    let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, Ampere)))
+  } else if lcat == Power && rcat == Voltage {
+    // 1 watt / 1 volt = 1 amp
+    let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
+    Ok(to_ideal_unit(Number::new(result, Ampere)))
   } else {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   }
