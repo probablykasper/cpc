@@ -25,6 +25,8 @@ pub enum UnitType {
   Power,
   /// A unit of electrical current, for example `Ampere`
   ElectricCurrent,
+  /// A unit of electric resistance, for example `Ohm`
+  Resistance,
   /// A unit of pressure, for example `Bar`
   Pressure,
   /// A unit of frequency, for example `Hertz`
@@ -215,6 +217,10 @@ create_units!(
   Ampere:                       (ElectricCurrent, d128!(1000)),
   Kiloampere:                   (ElectricCurrent, d128!(1000000)),
   Abampere:                     (ElectricCurrent, d128!(10000)),
+
+  Milliohm:                     (Resistance, d128!(1)),
+  Ohm:                          (Resistance, d128!(1000)),
+  Kiloohm:                      (Resistance, d128!(1000000)),
 
   Pascal:                       (Pressure, d128!(1)),
   Kilopascal:                   (Pressure, d128!(1000)),

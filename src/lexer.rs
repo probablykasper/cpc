@@ -54,8 +54,8 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
       '\'' => tokens.push(Token::Unit(Foot)),
       '"' | '“' | '”' | '″' => tokens.push(Token::LexerKeyword(DoubleQuotes)),
       value if value.is_whitespace() => {},
+      'Ω' => tokens.push(Token::Unit(Ohm)),
       value if value.is_ascii_alphabetic() => {
-
         let start_index = byte_index;
         let mut end_index = byte_index;
         while let Some(current_char) = chars.peek() {
@@ -67,8 +67,12 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
 
           if current_char.is_ascii_alphabetic() {
             byte_index += current_char.len_utf8();
-            chars.next();
             end_index += 1;
+            chars.next();
+          } else if current_char == &'Ω' {
+            byte_index += current_char.len_utf8();
+            end_index += current_char.len_utf8();
+            chars.next();
           } else {
             let string = &input[start_index..=end_index];
             match string.trim_end() {
@@ -322,6 +326,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "a" | "amp" | "ampere" => tokens.push(Token::Unit(Ampere)),
             "ka" | "kiloamp" | "Kiloampere" => tokens.push(Token::Unit(Kiloampere)),
             "bi" | "biot" | "biots" | "aba" | "abampere" => tokens.push(Token::Unit(Abampere)),
+
+            "mΩ" | "milliohm" => tokens.push(Token::Unit(Milliohm)),
+            "Ω" | "ohm" => tokens.push(Token::Unit(Ohm)),
+            "kΩ" | "kiloohm" => tokens.push(Token::Unit(Kiloohm)),
 
             // for pound-force per square inch
             "lbf" => tokens.push(Token::LexerKeyword(PoundForce)),
