@@ -1,3 +1,9 @@
+## Next
+- Added units of electric current
+- Added units of voltage
+- Added units of resistance
+- Fixed interpreting of `µs`
+
 ## 1.1.0 - 2020 Nov 14
 - Added units of frequency
 - Added support using foot-inch syntax with addition, like `2"+6'4"`

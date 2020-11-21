@@ -336,6 +336,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "Ω" | "Ω" | "ohm" | "ohms" => tokens.push(Token::Unit(Ohm)),
             "kΩ" | "kΩ" | "kiloohm" | "kiloohms" => tokens.push(Token::Unit(Kiloohm)),
 
+            "mv" | "millivolt" | "millivolts" => tokens.push(Token::Unit(Millivolt)),
+            "v" | "volt" | "volts" => tokens.push(Token::Unit(Volt)),
+            "kv" | "kilovolt" | "kilovolts" => tokens.push(Token::Unit(Kilovolt)),
+
             // for pound-force per square inch
             "lbf" => tokens.push(Token::LexerKeyword(PoundForce)),
             "force" => tokens.push(Token::LexerKeyword(Force)),

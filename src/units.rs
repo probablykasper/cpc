@@ -27,6 +27,8 @@ pub enum UnitType {
   ElectricCurrent,
   /// A unit of electric resistance, for example `Ohm`
   Resistance,
+  /// A unit of voltage, for example `Volt`
+  Voltage,
   /// A unit of pressure, for example `Bar`
   Pressure,
   /// A unit of frequency, for example `Hertz`
@@ -221,6 +223,10 @@ create_units!(
   Milliohm:                     (Resistance, d128!(1)),
   Ohm:                          (Resistance, d128!(1000)),
   Kiloohm:                      (Resistance, d128!(1000000)),
+
+  Millivolt:                    (Voltage, d128!(1)),
+  Volt:                         (Voltage, d128!(1000)),
+  Kilovolt:                     (Voltage, d128!(1000000)),
 
   Pascal:                       (Pressure, d128!(1)),
   Kilopascal:                   (Pressure, d128!(1000)),
@@ -683,6 +689,9 @@ mod tests {
 
     assert_eq!(convert_test(1000.0, Milliohm, Ohm), 1.0);
     assert_eq!(convert_test(1000.0, Ohm, Kiloohm), 1.0);
+
+    assert_eq!(convert_test(1000.0, Millivolt, Volt), 1.0);
+    assert_eq!(convert_test(1000.0, Volt, Kilovolt), 1.0);
 
     assert_eq!(convert_test(1000.0, Pascal, Kilopascal), 1.0);
     assert_eq!(convert_test(101325.0, Pascal, Atmosphere), 1.0);
