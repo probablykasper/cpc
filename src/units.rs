@@ -388,6 +388,10 @@ pub fn to_ideal_unit(number: Number) -> Number {
 /// - If you multiply `Length` with `Length`, the result has a unit of `Area`, etc.
 /// - If you multiply `Speed` with `Time`, the result has a unit of `Length`
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
+  Ok(actual_multiply(left, right, false)?)
+}
+
+fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
   if left.unit == NoUnit && right.unit == NoUnit {
@@ -397,17 +401,14 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
     // if temperature
     Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
   } else if left.unit == NoUnit && right.unit != NoUnit {
-    // 3 * 1 km
+    // 3 * 1 anyunit
     Ok(Number::new(left.value * right.value, right.unit))
-  } else if left.unit != NoUnit && right.unit == NoUnit {
-    // 1 km * 3
-    Ok(Number::new(left.value * right.value, left.unit))
   } else if lcat == Length && rcat == Length {
     // length * length
     let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
     Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-  } else if (lcat == Length && rcat == Area) || (lcat == Area && rcat == Length) {
-    // length * area, area * length
+  } else if lcat == Length && rcat == Area {
+    // length * area
     let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
     Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
   } else if lcat == Speed && rcat == Time {
@@ -426,7 +427,11 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
     let kilometers = Number::new(result, Kilometer);
     Ok(convert(kilometers, final_unit)?)
   } else {
-    Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+    if swapped == true {
+      Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+    } else {
+      actual_multiply(right, left, true)
+    }
   }
 }
 
