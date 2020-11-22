@@ -165,6 +165,8 @@ match string {
 ```
 
 ### Potential Improvements
+#### General
+- Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
 #### Potential unit types
 Nice list of units: https://support.google.com/websearch/answer/3284611
 - Currency: How would you go about dynamically updating the weights?
@@ -174,7 +176,6 @@ Nice list of units: https://support.google.com/websearch/answer/3284611
 - Force
 - Roman numerals
 - Angles
-- Electric current, capacitance, charge, conductance, volts
 - Flow rate
 
 ### Cross-compiling

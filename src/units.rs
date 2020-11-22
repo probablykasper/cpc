@@ -186,6 +186,7 @@ create_units!(
   Zebibyte:           (DigitalStorage, d128!(9444732965739290427392)),
   Yobibyte:           (DigitalStorage, d128!(9671406556917033397649408)),
 
+  // ! If updating Millijoule, also update get_inverted_millijoule_weight()
   Millijoule:         (Energy, d128!(0.001)),
   Joule:              (Energy, d128!(1)),
   NewtonMeter:        (Energy, d128!(1)),
@@ -262,6 +263,9 @@ create_units!(
 
 // These functions are here to avoid dividing by small numbers like 0.01,
 // because d128 gives numbers in E notation in that case.
+fn get_inverted_millijoule_weight() -> d128 {
+  return d128!(1000);
+}
 fn get_inverted_milliwatt_weight() -> d128 {
   return d128!(1000);
 }
@@ -356,8 +360,8 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 /// 
 /// If you have 1,000,000 millimeters, this will return 1 kilometer.
 /// 
-/// This only affects units of `Length`, `Area` and `Volume`. Other units are
-/// passed through.
+/// This only affects units of `Length`, `Area`, `Volume`, `Energy`, `Power`,
+/// `ElectricCurrent`, `Resistance` and `Voltage`. Other units are passed through.
 pub fn to_ideal_unit(number: Number) -> Number {
   let value = number.value * number.unit.weight();
   if number.unit.category() == Length {
@@ -395,6 +399,24 @@ pub fn to_ideal_unit(number: Number) -> Number {
       return Number::new(value/Milliliter.weight(), Milliliter)
     } else {
       return Number::new(value, CubicMillimeter)
+    }
+  } else if number.unit.category() == Energy {
+    if value >= d128!(3600000000000000000) { // 1 petawatthour
+      return Number::new(value/PetawattHour.weight(), PetawattHour)
+    } else if value >= d128!(3600000000000000) { // 1 terawatthour
+      return Number::new(value/TerawattHour.weight(), TerawattHour)
+    } else if value >= d128!(3600000000000) { // 1 gigawatthour
+      return Number::new(value/GigawattHour.weight(), GigawattHour)
+    } else if value >= d128!(3600000000) { // 1 megawatthour
+      return Number::new(value/MegawattHour.weight(), MegawattHour)
+    } else if value >= d128!(3600000) { // 1 kilowatthour
+      return Number::new(value/KilowattHour.weight(), KilowattHour)
+    } else if value >= d128!(3600) { // 1 watthour
+      return Number::new(value/WattHour.weight(), WattHour)
+    } else if value >= d128!(1) { // 1 joule
+      return Number::new(value, Joule)
+    } else {
+      return Number::new(value * get_inverted_millijoule_weight(), Millijoule)
     }
   } else if number.unit.category() == Power {
     if value >= d128!(1000000000000000) { // 1 petawatt
@@ -440,6 +462,27 @@ pub fn to_ideal_unit(number: Number) -> Number {
   number
 }
 
+/// Convert a [`Number`](enum.Number.html) to an ideal joule unit, if the number is .
+pub fn to_ideal_joule_unit(number: Number) -> Number {
+  let value = number.value * number.unit.weight();
+  if number.unit.category() == Energy {
+    if value >= d128!(1000000000000) { // 1 terajoule
+      return Number::new(value/Terajoule.weight(), Terajoule)
+    } else if value >= d128!(1000000000) { // 1 gigajoule
+      return Number::new(value/Gigajoule.weight(), Gigajoule)
+    } else if value >= d128!(1000000) { // 1 megajoule
+      return Number::new(value/Megajoule.weight(), Megajoule)
+    } else if value >= d128!(1000) { // 1 kilojoule
+      return Number::new(value/Kilojoule.weight(), Kilojoule)
+    } else if value >= d128!(1) { // 1 joule
+      return Number::new(value/Joule.weight(), Joule)
+    } else {
+      return Number::new(value * get_inverted_millijoule_weight(), Millijoule)
+    }
+  }
+  number
+}
+
 /// Multiply two [`Number`](enum.Number.html)s
 /// 
 /// - Temperatures don't work
@@ -448,6 +491,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 /// - If you multiply `Speed` with `Time`, the result has a unit of `Length`
 /// - If you multiply `Voltage` with `Current`, the result has a unit of `Power`
 /// - If you multiply `Current` with `Resistance`, the result has a unit of `Voltage`
+/// - If you multiply `Power` with `Time`, the result has a unit of `Energy`
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
   Ok(actual_multiply(left, right, false)?)
 }
@@ -495,6 +539,13 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
     // 1 amp * 1 ohm = 1 volt
     let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
     Ok(to_ideal_unit(Number::new(result, Watt)))
+  } else if lcat == Power && rcat == Time {
+    // 1 watt * 1 second = 1 joule
+    let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight() / Unit::Second.weight());
+    match right.unit {
+      Second => return Ok(to_ideal_joule_unit(Number::new(result, Joule))),
+      _ => return Ok(to_ideal_unit(Number::new(result, Joule))),
+    };
   } else {
     if swapped == true {
       Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
@@ -514,6 +565,7 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 /// - If you divide `Voltage` by `ElectricCurrent`, the result has a unit of `Ohm`
 /// - If you divide `Voltage` by `Resistance`, the result has a unit of `Ampere`
 /// - If you divide `Power` by `Voltage`, the result has a unit of `Ampere`
+/// - If you divide `Energy` by `Time`, the result has a unit of `Power`
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
@@ -568,6 +620,10 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     // 1 watt / 1 volt = 1 amp
     let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
     Ok(to_ideal_unit(Number::new(result, Ampere)))
+  } else if lcat == Energy && rcat == Time {
+    // 1 joule / 1 second = 1 watt
+    let result = (left.value * left.unit.weight()) / ((right.value * right.unit.weight() / Unit::Second.weight()));
+    Ok(to_ideal_unit(Number::new(result, Watt)))
   } else {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   }
