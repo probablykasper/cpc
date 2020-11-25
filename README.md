@@ -184,14 +184,13 @@ Nice list of units: https://support.google.com/websearch/answer/3284611
     ```
     cargo install cross
     ```
-3. Build. `<target>` is the platform you're building for:
+3. Build for x86_64 macOS, Linux and Windows:
     ```sh
-    cross build --release --target <target>
+    cross build --release --target x86_64-apple-darwin && cross build --release --target x86_64-unknown-linux-musl && cross build --release --target x86_64-pc-windows-gnu
     ```
-    - macOS target: `x86_64-apple-darwin` (Only works on macOS)
-    - Linux target: `x86_64-unknown-linux-musl`
-    - Windows target: `x86_64-pc-windows-gnu`
-    - In case you want to compile for more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
+    - Note that building for `x86_64-apple-darwin` only works on macOS
+    - For more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
+    - If you run `cross build` in parallel, you might get a `cargo not found` error
 The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
 
 ### Releasing a new version
