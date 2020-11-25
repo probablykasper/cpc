@@ -12,6 +12,7 @@
 - Added support for `Power * Time`
 - Added support for `Energy / Time`
 - Fixed interpreting of `µs`
+- Fixed panics caused in Rust `1.48.0` by specifying `decimal` as a git dependency.
 
 ## 1.1.0 - 2020 Nov 14
 - Added units of frequency

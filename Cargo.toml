@@ -13,4 +13,5 @@ keywords = ["math", "expression", "evaluate", "units", "convert"]
 categories = ["mathematics", "science", "parsing", "text-processing", "value-formatting"]
 
 [dependencies]
-decimal = "2.0.4"
+# decimal = "2.0.4"
+decimal = { git = "https://github.com/probablykasper/decimal-uninit-fix-mirror", branch = "uninit-fix" }
