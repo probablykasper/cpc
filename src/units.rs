@@ -577,7 +577,7 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
   } else if left.unit != NoUnit && right.unit == NoUnit {
     // 1 km / 2
-    Ok(Number::new(left.value / right.value, right.unit))
+    Ok(Number::new(left.value / right.value, left.unit))
   } else if lcat == rcat {
     // 4 km / 2 km
     let (left, right) = convert_to_lowest(left, right)?;

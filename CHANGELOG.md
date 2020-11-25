@@ -11,6 +11,7 @@
 - Added support for `ElectricCurrent * Resistance`
 - Added support for `Power * Time`
 - Added support for `Energy / Time`
+- Fixed dividing a unit by `NoUnit` resulting in `NoUnit`
 - Fixed interpreting of `µs`
 - Fixed panics caused in Rust `1.48.0` by specifying `decimal` as a git dependency.
 
