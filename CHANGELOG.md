@@ -1,4 +1,4 @@
-## Next
+## 1.2.0 - 2020 Nov 26
 - Added units of electric current
 - Added units of voltage
 - Added units of resistance
@@ -13,7 +13,7 @@
 - Added support for `Energy / Time`
 - Fixed dividing a unit by `NoUnit` resulting in `NoUnit`
 - Fixed interpreting of `µs`
-- Fixed panics caused in Rust `1.48.0` by specifying `decimal` as a git dependency.
+- Fixed panics caused in Rust `1.48.0` by switching `decimal` dependency to `decimal_fixes_mirror`.
 
 ## 1.1.0 - 2020 Nov 14
 - Added units of frequency

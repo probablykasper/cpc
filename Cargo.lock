@@ -14,7 +14,7 @@ checksum = "95752358c8f7552394baf48cd82695b345628ad3f170d607de3ca03b8dacca15"
 
 [[package]]
 name = "cpc"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "decimal_fixes_mirror",
 ]
