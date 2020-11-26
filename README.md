@@ -83,6 +83,9 @@ round(sqrt(2)^4)! liters
 - Digital storage (bytes etc)
 - Energy
 - Power
+- Electric current
+- Resistance
+- Voltage
 - Pressure
 - Frequency
 - Speed

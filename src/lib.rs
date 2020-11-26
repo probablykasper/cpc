@@ -165,7 +165,6 @@ pub enum LexerKeyword {
   Mercury,
   Hg,
   PoundForce,
-  PoundWord,
   Force,
 }
 

@@ -6,7 +6,7 @@ use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::NamedNumber::*;
 use crate::Constant::{E, Pi};
-use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, PoundWord, Force, DoubleQuotes};
+use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, Force, DoubleQuotes};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
 use crate::units::Unit;
 use crate::units::Unit::*;
