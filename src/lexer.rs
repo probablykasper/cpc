@@ -261,8 +261,8 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "kg" | "kilo" | "kilos" | "kilogram" | "kilograms" => tokens.push(Token::Unit(Kilogram)),
             "t" | "tonne" | "tonnes" | "metric ton" | "metric tons" | "metric tonne" | "metric tonnes" => tokens.push(Token::Unit(MetricTon)),
             "oz" | "ounces" => tokens.push(Token::Unit(Ounce)),
-            "lb" | "lbs" | "pounds" => tokens.push(Token::Unit(Pound)),
-            "pound" => {
+            "lb" | "lbs" => tokens.push(Token::Unit(Pound)),
+            "pound" | "pounds" => {
               let str_len = "-force".len();
               match input.get(end_index+1..=end_index+str_len) {
                 Some("-force") => {
