@@ -66,6 +66,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
         let start_index = byte_index;
         // account for chars longer than one byte
         let mut end_index = byte_index + current_char.len_utf8() - 1;
+
         while let Some(current_char) = chars.peek() {
           // don't loop more than max_word_length:
           if end_index >= start_index + max_word_length - 1 {
@@ -261,7 +262,21 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "t" | "tonne" | "tonnes" | "metric ton" | "metric tons" | "metric tonne" | "metric tonnes" => tokens.push(Token::Unit(MetricTon)),
             "oz" | "ounces" => tokens.push(Token::Unit(Ounce)),
             "lb" | "lbs" | "pounds" => tokens.push(Token::Unit(Pound)),
-            "pound" => tokens.push(Token::LexerKeyword(PoundWord)),
+            "pound" => {
+              let str_len = "-force".len();
+              match input.get(end_index+1..=end_index+str_len) {
+                Some("-force") => {
+                  tokens.push(Token::LexerKeyword(PoundForce));
+                  for _i in 0..str_len {
+                    chars.next();
+                  }
+                  byte_index += str_len;
+                },
+                _ => {
+                  tokens.push(Token::Unit(Pound));
+                }
+              }
+            },
             "st" | "ton" | "tons" | "short ton" | "short tons" | "short tonne" | "short tonnes" => tokens.push(Token::Unit(ShortTon)),
             "lt" | "long ton" | "long tons" | "long tonne" | "long tonnes" => tokens.push(Token::Unit(LongTon)),
 
@@ -541,10 +556,6 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
         // btu/h
         (Token::Unit(BritishThermalUnit), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
           tokens[token_index-2] = Token::Unit(BritishThermalUnitsPerHour);
-        },
-        // pound-force
-        (Token::LexerKeyword(PoundWord), Token::Operator(Minus), Token::LexerKeyword(Force)) => {
-          tokens[token_index-2] = Token::LexerKeyword(PoundForce);
         },
         // lbs/sqin
         (Token::LexerKeyword(PoundForce), Token::LexerKeyword(Per), Token::Unit(SquareInch)) => {
