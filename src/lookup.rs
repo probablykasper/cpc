@@ -2,7 +2,7 @@ use crate::NamedNumber::*;
 use crate::NamedNumber;
 use decimal_fixes_mirror::d128;
 
-/// Returns the number of a [`NamedNumber`](decimal/struct.d128.html) [`to`](../enum.NamedNumber.html) as a [`d128`](decimal/struct.d128.html)
+/// Returns the corresponding [`d128`] of a [`NamedNumber`]
 pub fn lookup_named_number(named_number: &NamedNumber) -> d128 {
   return match named_number {
     Hundred           => d128!(100),
@@ -32,7 +32,7 @@ pub fn lookup_named_number(named_number: &NamedNumber) -> d128 {
   }
 }
 
-/// Returns the factorial of an `i32` as a [`d128`](decimal/struct.d128.html)
+/// Returns the factorial of an `i32` as a [`struct@d128`]
 pub fn lookup_factorial(n: i32) -> d128 {
   return match n {
     0 => d128!(1),

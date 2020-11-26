@@ -18,7 +18,7 @@ pub const fn is_alphabetic_extended(input: &char) -> bool {
   }
 }
 
-/// Lex an input string and return a [`TokenVector`](../type.TokenVector.html)
+/// Lex an input string and return a [`TokenVector`]
 pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
 
   let mut input = input.replace(",", ""); // ignore commas

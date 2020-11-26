@@ -9,13 +9,13 @@ use crate::TextOperator::{To, Of};
 use crate::FunctionIdentifier::*;
 use crate::lookup::{lookup_factorial, lookup_named_number};
 
-/// Evaluate an [`AstNode`](struct.AstNode.html) into a [`Number`](struct.Number.html)
+/// Evaluate an [`AstNode`] into a [`Number`]
 pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
   let answer = evaluate_node(ast)?;
   Ok(answer)
 }
 
-/// Returns the factorial of a [`d128`](../decimal/struct.d128.html) up to `1000!` without doing any math
+/// Returns the factorial of a [`struct@d128`] up to `1000!` without doing any math
 /// 
 /// Factorials do not work with decimal numbers.
 /// 
@@ -24,7 +24,7 @@ pub fn factorial(input: d128) -> d128 {
   return lookup_factorial(input.into());
 }
 
-/// Returns the square root of a [`d128`](../decimal/struct.d128.html)
+/// Returns the square root of a [`struct@d128`]
 pub fn sqrt(input: d128) -> d128 {
   let mut n = d128!(1);
   let half = d128!(0.5);
@@ -34,7 +34,7 @@ pub fn sqrt(input: d128) -> d128 {
   return n
 }
 
-/// Returns the cube root of a [`d128`](../decimal/struct.d128.html)
+/// Returns the cube root of a [`struct@d128`]
 pub fn cbrt(input: d128) -> d128 {
   let mut n: d128 = input;
   // hope that 20 iterations makes it accurate enough
@@ -46,7 +46,7 @@ pub fn cbrt(input: d128) -> d128 {
   return n
 }
 
-/// Returns the sine of a [`d128`](../decimal/struct.d128.html)
+/// Returns the sine of a [`struct@d128`]
 pub fn sin(mut input: d128) -> d128 {
   let pi = d128!(3.141592653589793238462643383279503);
   let pi2 = d128!(6.283185307179586476925286766559006);
@@ -76,18 +76,18 @@ pub fn sin(mut input: d128) -> d128 {
   
 }
 
-/// Returns the cosine of a [`d128`](../decimal/struct.d128.html)
+/// Returns the cosine of a [`struct@d128`]
 pub fn cos(input: d128) -> d128 {
   let half_pi = d128!(1.570796326794896619231321691639751);
   return sin(half_pi - input);
 }
 
-/// Returns the tangent of a [`d128`](../decimal/struct.d128.html)
+/// Returns the tangent of a [`struct@d128`]
 pub fn tan(input: d128) -> d128 {
   return sin(input) / cos(input);
 }
 
-/// Evaluate an [`AstNode`](struct.AstNode.html) into a [`Number`](struct.Number.html)
+/// Evaluate an [`AstNode`] into a [`Number`]
 fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
   let token = &ast_node.token;
   let children = &ast_node.children;

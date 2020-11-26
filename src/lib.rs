@@ -28,11 +28,11 @@ use crate::units::Unit;
 
 /// Units, and functions you can use with them
 pub mod units;
-/// Turns a string into a [`TokenVector`](type.TokenVector.html)
+/// Turns a string into a [`TokenVector`]
 pub mod lexer;
-/// Turns a [`TokenVector`](type.TokenVector.html) into an [`AstNode`](struct.AstNode.html)
+/// Turns a [`TokenVector`] into an [`AstNode`](parser::AstNode)
 pub mod parser;
-/// Turns an [`AstNode`](struct.AstNode.html) into a [`Number`](struct.Number.html)
+/// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
 mod lookup;
 
@@ -51,9 +51,9 @@ mod lookup;
 /// };
 /// ```
 pub struct Number {
-  /// The number part of a `Number` struct
+  /// The number part of a [`Number`] struct
   pub value: d128,
-  /// The unit of a `Number` struct. This can be `NoType`
+  /// The unit of a [`Number`] struct. This can be [`NoType`](units::UnitType::NoType)
   pub unit: Unit,
 }
 
@@ -67,7 +67,7 @@ impl Number {
 }
 
 #[derive(Clone, Debug)]
-/// Math operators like [`Multiply`](enum.Operator.html#variant.Multiply), parentheses, etc.
+/// Math operators like [`Multiply`](Operator::Multiply), parentheses, etc.
 pub enum Operator {
   Plus,
   Minus,
@@ -80,21 +80,21 @@ pub enum Operator {
 }
 
 #[derive(Clone, Debug)]
-/// Unary operators like [`Percent`](enum.UnaryOperator.html#variant.Percent) and [`Factorial`](enum.UnaryOperator.html#variant.Factorial).
+/// Unary operators like [`Percent`](UnaryOperator::Percent) and [`Factorial`](UnaryOperator::Factorial).
 pub enum UnaryOperator {
   Percent,
   Factorial,
 }
 
 #[derive(Clone, Debug)]
-/// A Text operator like [`To`](enum.TextOperator.html#variant.To) or [`From`](enum.TextOperator.html#variant.From).
+/// A Text operator like [`To`](TextOperator::To) or [`Of`](TextOperator::Of).
 pub enum TextOperator {
   To,
   Of,
 }
 
 #[derive(Clone, Debug)]
-/// A named number like [`Million`](enum.NamedNumber.html#variant.Million).
+/// A named number like [`Million`](NamedNumber::Million).
 pub enum NamedNumber {
   Hundred,
   Thousand,
@@ -123,14 +123,14 @@ pub enum NamedNumber {
 }
 
 #[derive(Clone, Debug)]
-/// A constants like [`Pi`](enum.Constant.html#variant.Pi) or [`E`](enum.Constant.html#variant.E).
+/// A constants like [`Pi`](Constant::Pi) or [`E`](Constant::E).
 pub enum Constant {
   Pi,
   E,
 }
 
 #[derive(Clone, Debug)]
-/// Functions identifiers like [`Sqrt`](enum.FunctionIdentifier.html#variant.Sqrt), [`Sin`](enum.FunctionIdentifier.html#variant.Sin), [`Round`](enum.FunctionIdentifier.html#variant.Round), etc.
+/// Functions identifiers like [`Sqrt`](FunctionIdentifier::Sqrt), [`Sin`](FunctionIdentifier::Sin), [`Round`](FunctionIdentifier::Round), etc.
 pub enum FunctionIdentifier {
   Sqrt,
   Cbrt,
@@ -150,13 +150,13 @@ pub enum FunctionIdentifier {
 }
 
 #[derive(Clone, Debug)]
-/// A temporary enum used by the [`lexer`](lexer/index.html) to later determine what [`Token`](enum.Token.html) it is.
+/// A temporary enum used by the [`lexer`] to later determine what [`Token`] it is.
 /// 
 /// For example, when a symbol like `%` is found, the lexer turns it into a
-/// the [`PercentChar`](enum.LexerKeyword.html#variant.PercentChar) variant
-/// and then later it checks the surrounding [`Token`](enum.Token.html)s and,
-/// dependingon them, turns it into a [`Percent`](enum.UnaryOperator.html) or
-/// [`Modulo`](enum.Operator.html) [`Token`](enum.Token.html).
+/// the [`PercentChar`](LexerKeyword::PercentChar) variant
+/// and then later it checks the surrounding [`Token`]s and,
+/// dependingon them, turns it into a [`Percent`](UnaryOperator::Percent) or
+/// [`Modulo`](Operator::Modulo) [`Token`].
 pub enum LexerKeyword {
   Per,
   PercentChar,
@@ -170,9 +170,9 @@ pub enum LexerKeyword {
 }
 
 #[derive(Clone, Debug)]
-/// A token like a [`Number`](enum.Token.html#variant.Number), [`Operator`](enum.Token.html#variant.Operator), [`Unit`](enum.Token.html#variant.Unit) etc.
+/// A token like a [`Number`](Token::Number), [`Operator`](Token::Operator), [`Unit`](Token::Unit) etc.
 /// 
-/// Strings can be divided up into these tokens by the [`lexer`](lexer/index.html), and then put into the [`parser`](parser/index.html).
+/// Strings can be divided up into these tokens by the [`lexer`], and then put into the [`parser`].
 pub enum Token {
   Operator(Operator),
   UnaryOperator(UnaryOperator),
@@ -192,10 +192,10 @@ pub enum Token {
   Unit(units::Unit),
 }
 
-/// A vector of [`Token`](enum.Token.html)
+/// A vector of [`Token`]
 pub type TokenVector = Vec<Token>;
 
-/// Evaluates a string into a resulting [`Number`]().
+/// Evaluates a string into a resulting [`Number`].
 /// 
 /// Example:
 /// ```rust

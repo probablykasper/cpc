@@ -5,11 +5,11 @@ use crate::TextOperator::{To, Of};
 use crate::units::Unit::{Foot, Inch};
 
 #[derive(Debug)]
-/// A struct with a [`Token`](struct.AstNode.html#structfield.token) and `AstNode` [`children`](struct.AstNode.html#structfield.children)
+/// A struct with a [`Token`](AstNode::token) and [`AstNode`] [`children`](AstNode::children)
 pub struct AstNode {
-  /// The children of the `AstNode`
+  /// The children of the [`AstNode`]
   pub children: Vec<AstNode>,
-  /// The token of the `AstNode`
+  /// The token of the [`AstNode`]
   pub token: Token,
 }
 
@@ -22,7 +22,7 @@ impl AstNode {
   }
 }
 
-/// Parse [`TokenVector`](type.TokenVector.html) into an Abstract Syntax Tree ([`AstNode`](struct.AstNode.html))
+/// Parse [`TokenVector`] into an Abstract Syntax Tree ([`AstNode`])
 pub fn parse(tokens: &TokenVector) -> Result<AstNode, String> {
   parse_level_1(tokens, 0).and_then(|(ast, next_pos)| if next_pos == tokens.len() {
       Ok(ast)
@@ -32,7 +32,7 @@ pub fn parse(tokens: &TokenVector) -> Result<AstNode, String> {
 }
 
 // level 1 precedence (lowest): to, of
-/// Parse [`to`](../enum.TextOperator.html#variant.To) and [`of`](../enum.TextOperator.html#variant.Of)
+/// Parse [`To`](crate::TextOperator::To) and [`Of`](crate::TextOperator::Of)
 pub fn parse_level_1(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   // do higher precedences first, then come back down
   let (mut node, mut pos) = parse_level_2(tokens, pos)?;
@@ -60,7 +60,7 @@ pub fn parse_level_1(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
 }
 
 // level 2 precedence: +, -
-/// Parse [`Plus`](../enum.Operator.html#variant.Plus) and [`Minus`](../enum.Operator.html#variant.Minus)
+/// Parse [`Plus`](crate::Operator::Plus) and [`Minus`](crate::Operator::Minus)
 pub fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_3(tokens, pos)?;
   loop {
@@ -82,7 +82,7 @@ pub fn parse_level_2(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
 }
 
 // level 3 precedence: *, /, modulo, implicative multiplication, foot-inch 6'4"
-/// Parse [`Multiply`](../enum.Operator.html#variant.Multiply), [`Divide`](../enum.Operator.html#variant.Divide), [`Modulo`](../enum.Operator.html#variant.Modulo) and implicative multiplication (for example`2pi`)
+/// Parse [`Multiply`](crate::Operator::Multiply), [`Divide`](crate::Operator::Divide), [`Modulo`](crate::Operator::Modulo) and implicative multiplication (for example`2pi`)
 pub fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
 
   // parse foot-inch syntax 6'4"
@@ -214,7 +214,7 @@ pub fn parse_level_3(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
 }
 
 // level 4 precedence: ^
-/// Parse [`Caret`](../enum.Operator.html#variant.Caret)
+/// Parse [`Caret`](crate::Operator::Caret)
 pub fn parse_level_4(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_5(tokens, pos)?;
   loop {
@@ -236,7 +236,7 @@ pub fn parse_level_4(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
 }
 
 // level 5 precedence: - (as in -5, but not 4-5)
-/// Parse [`Negative`](../enum.Token.html#variant.Negative)
+/// Parse [`Negative`](Token::Negative)
 pub fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   // Here we parse the negative unary operator. If the current token
   // is a minus, we wrap the right_node inside a Negative AstNode.
@@ -263,7 +263,7 @@ pub fn parse_level_5(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
 }
 
 // level 6 precedence: !, percent, units attached to values
-/// Parse [`Factorial`](../enum.UnaryOperator.html#variant.Factorial) and [`Percent`](../enum.UnaryOperator.html#variant.Percent)
+/// Parse [`Factorial`](crate::UnaryOperator::Factorial) and [`Percent`](crate::UnaryOperator::Percent)
 pub fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_7(tokens, pos)?;
   loop {
@@ -295,11 +295,11 @@ pub fn parse_level_6(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize
 }
 
 // level 7 precedence: numbers, standalone units, constants, functions, parens
-/// Parse [`Number`](../enum.Token.html#variant.Number),
-/// [`Unit`](../units/enum.Unit.html),
-/// [`Constant`](../enum.Constant.html),
-/// [`FunctionIdentifier`](../enum.FunctionIdentifier.html),
-/// [`Paren`](../enum.Token.html#variant.Paren)
+/// Parse [`Number`](Token::Number),
+/// [`Unit`](Token::Unit),
+/// [`Constant`](Token::Constant),
+/// [`FunctionIdentifier`](Token::FunctionIdentifier),
+/// [`Paren`](Token::Paren)
 pub fn parse_level_7(tokens: &TokenVector, pos: usize) -> Result<(AstNode, usize), String> {
   let token: &Token = tokens.get(pos).ok_or(format!("Unexpected end of input at {}", pos))?;
   match token {
