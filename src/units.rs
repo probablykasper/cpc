@@ -148,6 +148,7 @@ create_units!(
   MetricTon:          (Mass, d128!(1000000)),
   Ounce:              (Mass, d128!(28.349523125)),
   Pound:              (Mass, d128!(453.59237)),
+  Stone:              (Mass, d128!(6350.29318)),
   ShortTon:           (Mass, d128!(907184.74)),
   LongTon:            (Mass, d128!(1016046.9088)),
 
@@ -769,6 +770,7 @@ mod tests {
     assert_eq!(convert_test(1000.0, Kilogram, MetricTon), 1.0);
     assert_eq!(convert_test(0.45359237, Kilogram, Pound), 1.0);
     assert_eq!(convert_test(16.0, Ounce, Pound), 1.0);
+    assert_eq!(convert_test(14.0, Pound, Stone), 1.0);
     assert_eq!(convert_test(2000.0, Pound, ShortTon), 1.0);
     assert_eq!(convert_test(2240.0, Pound, LongTon), 1.0);
 

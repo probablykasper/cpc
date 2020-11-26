@@ -277,6 +277,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
                 }
               }
             },
+            "stone" | "stones" => tokens.push(Token::Unit(Stone)),
             "st" | "ton" | "tons" | "short ton" | "short tons" | "short tonne" | "short tonnes" => tokens.push(Token::Unit(ShortTon)),
             "lt" | "long ton" | "long tons" | "long tonne" | "long tonnes" => tokens.push(Token::Unit(LongTon)),
 
