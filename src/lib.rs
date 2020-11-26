@@ -23,7 +23,7 @@
 //! ```
 
 use std::time::{Instant};
-use decimal::d128;
+use decimal_fixes_mirror::d128;
 use crate::units::Unit;
 
 /// Units, and functions you can use with them
@@ -43,7 +43,7 @@ mod lookup;
 /// ```rust
 /// use cpc::{eval,Number};
 /// use cpc::units::Unit;
-/// use decimal::d128;
+/// use decimal_fixes_mirror::d128;
 /// 
 /// let x = Number {
 ///   value: d128!(100),

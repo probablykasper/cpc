@@ -8,21 +8,22 @@ checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
 name = "cc"
-version = "1.0.48"
+version = "1.0.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f52a465a666ca3d838ebbf08b241383421412fe7ebb463527bba275526d89f76"
+checksum = "95752358c8f7552394baf48cd82695b345628ad3f170d607de3ca03b8dacca15"
 
 [[package]]
 name = "cpc"
-version = "1.2.0"
+version = "1.1.0"
 dependencies = [
- "decimal",
+ "decimal_fixes_mirror",
 ]
 
 [[package]]
-name = "decimal"
-version = "2.0.4"
-source = "git+https://github.com/probablykasper/decimal-uninit-fix-mirror?branch=uninit-fix#c0b91e05523b77705367f9e769cef335c004086a"
+name = "decimal_fixes_mirror"
+version = "2.0.4-fix1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "878957a52f4ae34351962b97a2bf349ec58cb86c91863e7b50f6f2c9bbd51ffa"
 dependencies = [
  "bitflags",
  "cc",
@@ -34,9 +35,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.66"
+version = "0.2.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d515b1f41455adea1313a4a2ac8a8a477634fbae63cc6100e3aebb207ce61558"
+checksum = "4d58d1b70b004888f764dfbf6a26a3b0342a1632d33968e4a179d8011c760614"
 
 [[package]]
 name = "ord_subset"
@@ -52,6 +53,6 @@ checksum = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda"
 
 [[package]]
 name = "serde"
-version = "1.0.103"
+version = "1.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1217f97ab8e8904b57dd22eb61cde455fa7446a9c1cf43966066da047c1f3702"
+checksum = "b88fa983de7720629c9387e9f517353ed404164b1e482c970a90c1a4aaf7dc1a"

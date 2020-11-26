@@ -1,4 +1,4 @@
-use decimal::d128;
+use decimal_fixes_mirror::d128;
 use crate::Number;
 
 #[derive(Clone, Copy, PartialEq, Debug)]

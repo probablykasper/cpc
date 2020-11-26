@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use decimal::d128;
+use decimal_fixes_mirror::d128;
 use crate::{Token, TokenVector};
 use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::UnaryOperator::{Percent, Factorial};

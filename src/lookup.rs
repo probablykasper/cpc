@@ -1,6 +1,6 @@
 use crate::NamedNumber::*;
 use crate::NamedNumber;
-use decimal::d128;
+use decimal_fixes_mirror::d128;
 
 /// Returns the number of a [`NamedNumber`](decimal/struct.d128.html) [`to`](../enum.NamedNumber.html) as a [`d128`](decimal/struct.d128.html)
 pub fn lookup_named_number(named_number: &NamedNumber) -> d128 {
