@@ -8,13 +8,12 @@
 - Added units of voltage
 - Added units of resistance
 - Added support for `Voltage * ElectricCurrent`
-- Added support for `ElectricCurrent * Resistance`
-- Added support for `Power / ElectricCurrent`
 - Added support for `Voltage / ElectricCurrent`
 - Added support for `Voltage / Resistance`
+- Added support for `Power / ElectricCurrent`
 - Added support for `Power / Voltage`
-- Added support for `ElectricCurrent * Resistance`
 - Added support for `Power * Time`
+- Added support for `ElectricCurrent * Resistance`
 - Added support for `Energy / Time`
 - Fixed dividing a unit by `NoUnit` resulting in `NoUnit`
 - Fixed interpreting of `µs`
