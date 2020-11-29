@@ -202,7 +202,7 @@ The compiled binaries will now be available inside `target/<target>/release/`. T
 2. Bump the version number in `Cargo.toml` and run `cargo check`
 3. Run `cargo test`
 4. Cross-compile cpc by following [the steps above](#cross-compiling)
-5. Commit and tag in format `v0.0.0`
+5. Commit and tag in format `v#.#.#`
 6. Publish on crates.io:
     1. Login by running `cargo login` and following the instructions
     2. Test publish to ensure there are no issues

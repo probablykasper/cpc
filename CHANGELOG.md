@@ -1,3 +1,8 @@
+## 1.3.0 - 2020 Nov 29
+- Added unit of mass `Stone`
+- Added keyword `pounds-force` (used for `PoundsPerSquareInch`)
+- Fixed lexing of `Pound`
+
 ## 1.2.0 - 2020 Nov 26
 - Added units of electric current
 - Added units of voltage
