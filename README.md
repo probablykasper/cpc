@@ -128,6 +128,14 @@ cargo build
 ```
 
 ### Adding a unit
+
+Nice resources for adding units:
+- https://github.com/ryantenney/gnu-units/blob/master/units.dat
+- https://support.google.com/websearch/answer/3284611 (unit list)
+- https://translatorscafe.com/unit-converter (unit conversion)
+- https://calculateme.com/ (unit conversion)
+- https://wikipedia.org/
+
 #### 1. Add the unit
 In `src/units.rs`, units are specified like this:
 ```rs
@@ -170,9 +178,9 @@ match string {
 ### Potential Improvements
 #### General
 - Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
+
 #### Potential unit types
-Nice list of units: https://support.google.com/websearch/answer/3284611
-- Currency: How would you go about dynamically updating the weights?
+- Currency: How to go about dynamically updating the weights?
 - Fuel consumption
 - Data transfer rate
 - Color codes
