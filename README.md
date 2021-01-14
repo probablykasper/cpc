@@ -191,7 +191,7 @@ match string {
 
 ### Cross-compiling
 1. [Install Docker](https://docs.docker.com/get-docker/)
-2. Install `cross`:
+2. Install [cross](https://github.com/rust-embedded/cross):
     ```
     cargo install cross
     ```
@@ -202,6 +202,7 @@ match string {
     - Note that building for `x86_64-apple-darwin` only works on macOS
     - For more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
     - If you run `cross build` in parallel, you might get a `cargo not found` error
+
 The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
 
 ### Releasing a new version

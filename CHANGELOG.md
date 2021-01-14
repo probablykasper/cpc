@@ -1,3 +1,6 @@
+## 1.3.1 - 2021 Jan 14
+- Fix spelling of `Celsius` (@joseluis)
+
 ## 1.3.0 - 2020 Nov 29
 - Added unit of mass `Stone`
 - Added keyword `pounds-force` (used for `PoundsPerSquareInch`)
@@ -28,8 +31,8 @@
 - Fixed error caused by consecutive percentage signs
 
 ## 1.0.2 - 2020 Oct 12
-- Fix parsing of unit `Quarter` (#1)
-- Use division instead of multiplication when dividing numbers of the same unit `Quarter` (#1)
+- Fix parsing of unit `Quarter` (@ethwu)
+- Use division instead of multiplication when dividing numbers of the same unit `Quarter` (@ethwu)
 
 ## 1.0.1 - 2020 Aug 20
 - Fixed the library not working
