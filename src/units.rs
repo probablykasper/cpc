@@ -258,7 +258,7 @@ create_units!(
   Knot:               (Speed, d128!(1.852)),
 
   Kelvin:             (Temperature, d128!(0)),
-  Celcius:            (Temperature, d128!(0)),
+  Celsius:            (Temperature, d128!(0)),
   Fahrenheit:         (Temperature, d128!(0)),
 );
 
@@ -303,14 +303,14 @@ pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
   if number.unit.category() == UnitType::Temperature {
     match (number.unit, to_unit) {
       (Kelvin, Kelvin)         => ok(value),
-      (Kelvin, Celcius)        => ok(value-d128!(273.15)),
+      (Kelvin, Celsius)        => ok(value-d128!(273.15)),
       (Kelvin, Fahrenheit)     => ok(value*d128!(1.8)-d128!(459.67)),
-      (Celcius, Celcius)       => ok(value),
-      (Celcius, Kelvin)        => ok(value+d128!(273.15)),
-      (Celcius, Fahrenheit)    => ok(value*d128!(1.8)+d128!(32)),
+      (Celsius, Celsius)       => ok(value),
+      (Celsius, Kelvin)        => ok(value+d128!(273.15)),
+      (Celsius, Fahrenheit)    => ok(value*d128!(1.8)+d128!(32)),
       (Fahrenheit, Fahrenheit) => ok(value),
       (Fahrenheit, Kelvin)     => ok((value+d128!(459.67))*d128!(5)/d128!(9)),
-      (Fahrenheit, Celcius)    => ok((value-d128!(32))/d128!(1.8)),
+      (Fahrenheit, Celsius)    => ok((value-d128!(32))/d128!(1.8)),
       _ => Err(format!("Error converting temperature {:?} to {:?}", number.unit, to_unit)),
     }
   } else {
@@ -865,11 +865,11 @@ mod tests {
     assert_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
     assert_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
 
-    assert_eq!(convert_test(274.15, Kelvin, Celcius), 1.0);
+    assert_eq!(convert_test(274.15, Kelvin, Celsius), 1.0);
     assert_eq!(convert_test(300.0, Kelvin, Fahrenheit), 80.33);
-    assert_eq!(convert_test(-272.15, Celcius, Kelvin), 1.0);
-    assert_eq!(convert_test(-15.0, Celcius, Fahrenheit), 5.0);
+    assert_eq!(convert_test(-272.15, Celsius, Kelvin), 1.0);
+    assert_eq!(convert_test(-15.0, Celsius, Fahrenheit), 5.0);
     assert_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
-    assert_eq!(convert_test(5.0, Fahrenheit, Celcius), -15.0);
+    assert_eq!(convert_test(5.0, Fahrenheit, Celsius), -15.0);
   }
 }
