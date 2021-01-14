@@ -11,7 +11,7 @@
 //! use cpc::{eval};
 //! use cpc::units::Unit;
 //! 
-//! match eval("3m + 1cm", true, Unit::Celcius, false) {
+//! match eval("3m + 1cm", true, Unit::Celsius, false) {
 //!     Ok(answer) => {
 //!         // answer: Number { value: 301, unit: Unit::Centimeter }
 //!         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
@@ -201,7 +201,7 @@ pub type TokenVector = Vec<Token>;
 /// use cpc::{eval};
 /// use cpc::units::Unit;
 /// 
-/// match eval("3m + 1cm", true, Unit::Celcius, false) {
+/// match eval("3m + 1cm", true, Unit::Celsius, false) {
 ///     Ok(answer) => {
 ///         // answer: Number { value: 301, unit: Unit::Centimeter }
 ///         println!("Evaluated value: {} {:?}", answer.value, answer.unit)

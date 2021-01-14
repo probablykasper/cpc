@@ -385,7 +385,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "kn" | "kt" | "knot" | "knots" => tokens.push(Token::Unit(Knot)),
 
             "k" | "kelvin" | "kelvins" => tokens.push(Token::Unit(Kelvin)),
-            "c" | "celcius" => tokens.push(Token::Unit(Celcius)),
+            "c" | "celsius" => tokens.push(Token::Unit(Celsius)),
             "f" | "fahrenheit" | "fahrenheits" => tokens.push(Token::Unit(Fahrenheit)),
             "deg" | "degree" | "degrees" => tokens.push(Token::Unit(default_degree)),
 

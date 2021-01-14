@@ -10,7 +10,7 @@ fn main() {
     debug = true;
   }
   if args.len() >= 2 {
-    match eval(&args[1], true, Unit::Celcius, debug) {
+    match eval(&args[1], true, Unit::Celsius, debug) {
       Ok(answer) => {
         if !debug {
           println!("{} {:?}", answer.value, answer.unit)
