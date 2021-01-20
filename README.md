@@ -1,11 +1,16 @@
+[documentation]: https://docs.rs/cpc
+
 # cpc
+
 calculation + conversion
 
 cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
 
 cpc lets you mix units, so for example `1 km - 1m` results in `Number { value: 999, unit: Meter }`.
 
-[docs.rs documentation](https://docs.rs/cpc)
+
+[![Crates.io](https://img.shields.io/crates/v/cpc.svg)](https://crates.io/crates/cpc)
+[![Documentation](https://docs.rs/iced/badge.svg)](https://docs.rs/cpc)
 
 [List of all supported units](https://docs.rs/cpc/latest/cpc/units/enum.Unit.html)
 
@@ -223,5 +228,5 @@ The compiled binaries will now be available inside `target/<target>/release/`. T
         cargo publish
         ```
 7. Publish on GitHub
-    1. Zip the binaries and rename them like `cpc-v1.0.0-darwin-x64`
+    1. Zip the binaries and rename them like `cpc-v1.0.0-macos-x64`
     2. Create GitHub release with release notes and attach the zipped binaries
