@@ -10,7 +10,7 @@ cpc lets you mix units, so for example `1 km - 1m` results in `Number { value: 9
 
 
 [![Crates.io](https://img.shields.io/crates/v/cpc.svg)](https://crates.io/crates/cpc)
-[![Documentation](https://docs.rs/iced/badge.svg)](https://docs.rs/cpc)
+[![Documentation](https://docs.rs/cpc/badge.svg)](https://docs.rs/cpc)
 
 [List of all supported units](https://docs.rs/cpc/latest/cpc/units/enum.Unit.html)
 
