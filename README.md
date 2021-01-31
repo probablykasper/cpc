@@ -20,7 +20,7 @@ To install the CLI using `cargo`:
 cargo install cpc
 ```
 
-To install the CLI directly, grab the appropriate binary from [cpc's Releases page on GitHub](https://github.com/probablykasper/cpc/releases), then place it wherever you normally place binaries on your OS (On Windows, you may need to edit your PATH variable or something).
+To install the CLI directly, grab the appropriate binary from [cpc's Releases page on GitHub](https://github.com/probablykasper/cpc/releases), then place it wherever you normally place binaries on your OS.
 
 
 ## CLI Usage
@@ -110,7 +110,7 @@ cpc returns `Result`s with basic strings as errors. Just to be safe, you may wan
 ## Dev Instructions
 
 ### Get started
-Install [Rust](https://www.rust-lang.org). This project was built in Rust 1.45.
+Install [Rust](https://www.rust-lang.org).
 
 Run cpc with a CLI argument as input:
 ```
@@ -213,7 +213,7 @@ The compiled binaries will now be available inside `target/<target>/release/`. T
 ### Releasing a new version
 
 1. Update `CHANGELOG.md`
-2. Bump the version number in `Cargo.toml` and run `cargo check`
+2. Bump the version number in `Cargo.toml`
 3. Run `cargo test`
 4. Cross-compile cpc by following [the steps above](#cross-compiling)
 5. Commit and tag in format `v#.#.#`
