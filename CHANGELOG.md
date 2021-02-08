@@ -1,4 +1,4 @@
-## Next
+## 1.3.2 - 2021 Feb 8
 - Fix incorrect parsing of named numbers `Duodecillion` and greater
 
 ## 1.3.1 - 2021 Jan 14
