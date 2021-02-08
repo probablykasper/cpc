@@ -1,3 +1,6 @@
+## Next
+- Fix incorrect parsing of named numbers `Duodecillion` and greater
+
 ## 1.3.1 - 2021 Jan 14
 - Fix spelling of `Celsius` (@joseluis)
 
