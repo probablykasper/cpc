@@ -6,7 +6,7 @@ calculation + conversion
 
 cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
 
-cpc lets you mix units, so for example `1 km - 1m` results in `Number { value: 999, unit: Meter }`.
+It also lets you mix units, so for example `1 km - 1m` results in `Number { value: 999, unit: Meter }`.
 
 
 [![Crates.io](https://img.shields.io/crates/v/cpc.svg)](https://crates.io/crates/cpc)
@@ -15,32 +15,20 @@ cpc lets you mix units, so for example `1 km - 1m` results in `Number { value: 9
 [List of all supported units](https://docs.rs/cpc/latest/cpc/units/enum.Unit.html)
 
 ## CLI Installation
-To install the CLI using `cargo`:
+Install using `cargo`:
 ```
 cargo install cpc
 ```
 
-To install the CLI directly, grab the appropriate binary from [cpc's Releases page on GitHub](https://github.com/probablykasper/cpc/releases), then place it wherever you normally place binaries on your OS.
-
+To install it manually, grab the appropriate binary from the [GitHub Releases page](https://github.com/probablykasper/cpc/releases) and place it wherever you normally place binaries on your OS.
 
 ## CLI Usage
 ```
-cpc '20c to f'
-```
-
-If you installed the binary somewhere that doesn't make binaries global, you would need to specify the path:
-```sh
-/usr/local/bin/custom/cpc '10+10'
-# OR
-./cpc '1" in cm'
+cpc '2h/3 to min'
 ```
 
 ## API Installation
-To install the library as a Rust dependency, add cpc to your `Cargo.toml` like so:
-```toml
-[dependencies]
-cpc = "1.*"
-```
+Add `cpc` as a dependency in `Cargo.toml`.
 
 ## API Usage
 
@@ -97,10 +85,10 @@ round(sqrt(2)^4)! liters
 - Temperature
 
 ## Accuracy
-cpc Uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
+cpc uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
 
 ## Performance
-It's pretty fast and scales well. In my case, `eval()` usually runs under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.25ms.
+It's pretty fast and scales well. In my case, it usually runs in under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.25ms.
 
 To see how fast it is, you can pass the `--debug` flag in CLI, or the `debug` argument to `eval()`.
 
@@ -138,8 +126,8 @@ Nice resources for adding units:
 - https://github.com/ryantenney/gnu-units/blob/master/units.dat
 - https://support.google.com/websearch/answer/3284611 (unit list)
 - https://translatorscafe.com/unit-converter (unit conversion)
-- https://calculateme.com/ (unit conversion)
-- https://wikipedia.org/
+- https://calculateme.com (unit conversion)
+- https://wikipedia.org
 
 #### 1. Add the unit
 In `src/units.rs`, units are specified like this:
@@ -181,18 +169,16 @@ match string {
 ```
 
 ### Potential Improvements
-#### General
 - Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
-
-#### Potential unit types
-- Currency: How to go about dynamically updating the weights?
-- Fuel consumption
-- Data transfer rate
-- Color codes
-- Force
-- Roman numerals
-- Angles
-- Flow rate
+- Unit types
+    - Currency: How to go about dynamically updating the weights?
+    - Fuel consumption
+    - Data transfer rate
+    - Color codes
+    - Force
+    - Roman numerals
+    - Angles
+    - Flow rate
 
 ### Cross-compiling
 1. [Install Docker](https://docs.docker.com/get-docker/)
