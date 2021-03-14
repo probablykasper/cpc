@@ -22,6 +22,7 @@ pub const fn is_alphabetic_extended(input: &char) -> bool {
 pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
 
   let mut input = input.replace(",", ""); // ignore commas
+  input = input.to_lowercase();
 
   if allow_trailing_operators {
     match &input.chars().last().unwrap_or('x') {
