@@ -16,14 +16,14 @@ checksum = "95752358c8f7552394baf48cd82695b345628ad3f170d607de3ca03b8dacca15"
 name = "cpc"
 version = "1.3.2"
 dependencies = [
- "decimal_fixes_mirror",
+ "decimal",
 ]
 
 [[package]]
-name = "decimal_fixes_mirror"
-version = "2.0.4-fix1.0.0"
+name = "decimal"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "878957a52f4ae34351962b97a2bf349ec58cb86c91863e7b50f6f2c9bbd51ffa"
+checksum = "5a8ab77e91baeb15034c3be91e87bff4665c9036216148e4996d9a9f5792114d"
 dependencies = [
  "bitflags",
  "cc",

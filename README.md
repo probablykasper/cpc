@@ -8,7 +8,6 @@ cpc parses and evaluates strings of math, with support for units and conversion.
 
 It also lets you mix units, so for example `1 km - 1m` results in `Number { value: 999, unit: Meter }`.
 
-
 [![Crates.io](https://img.shields.io/crates/v/cpc.svg)](https://crates.io/crates/cpc)
 [![Documentation](https://docs.rs/cpc/badge.svg)](https://docs.rs/cpc)
 
@@ -171,14 +170,14 @@ match string {
 ### Potential Improvements
 - Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
 - Unit types
-    - Currency: How to go about dynamically updating the weights?
-    - Fuel consumption
-    - Data transfer rate
-    - Color codes
-    - Force
-    - Roman numerals
-    - Angles
-    - Flow rate
+  - Currency: How to go about dynamically updating the weights?
+  - Fuel consumption
+  - Data transfer rate
+  - Color codes
+  - Force
+  - Roman numerals
+  - Angles
+  - Flow rate
 
 ### Cross-compiling
 1. [Install Docker](https://docs.docker.com/get-docker/)

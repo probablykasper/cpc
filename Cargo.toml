@@ -13,5 +13,4 @@ keywords = ["math", "expression", "evaluate", "units", "convert"]
 categories = ["mathematics", "science", "parsing", "text-processing", "value-formatting"]
 
 [dependencies]
-# decimal = "2.0.4"
-decimal_fixes_mirror = "2.0.4-fix1.0.0"
+decimal = "2.1.0"

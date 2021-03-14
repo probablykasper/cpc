@@ -1,6 +1,6 @@
 use crate::NamedNumber::*;
 use crate::NamedNumber;
-use decimal_fixes_mirror::d128;
+use decimal::d128;
 
 /// Returns the corresponding [`d128`] of a [`NamedNumber`]
 pub fn lookup_named_number(named_number: &NamedNumber) -> d128 {
