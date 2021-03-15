@@ -180,6 +180,7 @@ match string {
   - Flow rate
 
 ### Cross-compiling
+For some reason `cross` stopped working for me in Rust 1.50 ([rust-lang/rust#83154](https://github.com/rust-lang/rust/issues/83154)).
 1. [Install Docker](https://docs.docker.com/get-docker/)
 2. Install [cross](https://github.com/rust-embedded/cross):
     ```
@@ -187,9 +188,9 @@ match string {
     ```
 3. Build for x86_64 macOS, Linux and Windows:
     ```sh
-    cross build --release --target x86_64-apple-darwin && cross build --release --target x86_64-unknown-linux-musl && cross build --release --target x86_64-pc-windows-gnu
+    cargo build --release --target x86_64-apple-darwin && cross build --release --target x86_64-unknown-linux-musl && cross build --release --target x86_64-pc-windows-gnu
     ```
-    - Note that building for `x86_64-apple-darwin` only works on macOS
+    - Building for `x86_64-apple-darwin` only works on macOS
     - For more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
     - If you run `cross build` in parallel, you might get a `cargo not found` error
 
