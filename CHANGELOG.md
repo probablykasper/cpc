@@ -1,3 +1,7 @@
+## 1.4.0 - 2021 Feb 8
+- Made cpc case insensitive
+- Switch back to official `decimal` because [decimal#59](https://github.com/alkis/decimal/issues/59) is fixed.
+
 ## 1.3.2 - 2021 Feb 8
 - Fix incorrect parsing of named numbers `Duodecillion` and greater
 
