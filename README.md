@@ -179,22 +179,23 @@ match string {
   - Angles
   - Flow rate
 
-### Cross-compiling
-For some reason `cross` stopped working for me in Rust 1.50 ([rust-lang/rust#83154](https://github.com/rust-lang/rust/issues/83154)).
+### Cross-compiling (from x86_64 macOS)
 1. [Install Docker](https://docs.docker.com/get-docker/)
-2. Install [cross](https://github.com/rust-embedded/cross):
+2. Install [`cross`](https://github.com/rust-embedded/cross). `cross` works by installing toolchains for whatever target you're building for, then using those toolchains to compile in Docker containers
     ```
     cargo install cross
     ```
-3. Build for x86_64 macOS, Linux and Windows:
-    ```sh
-    cargo build --release --target x86_64-apple-darwin && cross build --release --target x86_64-unknown-linux-musl && cross build --release --target x86_64-pc-windows-gnu
+3. Set rustup profile to minimal. This means things like `rustdoc` won't be included in new toolchain installations. You can run `rustup set profile default` to reset this afterwards.
     ```
-    - Building for `x86_64-apple-darwin` only works on macOS
-    - For more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
-    - If you run `cross build` in parallel, you might get a `cargo not found` error
-
-The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
+    rustup set profile minimal
+    ```
+4. Build for x86_64 macOS, Linux and Windows. For more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
+    ```
+    cargo build --release --target x86_64-apple-darwin &&
+    cross build --release --target x86_64-unknown-linux-musl &&
+    cross build --release --target x86_64-pc-windows-gnu
+    ```
+5. The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
 
 ### Releasing a new version
 
