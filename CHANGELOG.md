@@ -1,4 +1,7 @@
 ## 1.4.1 - 2021 Apr 8
+- Fix d128 errors due to d128 error status not being cleared
+
+## 1.4.1 - 2021 Apr 8
 - Fix panic when input is empty string
 
 ## 1.4.0 - 2021 Feb 8
