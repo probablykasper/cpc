@@ -21,6 +21,10 @@ pub const fn is_alphabetic_extended(input: &char) -> bool {
 /// Lex an input string and return a [`TokenVector`]
 pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
 
+  if input == "" {
+    return Err(format!("Input was empty"))
+  }
+
   let mut input = input.replace(",", ""); // ignore commas
   input = input.to_lowercase();
 

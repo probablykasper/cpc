@@ -91,9 +91,6 @@ It's pretty fast and scales well. In my case, it usually runs in under 0.1ms. Th
 
 To see how fast it is, you can pass the `--debug` flag in CLI, or the `debug` argument to `eval()`.
 
-## Errors
-cpc returns `Result`s with basic strings as errors. Just to be safe, you may want to handle panics (You can do that using `std::panic::catch_unwind`).
-
 ## Dev Instructions
 
 ### Get started
