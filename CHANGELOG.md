@@ -1,3 +1,6 @@
+## 1.4.1 - 2021 Apr 8
+- Fix panic when input is empty string
+
 ## 1.4.0 - 2021 Feb 8
 - Made cpc case insensitive
 - Switch back to official `decimal` because [decimal#59](https://github.com/alkis/decimal/issues/59) is fixed.
