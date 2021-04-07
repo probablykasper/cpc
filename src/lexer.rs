@@ -416,6 +416,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
         }
         
         let number_string = &input[start_index..=end_index];
+        d128::set_status(decimal::Status::empty());
         match d128::from_str(number_string) {
           Ok(number) => {
             if d128::get_status().is_empty() {
