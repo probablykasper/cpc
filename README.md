@@ -166,8 +166,14 @@ match string {
 
 ### Potential Improvements
 - Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
+- E notation, like 2E+10
 - Unit types
   - Currency: How to go about dynamically updating the weights?
+    - https://api.exchangerate-api.com/v4/latest/USD
+    - https://www.coingecko.com/en/api
+    - https://developers.coinbase.com/api/v2
+  - Timezones
+  - Binary/octal/decimal/hexadecimal/base32/base64
   - Fuel consumption
   - Data transfer rate
   - Color codes
