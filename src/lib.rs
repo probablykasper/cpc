@@ -28,9 +28,9 @@ use crate::units::Unit;
 
 /// Units, and functions you can use with them
 pub mod units;
-/// Turns a string into a [`TokenVector`]
+/// Turns a string into [`Token`]s
 pub mod lexer;
-/// Turns a [`TokenVector`] into an [`AstNode`](parser::AstNode)
+/// Turns [`Token`]s into an [`AstNode`](parser::AstNode)
 pub mod parser;
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
@@ -123,7 +123,7 @@ pub enum NamedNumber {
 }
 
 #[derive(Clone, Debug)]
-/// A constants like [`Pi`](Constant::Pi) or [`E`](Constant::E).
+/// A constant like [`Pi`](Constant::Pi) or [`E`](Constant::E).
 pub enum Constant {
   Pi,
   E,
@@ -190,9 +190,6 @@ pub enum Token {
   Negative,
   Unit(units::Unit),
 }
-
-/// A vector of [`Token`]
-pub type TokenVector = Vec<Token>;
 
 /// Evaluates a string into a resulting [`Number`].
 /// 

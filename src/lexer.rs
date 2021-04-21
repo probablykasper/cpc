@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use decimal::d128;
-use crate::{Token, TokenVector};
+use crate::Token;
 use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
@@ -18,10 +18,11 @@ pub const fn is_alphabetic_extended(input: &char) -> bool {
   }
 }
 
-/// Lex an input string and return a [`TokenVector`]
-pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
+/// Lex an input string and returns [`Token`]s
+pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
 
   let mut input = input.replace(",", ""); // ignore commas
+
   input = input.to_lowercase();
 
   if allow_trailing_operators {
@@ -34,7 +35,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
   }
 
   let mut chars = input.chars().peekable();
-  let mut tokens: TokenVector = vec![];
+  let mut tokens: Vec<Token> = vec![];
   let max_word_length = 30;
 
   let mut left_paren_count = 0;
