@@ -21,10 +21,6 @@ pub const fn is_alphabetic_extended(input: &char) -> bool {
 /// Lex an input string and return a [`TokenVector`]
 pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<TokenVector, String> {
 
-  if input == "" {
-    return Err(format!("Input was empty"))
-  }
-
   let mut input = input.replace(",", ""); // ignore commas
   input = input.to_lowercase();
 
@@ -399,8 +395,6 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             }
           }
         }
-
-        
       },
       '.' | '0'..='9' => {
         let start_index = byte_index;
@@ -453,6 +447,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
     for _ in 0..missing_left_parens {
       tokens.insert(0, Token::Operator(LeftParen));
     }
+  }
+
+  if tokens.len() == 0 {
+    return Err(format!("Input was empty"))
   }
 
   let mut token_index = 0;
