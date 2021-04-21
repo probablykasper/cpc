@@ -89,7 +89,7 @@ cpc uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded D
 ## Performance
 It's pretty fast and scales well. In my case, it usually runs in under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.25ms.
 
-To see how fast it is, you can pass the `--debug` flag in CLI, or the `debug` argument to `eval()`.
+To see how fast it is, you can pass the `--verbose` flag in CLI, or the `verbose` argument to `eval()`.
 
 ## Dev Instructions
 
@@ -101,9 +101,9 @@ Run cpc with a CLI argument as input:
 cargo run -- '100ms to s'
 ```
 
-Run with debugging, which shows some extra logs:
+Run in verbose mode, which shows some extra logs:
 ```
-cargo run -- '100ms to s' --debug
+cargo run -- '100ms to s' --verbose
 ```
 
 Run tests:

@@ -5,14 +5,14 @@ use cpc::units::Unit;
 fn main() {
   use std::env;
   let args: Vec<String> = env::args().collect();
-  let mut debug = false;
-  if args.iter().any(|i| i=="--debug") {
-    debug = true;
+  let mut verbose = false;
+  if args.iter().any(|i| i == "-v" || i == "--verbose") {
+    verbose = true;
   }
   if args.len() >= 2 {
-    match eval(&args[1], true, Unit::Celsius, debug) {
+    match eval(&args[1], true, Unit::Celsius, verbose) {
       Ok(answer) => {
-        if !debug {
+        if !verbose {
           println!("{} {:?}", answer.value, answer.unit)
         }
       },
