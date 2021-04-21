@@ -1,3 +1,9 @@
+## 1.5.0 - 2021 Apr 21
+- Remove `TokenVector` type
+- Rename `--debug` to `--verbose` and `-v`
+- Allow CLI flags before input
+- Fix panic when input contains only whitespace and/or commas
+
 ## 1.4.2 - 2021 Apr 8
 - Fix d128 errors due to d128 error status not being cleared
 
