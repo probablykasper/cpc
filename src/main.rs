@@ -14,7 +14,7 @@ fn main() {
     match eval(&args[1], true, Unit::Celsius, verbose) {
       Ok(answer) => {
         if !verbose {
-          println!("{} {:?}", answer.value, answer.unit)
+          println!("{}", answer);
         }
       },
       Err(e) => {

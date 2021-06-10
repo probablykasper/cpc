@@ -22,6 +22,7 @@
 //! }
 //! ```
 
+use std::fmt::{self, Display};
 use std::time::{Instant};
 use decimal::d128;
 use crate::units::Unit;
@@ -63,6 +64,17 @@ impl Number {
       value: value,
       unit: unit,
     }
+  }
+}
+impl Display for Number {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    // 0.2/0.01 results in 2E+1, but if we add zero it becomes 20
+    let fixed_value = self.value + d128!(0);
+    let output = match self.unit {
+      Unit::NoUnit => format!("{}", fixed_value),
+      unit => format!("{} {:?}", fixed_value, unit),
+    };
+    return write!(f, "{}", output);
   }
 }
 

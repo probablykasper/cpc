@@ -164,6 +164,9 @@ match string {
 
 ### Potential Improvements
 - Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
+- Move to pure-rust decimal implementation
+  - `rust_decimal`: Only supports numbers up to ~1E+29
+  - `bigdecimal`: Lacking math functions
 - E notation, like 2E+10
 - Unit types
   - Currency: How to go about dynamically updating the weights?
