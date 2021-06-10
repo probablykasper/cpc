@@ -1,3 +1,6 @@
+## 1.5.1 - 2021 Jun 10
+- Fix numbers unnecessarily displayed in E notation
+
 ## 1.5.0 - 2021 Apr 21
 - Remove `TokenVector` type
 - Rename `--debug` to `--verbose` and `-v`
