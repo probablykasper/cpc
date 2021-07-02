@@ -18,7 +18,7 @@ fn main() {
         }
       },
       Err(e) => {
-        println!("{}", e)
+        eprintln!("{}", e)
       },
     }
   } else {
