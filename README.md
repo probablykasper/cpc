@@ -22,6 +22,7 @@ cargo install cpc
 To install it manually, grab the appropriate binary from the [GitHub Releases page](https://github.com/probablykasper/cpc/releases) and place it wherever you normally place binaries on your OS.
 
 ## CLI Usage
+The entire query must be passed as a single quoted string:
 ```
 cpc '2h/3 to min'
 ```
