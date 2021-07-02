@@ -22,6 +22,6 @@ fn main() {
       },
     }
   } else {
-    println!("No argument supplied");
+    eprintln!("No argument supplied");
   }
 }
