@@ -1,3 +1,8 @@
+## Next
+- Freak out instead of ignoring unexpected arguments
+- Add support for non-US "metre" and "litre" spellings
+- Fix decimeter parsed as centimeter
+
 ## 1.5.1 - 2021 Jun 10
 - Fix numbers unnecessarily displayed in E notation
 

@@ -1,27 +1,44 @@
 use cpc::eval;
 use cpc::units::Unit;
+use std::process::exit;
 
-/// cpc CLI interface
+/// CLI interface
 fn main() {
   use std::env;
-  let mut args: Vec<String> = env::args().collect();
+  let mut args = env::args().into_iter();
+  args.next();
   let mut verbose = false;
-  if let Some(pos) = args.iter().position(|x| x == "-v" || x == "--verbose") {
-    verbose = true;
-    args.remove(pos);
-  }
-  if args.len() >= 2 {
-    match eval(&args[1], true, Unit::Celsius, verbose) {
-      Ok(answer) => {
-        if !verbose {
-          println!("{}", answer);
+  let mut expression_opt = None;
+  for arg in args {
+    match arg.as_str() {
+      "-v" | "--verbose" => verbose = true,
+      _ => {
+        if expression_opt == None {
+          expression_opt = Some(arg);
+        } else {
+          eprintln!("Unexpected argument: {}", arg);
+          exit(1);
         }
-      },
-      Err(e) => {
-        println!("{}", e)
-      },
+      }
     }
-  } else {
-    eprintln!("No argument supplied");
+  }
+  match expression_opt {
+    Some(expression) => {
+      match eval(&expression, true, Unit::Celsius, verbose) {
+        Ok(answer) => {
+          if !verbose {
+            println!("{}", answer);
+          }
+        },
+        Err(e) => {
+          eprintln!("{}", e);
+          exit(1);
+        },
+      }
+    }
+    None => {
+      eprintln!("No argument supplied");
+      exit(1);
+    }
   }
 }
