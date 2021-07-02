@@ -111,20 +111,20 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
         if is_multidimensional {
           let string_plus_one_character = &input[start_index..=end_index+1];
           match string_plus_one_character {
-            "mm2" | "millimeter2" | "millimeters2" => tokens.push(Token::Unit(SquareMillimeter)),
-            "cm2" | "centimeter2" | "centimeters2" => tokens.push(Token::Unit(SquareCentimeter)),
-            "dm2" | "decimeter2" | "decimeters2" => tokens.push(Token::Unit(SquareCentimeter)),
-            "m2" | "meter2" | "meters2" => tokens.push(Token::Unit(SquareMeter)),
-            "km2" | "kilometer2" | "kilometers2" => tokens.push(Token::Unit(SquareKilometer)),
+            "mm2" | "millimeter2" | "millimeters2" | "millimetre2" | "millimetres2" => tokens.push(Token::Unit(SquareMillimeter)),
+            "cm2" | "centimeter2" | "centimeters2" | "centimetre2" | "centimetres2" => tokens.push(Token::Unit(SquareCentimeter)),
+            "dm2" | "decimeter2" | "decimeters2" | "decimetre2" | "decimetres2" => tokens.push(Token::Unit(SquareDecimeter)),
+            "m2" | "meter2" | "meters2" | "metre2" | "metres2" => tokens.push(Token::Unit(SquareMeter)),
+            "km2" | "kilometer2" | "kilometers2" | "kilometre2" | "kilometres2" => tokens.push(Token::Unit(SquareKilometer)),
             "in2" | "inch2" | "inches2" => tokens.push(Token::Unit(SquareInch)),
             "ft2" | "foot2" | "feet2" => tokens.push(Token::Unit(SquareFoot)),
             "yd2" | "yard2" | "yards2" => tokens.push(Token::Unit(SquareYard)),
             "mi2" | "mile2" | "miles2" => tokens.push(Token::Unit(SquareMile)),
-            "mm3" | "millimeter3" | "millimeters3" => tokens.push(Token::Unit(CubicMillimeter)),
-            "cm3" | "centimeter3" | "centimeters3" => tokens.push(Token::Unit(CubicCentimeter)),
-            "dm3" | "decimeter3" | "decimeters3" => tokens.push(Token::Unit(CubicCentimeter)),
-            "m3" | "meter3" | "meters3" => tokens.push(Token::Unit(CubicMeter)),
-            "km3" | "kilometer3" | "kilometers3" => tokens.push(Token::Unit(CubicKilometer)),
+            "mm3" | "millimeter3" | "millimeters3" | "millimetre3" | "millimetres3" => tokens.push(Token::Unit(CubicMillimeter)),
+            "cm3" | "centimeter3" | "centimeters3" | "centimetre3" | "centimetres3" => tokens.push(Token::Unit(CubicCentimeter)),
+            "dm3" | "decimeter3" | "decimeters3" | "decimetre3" | "decimetres3" => tokens.push(Token::Unit(CubicDecimeter)),
+            "m3" | "meter3" | "meters3" | "metre3" | "metres3" => tokens.push(Token::Unit(CubicMeter)),
+            "km3" | "kilometer3" | "kilometers3" | "kilometre3" | "kilometres3" => tokens.push(Token::Unit(CubicKilometer)),
             "inc3" | "inch3" | "inches3" => tokens.push(Token::Unit(CubicInch)),
             "ft3" | "foot3" | "feet3" => tokens.push(Token::Unit(CubicFoot)),
             "yd3" | "yard3" | "yards3" => tokens.push(Token::Unit(CubicYard)),
@@ -135,7 +135,6 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
           let string = &input[start_index..=end_index];
           let string: &str = &string.replacen("square", "sq", 1);
           match string {
-            
             // MAKE SURE max_word_length IS EQUAL TO THE
             // LENGTH OF THE LONGEST STRING IN THIS MATCH STATEMENT.
 
@@ -207,11 +206,11 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "century" | "centuries" => tokens.push(Token::Unit(Century)),
             "millenium" | "millenia" | "milleniums" => tokens.push(Token::Unit(Millenium)),
 
-            "mm" | "millimeter" | "millimeters" => tokens.push(Token::Unit(Millimeter)),
-            "cm" | "centimeter" | "centimeters" => tokens.push(Token::Unit(Centimeter)),
-            "dm" | "decimeter" | "decimeters" => tokens.push(Token::Unit(Centimeter)),
-            "m" | "meter" | "meters" => tokens.push(Token::Unit(Meter)),
-            "km" | "kilometer" | "kilometers" => tokens.push(Token::Unit(Kilometer)),
+            "mm" | "millimeter" | "millimeters" | "millimetre" | "millimetres" => tokens.push(Token::Unit(Millimeter)),
+            "cm" | "centimeter" | "centimeters" | "centimetre" | "centimetres" => tokens.push(Token::Unit(Centimeter)),
+            "dm" | "decimeter" | "decimeters" | "decimetre" | "decimetres" => tokens.push(Token::Unit(Decimeter)),
+            "m" | "meter" | "meters" | "metre" | "metres" => tokens.push(Token::Unit(Meter)),
+            "km" | "kilometer" | "kilometers" | "kilometre" | "kilometres" => tokens.push(Token::Unit(Kilometer)),
             "in" => tokens.push(Token::LexerKeyword(In)),
             "inch" | "inches" => tokens.push(Token::Unit(Inch)),
             "ft" | "foot" | "feet" => tokens.push(Token::Unit(Foot)),
@@ -221,11 +220,11 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "ly" | "lightyear" | "lightyears" | "light yr" | "light yrs" | "light year" | "light years" => tokens.push(Token::Unit(LightYear)),
             "lightsec" | "lightsecs" | "lightsecond" | "lightseconds" | "light sec" | "light secs" | "light second" | "light seconds" => tokens.push(Token::Unit(LightYear)),
 
-            "sqmm" | "sq mm" | "sq millimeter" | "sq millimeters" => tokens.push(Token::Unit(SquareMillimeter)),
-            "sqcm" | "sq cm" | "sq centimeter" | "sq centimeters" => tokens.push(Token::Unit(SquareCentimeter)),
-            "sqdm" | "sq dm" | "sq decimeter" | "sq decimeters" => tokens.push(Token::Unit(SquareDecimeter)),
-            "sqm" | "sq m" | "sq meter" | "sq meters" => tokens.push(Token::Unit(SquareMeter)),
-            "sqkm" | "sq km" | "sq kilometer" | "sq kilometers" => tokens.push(Token::Unit(SquareKilometer)),
+            "sqmm" | "sq mm" | "sq millimeter" | "sq millimeters" | "sq millimetre" | "sq millimetres" => tokens.push(Token::Unit(SquareMillimeter)),
+            "sqcm" | "sq cm" | "sq centimeter" | "sq centimeters" | "sq centimetre" | "sq centimetres" => tokens.push(Token::Unit(SquareCentimeter)),
+            "sqdm" | "sq dm" | "sq decimeter" | "sq decimeters" | "sq decimetre" | "sq decimetres" => tokens.push(Token::Unit(SquareDecimeter)),
+            "sqm" | "sq m" | "sq meter" | "sq meters" | "sq metre" | "sq metres" => tokens.push(Token::Unit(SquareMeter)),
+            "sqkm" | "sq km" | "sq kilometer" | "sq kilometers" | "sq kilometre" | "sq kilometres" => tokens.push(Token::Unit(SquareKilometer)),
             "sqin" | "sq in" | "sq inch" | "sq inches" => tokens.push(Token::Unit(SquareInch)),
             "sqft" | "sq ft" | "sq foot" | "sq feet" => tokens.push(Token::Unit(SquareFoot)),
             "sqyd" | "sq yd" | "sq yard" | "sq yards" => tokens.push(Token::Unit(SquareYard)),
@@ -234,20 +233,20 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "decare" | "decares" => tokens.push(Token::Unit(Decare)),
             "ha" | "hectare" | "hectares" => tokens.push(Token::Unit(Hectare)),
             "acre" | "acres" => tokens.push(Token::Unit(Acre)),
-          
-            "cubic millimeter" | "cubic millimeters" => tokens.push(Token::Unit(CubicMillimeter)),
-            "cubic centimeter" | "cubic centimeters" => tokens.push(Token::Unit(CubicCentimeter)),
-            "cubic decimeter" | "cubic decimeters" => tokens.push(Token::Unit(CubicDecimeter)),
-            "cubic meter" | "cubic meters" => tokens.push(Token::Unit(CubicMeter)),
-            "cubic kilometer" | "cubic kilometers" => tokens.push(Token::Unit(CubicKilometer)),
+
+            "cubic millimeter" | "cubic millimeters" | "cubic millimetre" | "cubic millimetres" => tokens.push(Token::Unit(CubicMillimeter)),
+            "cubic centimeter" | "cubic centimeters" | "cubic centimetre" | "cubic centimetres" => tokens.push(Token::Unit(CubicCentimeter)),
+            "cubic decimeter" | "cubic decimeters" | "cubic decimetre" | "cubic decimetres" => tokens.push(Token::Unit(CubicDecimeter)),
+            "cubic meter" | "cubic meters" | "cubic metre" | "cubic metres" => tokens.push(Token::Unit(CubicMeter)),
+            "cubic kilometer" | "cubic kilometers" | "cubic kilometre" | "cubic kilometres" => tokens.push(Token::Unit(CubicKilometer)),
             "cubic inch" | "cubic inches" => tokens.push(Token::Unit(CubicInch)),
             "cubic foot" | "cubic feet" => tokens.push(Token::Unit(CubicFoot)),
             "cubic yard" | "cubic yards" => tokens.push(Token::Unit(CubicYard)),
             "cubic mile" | "cubic miles" => tokens.push(Token::Unit(CubicMile)),
-            "ml" | "milliliter" | "milliliters" => tokens.push(Token::Unit(Milliliter)),
-            "cl" | "centiliter" | "centiliters" => tokens.push(Token::Unit(Centiliter)),
-            "dl" | "deciliter" | "deciliters" => tokens.push(Token::Unit(Deciliter)),
-            "l" | "liter" | "liters" => tokens.push(Token::Unit(Liter)),
+            "ml" | "milliliter" | "milliliters" | "millilitre" | "millilitres" => tokens.push(Token::Unit(Milliliter)),
+            "cl" | "centiliter" | "centiliters" | "centilitre" | "centilitres" => tokens.push(Token::Unit(Centiliter)),
+            "dl" | "deciliter" | "deciliters" | "decilitre" | "decilitres" => tokens.push(Token::Unit(Deciliter)),
+            "l" | "liter" | "liters" | "litre" | "litres" => tokens.push(Token::Unit(Liter)),
             "ts" | "tsp" | "tspn" | "tspns" | "teaspoon" | "teaspoons" => tokens.push(Token::Unit(Teaspoon)),
             "tbs" | "tbsp" | "tablespoon" | "tablespoons" => tokens.push(Token::Unit(Tablespoon)),
             "floz" | "fl oz" | "fl ounce" | "fl ounces" | "fluid oz" | "fluid ounce" | "fluid ounces" => tokens.push(Token::Unit(FluidOunce)),
@@ -256,7 +255,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             "qt" | "quart" | "quarts" => tokens.push(Token::Unit(Quart)),
             "gal" | "gallon" | "gallons" => tokens.push(Token::Unit(Gallon)),
             "bbl" | "oil barrel" | "oil barrels" => tokens.push(Token::Unit(OilBarrel)),
-          
+
             "mg" | "milligram" | "milligrams" => tokens.push(Token::Unit(Milligram)),
             "g" | "gram" | "grams" => tokens.push(Token::Unit(Gram)),
             "hectogram" | "hectograms" => tokens.push(Token::Unit(Hectogram)),
@@ -320,7 +319,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
 
             "millijoule" | "millijoules" => tokens.push(Token::Unit(Millijoule)),
             "j"| "joule" | "joules" => tokens.push(Token::Unit(Joule)),
-            "nm" | "newton meter" | "newton meters" | "newton-meter" | "newton-meters" => tokens.push(Token::Unit(NewtonMeter)),
+            "nm" | "newton meter" | "newton meters" | "newton-meter" | "newton-meters" | "newton metre" | "newton metres" | "newton-metre" | "newton-metres" => tokens.push(Token::Unit(NewtonMeter)),
             "kj" | "kilojoule" | "kilojoules" => tokens.push(Token::Unit(Kilojoule)),
             "mj" | "megajoule" | "megajoules" => tokens.push(Token::Unit(Megajoule)),
             "gj" | "gigajoule" | "gigajoules" => tokens.push(Token::Unit(Gigajoule)),
@@ -361,7 +360,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
             // for pound-force per square inch
             "lbf" => tokens.push(Token::LexerKeyword(PoundForce)),
             "force" => tokens.push(Token::LexerKeyword(Force)),
-            
+
             "pa" | "pascal" | "pascals" => tokens.push(Token::Unit(Pascal)),
             "kpa" | "kilopascal" | "kilopascals" => tokens.push(Token::Unit(Kilopascal)),
             "atm" | "atms" | "atmosphere" | "atmospheres" => tokens.push(Token::Unit(Atmosphere)),
