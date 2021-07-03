@@ -589,3 +589,29 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
 
   Ok(tokens)
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::numtok;
+
+  #[test]
+  fn test_lex() {
+    pub fn run_lex(input: &str, expected_tokens: Vec<Token>) {
+      let tokens = lex(input, false, Unit::Celsius).unwrap();
+      let matching_tokens = tokens.iter().zip(&expected_tokens).filter(|&(a, b)| a == b);
+      assert_eq!(matching_tokens.count(), expected_tokens.len());
+    }
+
+    run_lex("42 millilitres", vec![numtok!(42), Token::Unit(Milliliter)]);
+    run_lex("50 / 10", vec![numtok!(50), Token::Operator(Divide), numtok!(10)]);
+    run_lex("33.3 square meters", vec![numtok!(33.3), Token::Unit(SquareMeter)]);
+    run_lex("101 nautical miles", vec![numtok!(101), Token::Unit(NauticalMile)]);
+    run_lex("87 sq miles", vec![numtok!(87), Token::Unit(SquareMile)]);
+    run_lex("1 light year", vec![numtok!(1), Token::Unit(LightYear)]);
+    run_lex("34 cubic feet + 23 cubic yards", vec![numtok!(34), Token::Unit(CubicFoot), Token::Operator(Plus), numtok!(23), Token::Unit(CubicYard)]);
+    run_lex("50 metric tonnes", vec![numtok!(50), Token::Unit(MetricTon)]);
+    run_lex("5432 newton metres", vec![numtok!(5432), Token::Unit(NewtonMeter)]);
+    run_lex("2345 newton-meters", vec![numtok!(2345), Token::Unit(NewtonMeter)]);
+  }
+}
