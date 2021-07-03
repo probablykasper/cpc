@@ -219,5 +219,5 @@ match string {
         cargo publish
         ```
 7. Publish on GitHub
-    1. Zip the binaries and rename them like `cpc-v1.0.0-macos-x64`
+    1. Zip the binaries and rename them like `cpc-v#.#.#-macos-x64`
     2. Create GitHub release with release notes and attach the zipped binaries
