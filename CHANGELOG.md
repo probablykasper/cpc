@@ -1,5 +1,6 @@
 ## Next
 - Add support for non-US "metre" and "litre" spellings
+- Add help menu
 - Add `--version` flag
 - Freak out instead of ignoring unexpected arguments
 - Fix decimeter parsed as centimeter
