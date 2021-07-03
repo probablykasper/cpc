@@ -1,8 +1,9 @@
-## Next
+## 1.6.0 - 2021 Jul 3
 - Add support for non-US "metre" and "litre" spellings
 - Add help menu
 - Add `--version` flag
 - Freak out instead of ignoring unexpected arguments
+- Print errors to STDERR
 - Fix decimeter parsed as centimeter
 
 ## 1.5.1 - 2021 Jun 10
