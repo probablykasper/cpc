@@ -78,7 +78,7 @@ impl Display for Number {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// Math operators like [`Multiply`](Operator::Multiply), parentheses, etc.
 pub enum Operator {
   Plus,
@@ -91,21 +91,21 @@ pub enum Operator {
   RightParen, // lexer only
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// Unary operators like [`Percent`](UnaryOperator::Percent) and [`Factorial`](UnaryOperator::Factorial).
 pub enum UnaryOperator {
   Percent,
   Factorial,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// A Text operator like [`To`](TextOperator::To) or [`Of`](TextOperator::Of).
 pub enum TextOperator {
   To,
   Of,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// A named number like [`Million`](NamedNumber::Million).
 pub enum NamedNumber {
   Hundred,
@@ -134,14 +134,14 @@ pub enum NamedNumber {
   Googol,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// A constant like [`Pi`](Constant::Pi) or [`E`](Constant::E).
 pub enum Constant {
   Pi,
   E,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// Functions identifiers like [`Sqrt`](FunctionIdentifier::Sqrt), [`Sin`](FunctionIdentifier::Sin), [`Round`](FunctionIdentifier::Round), etc.
 pub enum FunctionIdentifier {
   Sqrt,
@@ -161,7 +161,7 @@ pub enum FunctionIdentifier {
   Tan,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// A temporary enum used by the [`lexer`] to later determine what [`Token`] it is.
 /// 
 /// For example, when a symbol like `%` is found, the lexer turns it into a
@@ -180,7 +180,7 @@ pub enum LexerKeyword {
   Force,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// A token like a [`Number`](Token::Number), [`Operator`](Token::Operator), [`Unit`](Token::Unit) etc.
 /// 
 /// Strings can be divided up into these tokens by the [`lexer`], and then put into the [`parser`].
@@ -201,6 +201,13 @@ pub enum Token {
   /// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
   Negative,
   Unit(units::Unit),
+}
+
+#[macro_export]
+macro_rules! numtok {
+  ( $num:literal ) => {
+    Token::Number(d128!($num));
+  }
 }
 
 /// Evaluates a string into a resulting [`Number`].
