@@ -1,6 +1,7 @@
 ## Next
-- Freak out instead of ignoring unexpected arguments
 - Add support for non-US "metre" and "litre" spellings
+- Add `--version` flag
+- Freak out instead of ignoring unexpected arguments
 - Fix decimeter parsed as centimeter
 
 ## 1.5.1 - 2021 Jun 10

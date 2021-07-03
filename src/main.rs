@@ -2,6 +2,8 @@ use cpc::eval;
 use cpc::units::Unit;
 use std::process::exit;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 /// CLI interface
 fn main() {
   use std::env;
@@ -12,6 +14,10 @@ fn main() {
   for arg in args {
     match arg.as_str() {
       "-v" | "--verbose" => verbose = true,
+      "--version" => {
+        println!("{}", VERSION);
+        exit(0);
+      },
       _ => {
         if expression_opt == None {
           expression_opt = Some(arg);
