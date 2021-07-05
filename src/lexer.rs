@@ -1097,5 +1097,8 @@ mod tests {
     run_lex("6 / 3", vec![numtok!(6), Token::Operator(Divide), numtok!(3)]);
     run_lex("6 divided by 3", vec![numtok!(6), Token::Operator(Divide), numtok!(3)]);
     run_lex("7 mod 5", vec![numtok!(7), Token::Operator(Modulo), numtok!(5)]);
+
+    run_lex("(2 + 3) * 4", vec![Token::Operator(LeftParen), numtok!(2), Token::Operator(Plus), numtok!(3), Token::Operator(RightParen), Token::Operator(Multiply), numtok!(4)]);
+    run_lex("52 weeks * (12 hrs + 12 hours)", vec![numtok!(52), Token::Unit(Week), Token::Operator(Multiply), Token::Operator(LeftParen), numtok!(12), Token::Unit(Hour), Token::Operator(Plus), numtok!(12), Token::Unit(Hour), Token::Operator(RightParen)]);
   }
 }
