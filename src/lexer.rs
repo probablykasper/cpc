@@ -587,7 +587,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
                   grapheme_counter = new_grapheme_counter;
                   tokens.push(Token::Unit(WattHour));
                 },
-                _ => tokens.push(Token::Unit(Watt)),
+                _ => {
+                  grapheme_counter -= 1;
+                  tokens.push(Token::Unit(Watt));
+                },
               }
             }
           },
@@ -610,7 +613,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
                   grapheme_counter = new_grapheme_counter;
                   tokens.push(Token::Unit(KilowattHour));
                 },
-                _ => tokens.push(Token::Unit(Kilowatt)),
+                _ => {
+                  grapheme_counter -= 1;
+                  tokens.push(Token::Unit(Kilowatt));
+                },
               }
             }
           },
@@ -633,7 +639,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
                   grapheme_counter = new_grapheme_counter;
                   tokens.push(Token::Unit(MegawattHour));
                 },
-                _ => tokens.push(Token::Unit(Megawatt)),
+                _ => {
+                  grapheme_counter -= 1;
+                  tokens.push(Token::Unit(Megawatt));
+                },
               }
             }
           },
@@ -656,7 +665,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
                   grapheme_counter = new_grapheme_counter;
                   tokens.push(Token::Unit(GigawattHour));
                 },
-                _ => tokens.push(Token::Unit(Gigawatt)),
+                _ => {
+                  grapheme_counter -= 1;
+                  tokens.push(Token::Unit(Gigawatt));
+                },
               }
             }
           },
@@ -679,7 +691,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
                   grapheme_counter = new_grapheme_counter;
                   tokens.push(Token::Unit(TerawattHour));
                 },
-                _ => tokens.push(Token::Unit(Terawatt)),
+                _ => {
+                  grapheme_counter -= 1;
+                  tokens.push(Token::Unit(Terawatt));
+                },
               }
             }
           },
@@ -702,7 +717,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
                   grapheme_counter = new_grapheme_counter;
                   tokens.push(Token::Unit(PetawattHour));
                 },
-                _ => tokens.push(Token::Unit(Petawatt)),
+                _ => {
+                  grapheme_counter -= 1;
+                  tokens.push(Token::Unit(Petawatt));
+                },
               }
             }
           },
@@ -1046,25 +1064,82 @@ mod tests {
     run_lex("4 lt", vec![numtok!(4), Token::Unit(LongTon)]);
     run_lex("4 long tonnes", vec![numtok!(4), Token::Unit(LongTon)]);
     run_lex("234 wh", vec![numtok!(234), Token::Unit(WattHour)]);
+    run_lex("1 w", vec![numtok!(1), Token::Unit(Watt)]);
     run_lex("1 watt", vec![numtok!(1), Token::Unit(Watt)]);
+    run_lex("1 watts", vec![numtok!(1), Token::Unit(Watt)]);
     run_lex("1 watt hour", vec![numtok!(1), Token::Unit(WattHour)]);
+    run_lex("0 watt + 1 watts", vec![numtok!(0), Token::Unit(Watt), Token::Operator(Plus), numtok!(1), Token::Unit(Watt)]);
+    run_lex("0 watt * 1", vec![numtok!(0), Token::Unit(Watt), Token::Operator(Multiply), numtok!(1)]);
     run_lex("2 watts + 3 watts", vec![numtok!(2), Token::Unit(Watt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 watts * 3", vec![numtok!(2), Token::Unit(Watt), Token::Operator(Multiply), numtok!(3)]);
+    run_lex("4 watt plus 5 watts", vec![numtok!(4), Token::Unit(Watt), Token::Operator(Plus), numtok!(5), Token::Unit(Watt)]);
+    run_lex("4 watt times 5", vec![numtok!(4), Token::Unit(Watt), Token::Operator(Multiply), numtok!(5)]);
+    run_lex("6 watts plus 7 watts", vec![numtok!(6), Token::Unit(Watt), Token::Operator(Plus), numtok!(7), Token::Unit(Watt)]);
+    run_lex("6 watts times 7", vec![numtok!(6), Token::Unit(Watt), Token::Operator(Multiply), numtok!(7)]);
     run_lex("2.3 kwh", vec![numtok!(2.3), Token::Unit(KilowattHour)]);
+    run_lex("1 kw", vec![numtok!(1), Token::Unit(Kilowatt)]);
     run_lex("1 kilowatt", vec![numtok!(1), Token::Unit(Kilowatt)]);
+    run_lex("1 kilowatts", vec![numtok!(1), Token::Unit(Kilowatt)]);
     run_lex("1 kilowatt hour", vec![numtok!(1), Token::Unit(KilowattHour)]);
+    run_lex("2 kilowatt + 3 watt", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 kilowatt * 4", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Multiply), numtok!(4)]);
+    run_lex("2 kilowatt times 4", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Multiply), numtok!(4)]);
+    run_lex("2 kilowatt + 3 watts", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 kilowatts + 3 watt", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
     run_lex("2 kilowatts + 3 watts", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 kilowatt plus 3 watt", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 kilowatt plus 3 watts", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 kilowatts plus 3 watt", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 kilowatts plus 3 watts", vec![numtok!(2), Token::Unit(Kilowatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
     run_lex("6.6 watts + 4 kilowatts", vec![numtok!(6.6), Token::Unit(Watt), Token::Operator(Plus), numtok!(4), Token::Unit(Kilowatt)]);
+    run_lex("6.6 watts plus 4 kilowatts", vec![numtok!(6.6), Token::Unit(Watt), Token::Operator(Plus), numtok!(4), Token::Unit(Kilowatt)]);
     run_lex("2.3 mwh", vec![numtok!(2.3), Token::Unit(MegawattHour)]);
+    run_lex("1 mw", vec![numtok!(1), Token::Unit(Megawatt)]);
     run_lex("1 megawatt", vec![numtok!(1), Token::Unit(Megawatt)]);
     run_lex("1 megawatt hour", vec![numtok!(1), Token::Unit(MegawattHour)]);
+    run_lex("2 megawatt + 3 watt", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 megawatt * 6", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Multiply), numtok!(6)]);
+    run_lex("2 megawatt times 6", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Multiply), numtok!(6)]);
+    run_lex("2 megawatt + 3 watts", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 megawatts + 3 watt", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
     run_lex("2 megawatts + 3 watts", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 megawatt plus 3 watt", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 megawatt plus 3 watts", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 megawatts plus 3 watt", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
+    run_lex("2 megawatts plus 3 watts", vec![numtok!(2), Token::Unit(Megawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Watt)]);
     run_lex("6.6 watts + 4 megawatts", vec![numtok!(6.6), Token::Unit(Watt), Token::Operator(Plus), numtok!(4), Token::Unit(Megawatt)]);
+    run_lex("6.6 watts plus 4 megawatts", vec![numtok!(6.6), Token::Unit(Watt), Token::Operator(Plus), numtok!(4), Token::Unit(Megawatt)]);
+    run_lex("234 gwh", vec![numtok!(234), Token::Unit(GigawattHour)]);
+    run_lex("1 gw", vec![numtok!(1), Token::Unit(Gigawatt)]);
+    run_lex("1 gigawatt", vec![numtok!(1), Token::Unit(Gigawatt)]);
+    run_lex("1 gigawatts", vec![numtok!(1), Token::Unit(Gigawatt)]);
+    run_lex("1 gigawatt hour", vec![numtok!(1), Token::Unit(GigawattHour)]);
+    run_lex("0 gigawatt + 1 gigawatts", vec![numtok!(0), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(1), Token::Unit(Gigawatt)]);
+    run_lex("0 gigawatt * 1", vec![numtok!(0), Token::Unit(Gigawatt), Token::Operator(Multiply), numtok!(1)]);
+    run_lex("2 gigawatts + 3 gigawatts", vec![numtok!(2), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(3), Token::Unit(Gigawatt)]);
+    run_lex("2 gigawatts * 3", vec![numtok!(2), Token::Unit(Gigawatt), Token::Operator(Multiply), numtok!(3)]);
+    run_lex("4 gigawatt plus 5 watt", vec![numtok!(4), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(5), Token::Unit(Watt)]);
+    run_lex("4 gigawatt plus 5 megawatt", vec![numtok!(4), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(5), Token::Unit(Megawatt)]);
+    run_lex("4 gigawatt plus 5 gigawatt", vec![numtok!(4), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(5), Token::Unit(Gigawatt)]);
+    run_lex("4 gigawatt plus 5 watts", vec![numtok!(4), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(5), Token::Unit(Watt)]);
+    run_lex("4 gigawatt plus 5 megawatts", vec![numtok!(4), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(5), Token::Unit(Megawatt)]);
+    run_lex("4 gigawatt plus 5 gigawatts", vec![numtok!(4), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(5), Token::Unit(Gigawatt)]);
+    run_lex("4 gigawatt times 5", vec![numtok!(4), Token::Unit(Gigawatt), Token::Operator(Multiply), numtok!(5)]);
+    run_lex("6 gigawatts plus 7 watt", vec![numtok!(6), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(7), Token::Unit(Watt)]);
+    run_lex("6 gigawatts plus 7 megawatt", vec![numtok!(6), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(7), Token::Unit(Megawatt)]);
+    run_lex("6 gigawatts plus 7 gigawatt", vec![numtok!(6), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(7), Token::Unit(Gigawatt)]);
+    run_lex("6 gigawatts plus 7 watts", vec![numtok!(6), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(7), Token::Unit(Watt)]);
+    run_lex("6 gigawatts plus 7 megawatts", vec![numtok!(6), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(7), Token::Unit(Megawatt)]);
+    run_lex("6 gigawatts plus 7 gigawatts", vec![numtok!(6), Token::Unit(Gigawatt), Token::Operator(Plus), numtok!(7), Token::Unit(Gigawatt)]);
+    run_lex("6 gigawatts times 7", vec![numtok!(6), Token::Unit(Gigawatt), Token::Operator(Multiply), numtok!(7)]);
     run_lex("88 mw * 3", vec![numtok!(88), Token::Unit(Megawatt), Token::Operator(Multiply), numtok!(3)]);
+    run_lex("88 mw times 3", vec![numtok!(88), Token::Unit(Megawatt), Token::Operator(Multiply), numtok!(3)]);
     run_lex("999 kb", vec![numtok!(999), Token::Unit(Kilobyte)]);
     run_lex("200 gb - 100 mb", vec![numtok!(200), Token::Unit(Gigabyte), Token::Operator(Minus), numtok!(100), Token::Unit(Megabyte)]);
     run_lex("999 kib", vec![numtok!(999), Token::Unit(Kibibyte)]);
     run_lex("200 gib - 100 mib", vec![numtok!(200), Token::Unit(Gibibyte), Token::Operator(Minus), numtok!(100), Token::Unit(Mebibyte)]);
     run_lex("45 btu", vec![numtok!(45), Token::Unit(BritishThermalUnit)]);
+    run_lex("45.5 british thermal unit", vec![numtok!(45.5), Token::Unit(BritishThermalUnit)]);
     run_lex("46 british thermal units", vec![numtok!(46), Token::Unit(BritishThermalUnit)]);
     run_lex("5432 newton metres", vec![numtok!(5432), Token::Unit(NewtonMeter)]);
     run_lex("2345 newton-meters", vec![numtok!(2345), Token::Unit(NewtonMeter)]);
