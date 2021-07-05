@@ -64,7 +64,7 @@ pub fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
       break;
     }
   }
-  let mut word = first_c.to_owned();
+  let mut word = first_c.trim().to_owned();
   while let Some(next_char) = chars.peek() {
     if is_alphabetic_extended_str(&next_char) {
       word += chars.next().unwrap();
@@ -335,27 +335,25 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "oz" | "ounces" => Token::Unit(Ounce),
     "lb" | "lbs" => Token::Unit(Pound),
     "pound" | "pounds" => {
-      todo!();
-      // if chars.peek() == Some(&"-") {
-      //   let dash_chars_iter = chars.clone();
-      //   dash_chars_iter.next();
-      //   match read_word_plain(dash_chars_iter).as_str() {
-      //     "force" => {
-            
-      //     }
-      //   }
-      //   chars.next();
-      //   match read_word_plain(chars).as_str() {
-      //     "force" => Token::LexerKeyword(PoundForce),
-      //     string => return Err(format!("Invalid string: {}", string)),
-      //   }
-      //   match read_word(chars).as_str() {
-      //     "force" => Token::LexerKeyword(PoundForce),
-      //     string => return Err(format!("Invalid string: {}", string)),
-      //   }
-      // } else {
-      //   Token::Unit(Pound)
-      // }
+      match lexer.chars.next() {
+        Some("-") => {
+          match read_word_plain(&mut lexer.chars).as_str() {
+            "force" => Token::LexerKeyword(PoundForce),
+            other => {
+              lexer.tokens.push(Token::Unit(Pound));
+              lexer.tokens.push(Token::Operator(Minus));
+              parse_token(&other, lexer)?;
+              return Ok(());
+            }
+          }
+        },
+        Some(c) => {
+          lexer.tokens.push(Token::Unit(Pound));
+          parse_token(c, lexer)?;
+          return Ok(());
+        },
+        None => return Ok(()),
+      }
     },
     "stone" | "stones" => Token::Unit(Stone),
     "st" | "ton" | "tons" => Token::Unit(ShortTon),
@@ -412,9 +410,21 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "j"| "joule" | "joules" => Token::Unit(Joule),
     "nm" => Token::Unit(NewtonMeter),
     "newton" => {
-      todo!();
-      // "-meter" | "-meters" | "metre" | "metres" => Token::Unit(NewtonMeter),
-      // "meter" | "meters" | "metre" | "metres" => Token::Unit(NewtonMeter),
+      match lexer.chars.next() {
+        Some("-") => {
+          match read_word_plain(&mut lexer.chars).as_str() {
+            "meter" | "meters" | "metre" | "metres" => Token::Unit(NewtonMeter),
+            string => return Err(format!("Invalid string: {}", string)),
+          }
+        },
+        Some(c) => {
+          match read_word(c, lexer).as_str() {
+            "meter" | "meters" | "metre" | "metres" => Token::Unit(NewtonMeter),
+            string => return Err(format!("Invalid string: {}", string)),
+          }
+        },
+        None => return Err(format!("Invalid string: {}", word)),
+      }
     },
     "kj" | "kilojoule" | "kilojoules" => Token::Unit(Kilojoule),
     "mj" | "megajoule" | "megajoules" => Token::Unit(Megajoule),
