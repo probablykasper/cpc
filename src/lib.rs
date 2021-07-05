@@ -178,6 +178,7 @@ pub enum LexerKeyword {
   Hg,
   PoundForce,
   Force,
+  Revolution,
 }
 
 #[derive(Clone, Debug, PartialEq)]

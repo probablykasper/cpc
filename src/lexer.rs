@@ -7,7 +7,7 @@ use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::NamedNumber::*;
 use crate::Constant::{E, Pi};
-use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, Force, DoubleQuotes};
+use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, Force, DoubleQuotes, Revolution};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
 use crate::units::Unit;
 use crate::units::Unit::*;
@@ -757,7 +757,8 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
           "ghz" | "gigahertz" => tokens.push(Token::Unit(Gigahertz)),
           "thz" | "terahertz" => tokens.push(Token::Unit(Terahertz)),
           "phz" | "petahertz" => tokens.push(Token::Unit(Petahertz)),
-          "rpm" | "r/min" | "rev/min" => tokens.push(Token::Unit(RevolutionsPerMinute)),
+          "rpm" => tokens.push(Token::Unit(RevolutionsPerMinute)),
+          "r" | "rev" | "revolution" | "revolutions" => tokens.push(Token::LexerKeyword(Revolution)),
 
           "kph" | "kmh" => tokens.push(Token::Unit(KilometersPerHour)),
           "mps" => tokens.push(Token::Unit(MetersPerSecond)),
@@ -958,6 +959,10 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
         (Token::Unit(Inch), Token::TextOperator(Of), Token::LexerKeyword(Mercury)) => {
           tokens[token_index-2] = Token::Unit(InchOfMercury);
         },
+        // revolutions per minute
+        (Token::LexerKeyword(Revolution), Token::LexerKeyword(Per), Token::Unit(Minute)) => {
+          tokens[token_index-2] = Token::Unit(RevolutionsPerMinute);
+        },
         _ => {
           replaced = false;
         },
@@ -1074,6 +1079,15 @@ mod tests {
     run_lex("20 lbf", vec![numtok!(20), Token::LexerKeyword(PoundForce)]);
     run_lex("60 hz", vec![numtok!(60), Token::Unit(Hertz)]);
     run_lex("1100 rpm", vec![numtok!(1100), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1150 revolutions per minute", vec![numtok!(1150), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1 revolution per min", vec![numtok!(1), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("4 revolution / mins", vec![numtok!(4), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1250 r / min", vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1300 rev / min", vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1350 rev / minute", vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1250 r per min", vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1300 rev per min", vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1350 rev per minute", vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)]);
     run_lex("30 pa", vec![numtok!(30), Token::Unit(Pascal)]);
     run_lex("23 celsius + 4 celsius", vec![numtok!(23), Token::Unit(Celsius), Token::Operator(Plus), numtok!(4), Token::Unit(Celsius)]);
     run_lex("54 f - 1.5 fahrenheit", vec![numtok!(54), Token::Unit(Fahrenheit), Token::Operator(Minus), numtok!(1.5), Token::Unit(Fahrenheit)]);
