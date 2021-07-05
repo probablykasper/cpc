@@ -54,8 +54,9 @@ pub fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
 
 /// Read next as a word, otherwise return empty string.
 /// Leading whitespace is ignored. A trailing digit may be included.
-pub fn read_word(chars: &mut Peekable<Graphemes>) -> String {
+pub fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
   // skip whitespace
+  let chars = &mut lexer.chars;
   while let Some(current_char) = chars.peek() {
     if current_char.trim().is_empty() {
     chars.next();
@@ -63,7 +64,7 @@ pub fn read_word(chars: &mut Peekable<Graphemes>) -> String {
       break;
     }
   }
-  let mut word = String::new();
+  let mut word = first_c.to_owned();
   while let Some(next_char) = chars.peek() {
     if is_alphabetic_extended_str(&next_char) {
       word += chars.next().unwrap();
@@ -85,8 +86,68 @@ pub fn read_word(chars: &mut Peekable<Graphemes>) -> String {
   return word;
 }
 
-pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, default_degree: Unit) -> Result<(), String> {
-  let token = match read_word(chars).as_str() {
+pub fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
+  let tokens = &mut lexer.tokens;
+  match c {
+    value if value.trim().is_empty() => {},
+    value if is_alphabetic_extended_str(&value) => {
+      parse_word(read_word(c, lexer).as_str(), lexer)?;
+    },
+    value if is_numeric_str(value) => {
+      let mut number_string = value.to_owned();
+      while let Some(number_char) = lexer.chars.peek() {
+        if is_numeric_str(number_char) {
+          number_string += number_char;
+          lexer.chars.next();
+        } else {
+          break;
+        }
+      }
+      d128::set_status(decimal::Status::empty());
+      match d128::from_str(&number_string) {
+        Ok(number) => {
+          if d128::get_status().is_empty() {
+            tokens.push(Token::Number(number));
+          } else {
+            return Err(format!("Error lexing d128 number: {}", number_string));
+          }
+        },
+        Err(_e) => {
+          return Err(format!("Error lexing d128 number: {}", number_string));
+        }
+      };
+    },
+    "+" => tokens.push(Token::Operator(Plus)),
+    "-" => tokens.push(Token::Operator(Minus)),
+    "*" => tokens.push(Token::Operator(Multiply)),
+    "/" => tokens.push(Token::Operator(Divide)),
+    "%" => tokens.push(Token::LexerKeyword(PercentChar)),
+    "^" => tokens.push(Token::Operator(Caret)),
+    "!" => tokens.push(Token::UnaryOperator(Factorial)),
+    "(" => {
+      // left_paren_count += 1;
+      tokens.push(Token::Operator(LeftParen));
+    },
+    ")" => {
+      // right_paren_count += 1;
+      tokens.push(Token::Operator(RightParen));
+    },
+    "π" => tokens.push(Token::Constant(Pi)),
+    "'" => tokens.push(Token::Unit(Foot)),
+    "\"" | "“" | "”" | "″" => tokens.push(Token::LexerKeyword(DoubleQuotes)),
+    "Ω" | "Ω" => tokens.push(Token::Unit(Ohm)),
+    _ => {
+      return Err(format!("Invalid character: {}", c));
+    },
+  }
+  if let Some(next_c) = lexer.chars.next() {
+    parse_token(next_c, lexer)?;
+  }
+  Ok(())
+}
+
+pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
+  let token = match word {
     "to" => Token::TextOperator(To),
     "of" => Token::TextOperator(Of),
 
@@ -167,7 +228,7 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "mi" | "mile" | "miles" => Token::Unit(Mile),
     "nmi" => Token::Unit(NauticalMile),
     "nautical" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "mile" | "miles" => Token::Unit(NauticalMile),
         string => return Err(format!("Invalid string: {}", string)),
       }
@@ -175,7 +236,7 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "ly" | "lightyear" | "lightyears" => Token::Unit(LightYear),
     "lightsec" | "lightsecs" | "lightsecond" | "lightseconds" => Token::Unit(LightSecond),
     "light" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "yr" | "yrs" | "year" | "years" => Token::Unit(LightYear),
         "sec" | "secs" | "second" | "seconds" => Token::Unit(LightSecond),
         string => return Err(format!("Invalid string: {}", string)),
@@ -192,7 +253,7 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "sqyd" | "yd2" | "yard2" | "yards2" => Token::Unit(SquareYard),
     "sqmi" | "mi2" | "mile2" | "miles2" => Token::Unit(SquareMile),
     "sq" | "square" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "mm" | "millimeter" | "millimeters" | "millimetre" | "millimetres" => Token::Unit(SquareMillimeter),
         "cm" | "centimeter" | "centimeters" | "centimetre" | "centimetres" => Token::Unit(SquareCentimeter),
         "dm" | "decimeter" | "decimeters" | "decimetre" | "decimetres" => Token::Unit(SquareDecimeter),
@@ -220,7 +281,7 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "yd3" | "yard3" | "yards3" => Token::Unit(CubicYard),
     "mi3" | "mile3" | "miles3" => Token::Unit(CubicMile),
     "cubic" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "mm" | "millimeter" | "millimeters" | "millimetre" | "millimetres" => Token::Unit(CubicMillimeter),
         "cm" | "centimeter" | "centimeters" | "centimetre" | "centimetres" => Token::Unit(CubicCentimeter),
         "dm" | "decimeter" | "decimeters" | "decimetre" | "decimetres" => Token::Unit(CubicDecimeter),
@@ -241,7 +302,7 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "tbs" | "tbsp" | "tablespoon" | "tablespoons" => Token::Unit(Tablespoon),
     "floz" => Token::Unit(FluidOunce),
     "fl" | "fluid" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "oz" | "ounce" | "ounces" => Token::Unit(FluidOunce),
         string => return Err(format!("Invalid string: {}", string)),
       }
@@ -252,14 +313,14 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "gal" | "gallon" | "gallons" => Token::Unit(Gallon),
     "bbl" | "oil barrel" | "oil barrels" => Token::Unit(OilBarrel),
     "oil" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "barrel" | "barrels" => Token::Unit(OilBarrel),
         string => return Err(format!("Invalid string: {}", string)),
       }
     },
 
     "metric" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "ton" | "tons" | "tonne" | "tonnes" => Token::Unit(MetricTon),
         "hp" | "hps" | "horsepower" | "horsepowers" => Token::Unit(MetricHorsepower),
         string => return Err(format!("Invalid string: {}", string)),
@@ -299,14 +360,14 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "stone" | "stones" => Token::Unit(Stone),
     "st" | "ton" | "tons" => Token::Unit(ShortTon),
     "short" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "ton" | "tons" | "tonne" | "tonnes" => Token::Unit(ShortTon),
         string => return Err(format!("Invalid string: {}", string)),
       }
     },
     "lt" => Token::Unit(LongTon),
     "long" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "ton" | "tons" | "tonne" | "tonnes" => Token::Unit(LongTon),
         string => return Err(format!("Invalid string: {}", string)),
       }
@@ -363,9 +424,9 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "kcal" | "kilocalorie" | "kilocalories" => Token::Unit(KiloCalorie),
     "btu" => Token::Unit(BritishThermalUnit),
     "british" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "thermal" => {
-          match read_word(chars).as_str() {
+          match read_word("", lexer).as_str() {
             "unit" | "units" => Token::Unit(BritishThermalUnit),
             string => return Err(format!("Invalid string: {}", string)),
           }
@@ -391,39 +452,47 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "mhp" | "hpm" => Token::Unit(MetricHorsepower),
 
     "watt" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(WattHour),
         _ => Token::Unit(Watt)
       }
     }
     "kilowatt" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(KilowattHour),
         _ => Token::Unit(Kilowatt),
       }
     }
     "megawatt" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(MegawattHour),
         _ => Token::Unit(Megawatt),
       }
     }
     "gigawatt" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(GigawattHour),
         _ => Token::Unit(Gigawatt),
       }
     }
     "terawatt" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(TerawattHour),
-        _ => Token::Unit(Terawatt),
+        other => {
+          lexer.tokens.push(Token::Unit(Watt));
+          parse_token(other, lexer)?;
+          return Ok(());
+        }
       }
     }
     "petawatt" => {
-      match read_word(chars).as_str() {
+      match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(PetawattHour),
-        _ => Token::Unit(Petawatt),
+        other => {
+          lexer.tokens.push(Token::Unit(Watt));
+          parse_token(other, lexer)?;
+          return Ok(());
+        }
       }
     }
 
@@ -471,14 +540,22 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "k" | "kelvin" | "kelvins" => Token::Unit(Kelvin),
     "c" | "celsius" => Token::Unit(Celsius),
     "f" | "fahrenheit" | "fahrenheits" => Token::Unit(Fahrenheit),
-    "deg" | "degree" | "degrees" => Token::Unit(default_degree),
+    "deg" | "degree" | "degrees" => Token::Unit(lexer.default_degree),
 
     string => {
       return Err(format!("Invalid string: {}", string));
     }
   };
-  tokens.push(token);
+  lexer.tokens.push(token);
   return Ok(());
+}
+
+pub struct Lexer<'a> {
+  left_paren_count: u16,
+  right_paren_count: u16,
+  chars: Peekable<Graphemes<'a>>,
+  tokens: Vec<Token>,
+  default_degree: Unit,
 }
 
 /// Lex an input string and returns [`Token`]s
@@ -497,85 +574,26 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
     }
   }
 
-  let mut left_paren_count = 0;
-  let mut right_paren_count = 0;
+  let mut lexer = Lexer {
+    left_paren_count: 0,
+    right_paren_count: 0,
+    chars: UnicodeSegmentation::graphemes(input.as_str(), true).peekable(),
+    tokens: Vec::new(),
+    default_degree,
+  };
 
-  let mut chars = UnicodeSegmentation::graphemes(input.as_str(), true).peekable();
-  let mut tokens: Vec<Token> = vec![];
-
-  while let Some(_) = chars.peek() {
-    let current_char = chars.peek().unwrap();
-    println!("1: {}", current_char);
-    let token = match *current_char {
-      value if value.trim().is_empty() => {
-        chars.next();
-        continue;
-      },
-      value if is_alphabetic_extended_str(&value) => {
-        parse_word(&mut tokens, &mut chars, default_degree)?;
-        continue;
-      },
-      value if is_numeric_str(value) => {
-        let mut number_string = String::new();
-        while let Some(number_char) = chars.peek() {
-          if is_numeric_str(number_char) {
-            number_string += number_char;
-            chars.next();
-          } else {
-            break;
-          }
-        }
-        d128::set_status(decimal::Status::empty());
-        let token;
-        match d128::from_str(&number_string) {
-          Ok(number) => {
-            if d128::get_status().is_empty() {
-              token = Token::Number(number);
-            } else {
-              return Err(format!("Error lexing d128 number: {}", number_string));
-            }
-          },
-          Err(_e) => {
-            return Err(format!("Error lexing d128 number: {}", number_string));
-          }
-        };
-        token
-      },
-      "+" => Token::Operator(Plus),
-      "-" => Token::Operator(Minus),
-      "*" => Token::Operator(Multiply),
-      "/" => Token::Operator(Divide),
-      "%" => Token::LexerKeyword(PercentChar),
-      "^" => Token::Operator(Caret),
-      "!" => Token::UnaryOperator(Factorial),
-      "(" => {
-        left_paren_count += 1;
-        Token::Operator(LeftParen)
-      },
-      ")" => {
-        right_paren_count += 1;
-        Token::Operator(RightParen)
-      },
-      "π" => Token::Constant(Pi),
-      "'" => Token::Unit(Foot),
-      "\"" | "“" | "”" | "″" => Token::LexerKeyword(DoubleQuotes),
-      "Ω" | "Ω" => Token::Unit(Ohm),
-      _ => {
-        return Err(format!("Invalid character: {}", current_char));
-      },
-    };
-    chars.next();
-    tokens.push(token);
+  if let Some(c) = lexer.chars.next() {
+    parse_token(c, &mut lexer)?;
   }
-
+  let tokens = &mut lexer.tokens;
   // auto insert missing parentheses in first and last position
-  if left_paren_count > right_paren_count {
-    let missing_right_parens = left_paren_count - right_paren_count;
+  if lexer.left_paren_count > lexer.right_paren_count {
+    let missing_right_parens = lexer.left_paren_count - lexer.right_paren_count;
     for _ in 0..missing_right_parens {
       tokens.push(Token::Operator(RightParen));
     }
-  } else if left_paren_count < right_paren_count {
-    let missing_left_parens = right_paren_count - left_paren_count;
+  } else if lexer.left_paren_count < lexer.right_paren_count {
+    let missing_left_parens = lexer.right_paren_count - lexer.left_paren_count;
     for _ in 0..missing_left_parens {
       tokens.insert(0, Token::Operator(LeftParen));
     }
@@ -719,7 +737,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
     }
   }
 
-  Ok(tokens)
+  Ok(lexer.tokens)
 }
 
 #[cfg(test)]
