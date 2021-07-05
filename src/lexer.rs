@@ -17,13 +17,6 @@ use unicode_segmentation::UnicodeSegmentation;
 const LOWERCASE_LETTERS: RangeInclusive<char> = 'a'..='z';
 const UPPERCASE_LETTERS: RangeInclusive<char> = 'A'..='Z';
 
-pub const fn is_alphabetic_extended(input: &char) -> bool {
-  match input {
-    'A'..='Z' | 'a'..='z' | 'Ω' | 'Ω' | 'µ' | 'μ' | 'π' => true,
-    _ => false,
-  }
-}
-
 pub fn is_str_alphabetic_extended(input: &str) -> bool {
   match input {
     "Ω" | "Ω" | "µ" | "μ" | "π" => true,
