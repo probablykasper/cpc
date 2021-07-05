@@ -41,7 +41,7 @@ pub fn is_numeric_str(input: &str) -> bool {
 /// Read next characters as a word, otherwise return empty string.
 /// Returns an empty string if there's leading whitespace.
 pub fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
-  let mut word = "".to_string();
+  let mut word = String::new();
   while let Some(next_char) = chars.peek() {
     if is_alphabetic_extended_str(&next_char) {
       word += chars.next().unwrap();
@@ -63,7 +63,7 @@ pub fn read_word(chars: &mut Peekable<Graphemes>) -> String {
       break;
     }
   }
-  let mut word = "".to_string();
+  let mut word = String::new();
   while let Some(next_char) = chars.peek() {
     if is_alphabetic_extended_str(&next_char) {
       word += chars.next().unwrap();
@@ -177,7 +177,7 @@ pub fn parse_word(tokens: &mut Vec<Token>, chars: &mut Peekable<Graphemes>, defa
     "light" => {
       match read_word(chars).as_str() {
         "yr" | "yrs" | "year" | "years" => Token::Unit(LightYear),
-        "sec" | "secs" | "second" | "seconds" => Token::Unit(LightYear),
+        "sec" | "secs" | "second" | "seconds" => Token::Unit(LightSecond),
         string => return Err(format!("Invalid string: {}", string)),
       }
     }
@@ -516,7 +516,7 @@ pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) ->
         continue;
       },
       value if is_numeric_str(value) => {
-        let mut number_string = "".to_string();
+        let mut number_string = String::new();
         while let Some(number_char) = chars.peek() {
           if is_numeric_str(number_char) {
             number_string += number_char;
