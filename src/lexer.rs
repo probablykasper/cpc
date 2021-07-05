@@ -1011,7 +1011,6 @@ mod tests {
       assert_eq!(matching_tokens_afterdigit_stripped_spaces.count(), expected_tokens.len());
     };
 
-    run_lex("50 / 10", vec![numtok!(50), Token::Operator(Divide), numtok!(10)]);
     run_lex("88 kilometres * 2", vec![numtok!(88), Token::Unit(Kilometer), Token::Operator(Multiply), numtok!(2)]);
     run_lex("100 nmi", vec![numtok!(100), Token::Unit(NauticalMile)]);
     run_lex("101 nautical miles", vec![numtok!(101), Token::Unit(NauticalMile)]);
@@ -1081,6 +1080,23 @@ mod tests {
     run_lex("1250 r per min", vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)]);
     run_lex("1300 rev per min", vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)]);
     run_lex("1350 rev per minute", vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("100 kph", vec![numtok!(100), Token::Unit(KilometersPerHour)]);
+    run_lex("100 kmh", vec![numtok!(100), Token::Unit(KilometersPerHour)]);
+    run_lex("100 kilometers per hour", vec![numtok!(100), Token::Unit(KilometersPerHour)]);
+    run_lex("100 kilometre / hrs", vec![numtok!(100), Token::Unit(KilometersPerHour)]);
+    run_lex("3.6 mps", vec![numtok!(3.6), Token::Unit(MetersPerSecond)]);
+    run_lex("3.6 meters per second", vec![numtok!(3.6), Token::Unit(MetersPerSecond)]);
+    run_lex("3.6 metre / secs", vec![numtok!(3.6), Token::Unit(MetersPerSecond)]);
+    run_lex("60 mph", vec![numtok!(60), Token::Unit(MilesPerHour)]);
+    run_lex("60 miles per hour", vec![numtok!(60), Token::Unit(MilesPerHour)]);
+    run_lex("60 mile / hr", vec![numtok!(60), Token::Unit(MilesPerHour)]);
+    run_lex("35 fps", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
+    run_lex("35 ft / sec", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
+    run_lex("35 ft per seconds", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
+    run_lex("35 foot / secs", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
+    run_lex("35 foot per seconds", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
+    run_lex("35 feet / sec", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
+    run_lex("35 feet per second", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
     run_lex("30 pa", vec![numtok!(30), Token::Unit(Pascal)]);
     run_lex("23 celsius + 4 celsius", vec![numtok!(23), Token::Unit(Celsius), Token::Operator(Plus), numtok!(4), Token::Unit(Celsius)]);
     run_lex("54 f - 1.5 fahrenheit", vec![numtok!(54), Token::Unit(Fahrenheit), Token::Operator(Minus), numtok!(1.5), Token::Unit(Fahrenheit)]);
@@ -1095,6 +1111,7 @@ mod tests {
     run_lex("50.5 times 2", vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)]);
     run_lex("50.5 multiplied by 2", vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)]);
     run_lex("6 / 3", vec![numtok!(6), Token::Operator(Divide), numtok!(3)]);
+    run_lex("50 / 10", vec![numtok!(50), Token::Operator(Divide), numtok!(10)]);
     run_lex("6 divided by 3", vec![numtok!(6), Token::Operator(Divide), numtok!(3)]);
     run_lex("7 mod 5", vec![numtok!(7), Token::Operator(Modulo), numtok!(5)]);
 
