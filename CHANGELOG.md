@@ -1,3 +1,6 @@
+## Next
+- Add support for dividing length units by speed units (like 10 km / 100 kph)
+
 ## 1.7.0 - 2021 Jul 14
 - Add operator words `plus`, `minus` and `times`
 - Add operator phrases `multiplied by` and `divided by`
