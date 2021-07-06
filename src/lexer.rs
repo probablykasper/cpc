@@ -55,16 +55,18 @@ pub fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
 /// Read next as a word, otherwise return empty string.
 /// Leading whitespace is ignored. A trailing digit may be included.
 pub fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
-  // skip whitespace
   let chars = &mut lexer.chars;
-  while let Some(current_char) = chars.peek() {
-    if current_char.trim().is_empty() {
-    chars.next();
-    } else {
-      break;
+  let mut word = first_c.trim().to_owned();
+  if word == "" {
+    // skip whitespace
+    while let Some(current_char) = chars.peek() {
+      if current_char.trim().is_empty() {
+      chars.next();
+      } else {
+        break;
+      }
     }
   }
-  let mut word = first_c.trim().to_owned();
   while let Some(next_char) = chars.peek() {
     if is_alphabetic_extended_str(&next_char) {
       word += chars.next().unwrap();
@@ -178,9 +180,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 
     "pi" => Token::Constant(Pi),
     "e" => Token::Constant(E),
-  
-    "plus" => Token::Operator(Plus),
-  
+
     "mod" => Token::Operator(Modulo),
 
     "sqrt" => Token::FunctionIdentifier(Sqrt),
@@ -469,45 +469,61 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "watt" => {
       match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(WattHour),
-        _ => Token::Unit(Watt)
+        other => {
+          lexer.tokens.push(Token::Unit(Watt));
+          parse_token(word, lexer)?;
+          return Ok(());
+        },
       }
     }
     "kilowatt" => {
       match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(KilowattHour),
-        _ => Token::Unit(Kilowatt),
+        other => {
+          lexer.tokens.push(Token::Unit(Kilowatt));
+          parse_token(word, lexer)?;
+          return Ok(());
+        },
       }
     }
     "megawatt" => {
       match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(MegawattHour),
-        _ => Token::Unit(Megawatt),
+        other => {
+          lexer.tokens.push(Token::Unit(Megawatt));
+          parse_token(word, lexer)?;
+          return Ok(());
+        },
       }
     }
     "gigawatt" => {
       match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(GigawattHour),
-        _ => Token::Unit(Gigawatt),
+        other => {
+          lexer.tokens.push(Token::Unit(Gigawatt));
+          parse_token(word, lexer)?;
+          return Ok(());
+        },
       }
     }
     "terawatt" => {
       match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(TerawattHour),
         other => {
-          lexer.tokens.push(Token::Unit(Watt));
-          parse_token(other, lexer)?;
+          lexer.tokens.push(Token::Unit(Terawatt));
+          parse_token(word, lexer)?;
           return Ok(());
-        }
+        },
       }
     }
     "petawatt" => {
       match read_word("", lexer).as_str() {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(PetawattHour),
         other => {
-          lexer.tokens.push(Token::Unit(Watt));
-          parse_token(other, lexer)?;
+          lexer.tokens.push(Token::Unit(Petawatt));
+          parse_token(word, lexer)?;
           return Ok(());
-        }
+        },
       }
     }
 
