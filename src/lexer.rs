@@ -464,6 +464,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(WattHour),
         other => {
           lexer.tokens.push(Token::Unit(Watt));
+          println!("parse_token({})", other);
           parse_token(other, lexer)?;
           return Ok(());
         },
@@ -584,9 +585,7 @@ pub struct Lexer<'a> {
 
 /// Lex an input string and returns [`Token`]s
 pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
-
-  let mut input = input.replace(",", ""); // ignore commas
-  input = input.to_lowercase();
+  let mut input = input.replace(",", "").to_lowercase();
 
   if remove_trailing_operator {
     match &input.chars().last().unwrap_or('x') {
@@ -767,20 +766,38 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
 mod tests {
   use super::*;
   use crate::numtok;
+  use regex::Regex;
 
   #[test]
   fn test_lex() {
-    pub fn run_lex(input: &str, expected_tokens: Vec<Token>) {
+    let strip_operator_spacing = Regex::new(r" ([+\-*/]) ").unwrap();
+    let strip_afterdigit_spacing = Regex::new(r"(\d) ").unwrap();
+
+    let run_lex = |input: &str, expected_tokens: Vec<Token>| {
       let tokens = match lex(input, false, Unit::Celsius) {
         Ok(tokens) => tokens,
         Err(e) => {
           panic!("lex error: {}\nrun_lex input: {}", e, input);
         }
       };
-      if tokens != expected_tokens {
-        panic!("tokens mismatch: run_lex input: {}\nexpected: {:?}\nreceived: {:?}", input, expected_tokens, tokens);
-      }
-    }
+      let info_msg = format!("run_lex input: {}\nexpected: {:?}\nreceived: {:?}", input, expected_tokens, tokens);
+      assert!(tokens == expected_tokens, "{}", info_msg);
+
+      // Prove we can handle multiple spaces wherever we handle a single space
+      let input_extra_spaces = input.replace(" ", "   ");
+      let tokens_extra_spaces = lex(&input_extra_spaces, false, Unit::Celsius).unwrap();
+      assert!(tokens_extra_spaces == expected_tokens, "{}", info_msg);
+
+      // Prove we don't need spaces around operators
+      let input_stripped_spaces = strip_operator_spacing.replace_all(input, "$1");
+      let tokens_stripped_spaces = lex(&input_stripped_spaces, false, Unit::Celsius).unwrap();
+      assert!(tokens_stripped_spaces == expected_tokens, "{}", info_msg);
+
+      // Prove we don't need a space after a digit
+      let input_afterdigit_stripped_spaces = strip_afterdigit_spacing.replace_all(input, "$1");
+      let tokens_afterdigit_stripped_spaces = lex(&input_afterdigit_stripped_spaces, false, Unit::Celsius).unwrap();
+      assert!(tokens_afterdigit_stripped_spaces == expected_tokens, "{}", info_msg);
+    };
 
     run_lex("88 kilometres * 2", vec![numtok!(88), Token::Unit(Kilometer), Token::Operator(Multiply), numtok!(2)]);
     run_lex("100 nmi", vec![numtok!(100), Token::Unit(NauticalMile)]);
