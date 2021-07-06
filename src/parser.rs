@@ -23,7 +23,7 @@ impl AstNode {
 }
 
 /// Parse [`Token`]s into an Abstract Syntax Tree ([`AstNode`])
-pub fn parse(tokens: &Vec<Token>) -> Result<AstNode, String> {
+pub fn parse(tokens: &[Token]) -> Result<AstNode, String> {
   parse_level_1(tokens, 0).and_then(|(ast, next_pos)| if next_pos == tokens.len() {
       Ok(ast)
   } else {
@@ -33,7 +33,7 @@ pub fn parse(tokens: &Vec<Token>) -> Result<AstNode, String> {
 
 // level 1 precedence (lowest): to, of
 /// Parse [`To`](crate::TextOperator::To) and [`Of`](crate::TextOperator::Of)
-pub fn parse_level_1(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_1(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
   // do higher precedences first, then come back down
   let (mut node, mut pos) = parse_level_2(tokens, pos)?;
   // now we loop through the next tokens
@@ -61,7 +61,7 @@ pub fn parse_level_1(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize)
 
 // level 2 precedence: +, -
 /// Parse [`Plus`](crate::Operator::Plus) and [`Minus`](crate::Operator::Minus)
-pub fn parse_level_2(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_2(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_3(tokens, pos)?;
   loop {
     let token = tokens.get(pos);
@@ -83,8 +83,7 @@ pub fn parse_level_2(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize)
 
 // level 3 precedence: *, /, modulo, implicative multiplication, foot-inch 6'4"
 /// Parse [`Multiply`](crate::Operator::Multiply), [`Divide`](crate::Operator::Divide), [`Modulo`](crate::Operator::Modulo) and implicative multiplication (for example`2pi`)
-pub fn parse_level_3(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize), String> {
-
+pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
   // parse foot-inch syntax 6'4"
   let token0 = tokens.get(pos);
   if let Some(Token::Number(_number)) = token0 {
@@ -116,7 +115,7 @@ pub fn parse_level_3(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize)
       }
     }
   }
-  
+
   let (mut node, mut pos) = parse_level_4(tokens, pos)?;
 
   loop {
@@ -215,7 +214,7 @@ pub fn parse_level_3(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize)
 
 // level 4 precedence: ^
 /// Parse [`Caret`](crate::Operator::Caret)
-pub fn parse_level_4(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_4(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_5(tokens, pos)?;
   loop {
     let token = tokens.get(pos);
@@ -237,7 +236,7 @@ pub fn parse_level_4(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize)
 
 // level 5 precedence: - (as in -5, but not 4-5)
 /// Parse [`Negative`](Token::Negative)
-pub fn parse_level_5(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_5(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
   // Here we parse the negative unary operator. If the current token
   // is a minus, we wrap the right_node inside a Negative AstNode.
   // 
@@ -264,7 +263,7 @@ pub fn parse_level_5(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize)
 
 // level 6 precedence: !, percent, units attached to values
 /// Parse [`Factorial`](crate::UnaryOperator::Factorial) and [`Percent`](crate::UnaryOperator::Percent)
-pub fn parse_level_6(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_6(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
   let (mut node, mut pos) = parse_level_7(tokens, pos)?;
   loop {
     let token = tokens.get(pos);
@@ -300,7 +299,7 @@ pub fn parse_level_6(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize)
 /// [`Constant`](Token::Constant),
 /// [`FunctionIdentifier`](Token::FunctionIdentifier),
 /// [`Paren`](Token::Paren)
-pub fn parse_level_7(tokens: &Vec<Token>, pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_level_7(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
   let token: &Token = tokens.get(pos).ok_or(format!("Unexpected end of input at {}", pos))?;
   match token {
     &Token::Number(_number) => {

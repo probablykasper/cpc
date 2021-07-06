@@ -623,7 +623,7 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     Ok(to_ideal_unit(Number::new(result, Ampere)))
   } else if lcat == Energy && rcat == Time {
     // 1 joule / 1 second = 1 watt
-    let result = (left.value * left.unit.weight()) / ((right.value * right.unit.weight() / Unit::Second.weight()));
+    let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight() / Unit::Second.weight());
     Ok(to_ideal_unit(Number::new(result, Watt)))
   } else {
     Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
@@ -689,6 +689,12 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 mod tests {
   use super::*;
 
+  macro_rules! assert_float_eq {
+    ( $actual:expr, $expected:literal ) => {
+      assert!(($actual - $expected).abs() < f64::EPSILON);
+    }
+  }
+
   #[test]
   fn test_convert() {
     pub fn convert_test(value: f64, unit: Unit, to_unit: Unit) -> f64 {
@@ -697,179 +703,179 @@ mod tests {
       let value_string = &value.to_string();
       let value_d128 = d128::from_str(value_string).unwrap();
       let number = Number::new(value_d128, unit);
-      
+
       let result = convert(number, to_unit);
       let string_result = &result.unwrap().value.to_string();
       let float_result = f64::from_str(string_result).unwrap();
 
       return float_result;
     }
-    assert_eq!(convert_test(1000.0, Nanosecond, Microsecond), 1.0);
-    assert_eq!(convert_test(1000.0, Nanosecond, Microsecond), 1.0);
-    assert_eq!(convert_test(1000.0, Microsecond, Millisecond), 1.0);
-    assert_eq!(convert_test(1000.0, Millisecond, Second), 1.0);
-    assert_eq!(convert_test(60.0, Second, Minute), 1.0);
-    assert_eq!(convert_test(60.0, Minute, Hour), 1.0);
-    assert_eq!(convert_test(24.0, Hour, Day), 1.0);
-    assert_eq!(convert_test(7.0, Day, Week), 1.0);
-    assert_eq!(convert_test(30.436875, Day, Month), 1.0);
-    assert_eq!(convert_test(3.0, Month, Quarter), 1.0);
-    assert_eq!(convert_test(4.0, Quarter, Year), 1.0);
-    assert_eq!(convert_test(10.0, Year, Decade), 1.0);
-    assert_eq!(convert_test(10.0, Decade, Century), 1.0);
-    assert_eq!(convert_test(10.0, Century, Millenium), 1.0);
 
-    assert_eq!(convert_test(10.0, Millimeter, Centimeter), 1.0);
-    assert_eq!(convert_test(10.0, Centimeter, Decimeter), 1.0);
-    assert_eq!(convert_test(10.0, Decimeter, Meter), 1.0);
-    assert_eq!(convert_test(1000.0, Meter, Kilometer), 1.0);
-    assert_eq!(convert_test(2.54, Centimeter, Inch), 1.0);
-    assert_eq!(convert_test(12.0, Inch, Foot), 1.0);
-    assert_eq!(convert_test(3.0, Foot, Yard), 1.0);
-    assert_eq!(convert_test(1760.0, Yard, Mile), 1.0);
-    assert_eq!(convert_test(1852.0, Meter, NauticalMile), 1.0);
-    assert_eq!(convert_test(9460730472580800.0, Meter, LightYear), 1.0);
-    assert_eq!(convert_test(299792458.0, Meter, LightSecond), 1.0);
-    
-    assert_eq!(convert_test(100.0, SquareMillimeter, SquareCentimeter), 1.0);
-    assert_eq!(convert_test(100.0, SquareCentimeter, SquareDecimeter), 1.0);
-    assert_eq!(convert_test(100.0, SquareDecimeter, SquareMeter), 1.0);
-    assert_eq!(convert_test(1000000.0, SquareMeter, SquareKilometer), 1.0);
-    assert_eq!(convert_test(645.16, SquareMillimeter, SquareInch), 1.0);
-    assert_eq!(convert_test(144.0, SquareInch, SquareFoot), 1.0);
-    assert_eq!(convert_test(9.0, SquareFoot, SquareYard), 1.0);
-    assert_eq!(convert_test(3097600.0, SquareYard, SquareMile), 1.0);
-    assert_eq!(convert_test(100.0, SquareMeter, Are), 1.0);
-    assert_eq!(convert_test(10.0, Are, Decare), 1.0);
-    assert_eq!(convert_test(10.0, Decare, Hectare), 1.0);
-    assert_eq!(convert_test(640.0, Acre, SquareMile), 1.0);
+    assert_float_eq!(convert_test(1000.0, Nanosecond, Microsecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, Nanosecond, Microsecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, Microsecond, Millisecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, Millisecond, Second), 1.0);
+    assert_float_eq!(convert_test(60.0, Second, Minute), 1.0);
+    assert_float_eq!(convert_test(60.0, Minute, Hour), 1.0);
+    assert_float_eq!(convert_test(24.0, Hour, Day), 1.0);
+    assert_float_eq!(convert_test(7.0, Day, Week), 1.0);
+    assert_float_eq!(convert_test(30.436875, Day, Month), 1.0);
+    assert_float_eq!(convert_test(3.0, Month, Quarter), 1.0);
+    assert_float_eq!(convert_test(4.0, Quarter, Year), 1.0);
+    assert_float_eq!(convert_test(10.0, Year, Decade), 1.0);
+    assert_float_eq!(convert_test(10.0, Decade, Century), 1.0);
+    assert_float_eq!(convert_test(10.0, Century, Millenium), 1.0);
 
-    assert_eq!(convert_test(1000.0, CubicMillimeter, CubicCentimeter), 1.0);
-    assert_eq!(convert_test(1000.0, CubicCentimeter, CubicDecimeter), 1.0);
-    assert_eq!(convert_test(1000.0, CubicDecimeter, CubicMeter), 1.0);
-    assert_eq!(convert_test(1000000000.0, CubicMeter, CubicKilometer), 1.0);
-    assert_eq!(convert_test(1728.0, CubicInch, CubicFoot), 1.0);
-    assert_eq!(convert_test(27.0, CubicFoot, CubicYard), 1.0);
-    assert_eq!(convert_test(5451776000.0, CubicYard, CubicMile), 1.0);
-    assert_eq!(convert_test(1.0, Milliliter, CubicCentimeter), 1.0);
-    assert_eq!(convert_test(10.0, Milliliter, Centiliter), 1.0);
-    assert_eq!(convert_test(10.0, Centiliter, Deciliter), 1.0);
-    assert_eq!(convert_test(10.0, Deciliter, Liter), 1.0);
-    assert_eq!(convert_test(4.92892159375, Milliliter, Teaspoon), 1.0);
-    assert_eq!(convert_test(3.0, Teaspoon, Tablespoon), 1.0);
-    assert_eq!(convert_test(2.0, Tablespoon, FluidOunce), 1.0);
-    assert_eq!(convert_test(8.0, FluidOunce, Cup), 1.0);
-    assert_eq!(convert_test(2.0, Cup, Pint), 1.0);
-    assert_eq!(convert_test(2.0, Pint, Quart), 1.0);
-    assert_eq!(convert_test(4.0, Quart, Gallon), 1.0);
-    assert_eq!(convert_test(42.0, Gallon, OilBarrel), 1.0);
+    assert_float_eq!(convert_test(10.0, Millimeter, Centimeter), 1.0);
+    assert_float_eq!(convert_test(10.0, Centimeter, Decimeter), 1.0);
+    assert_float_eq!(convert_test(10.0, Decimeter, Meter), 1.0);
+    assert_float_eq!(convert_test(1000.0, Meter, Kilometer), 1.0);
+    assert_float_eq!(convert_test(2.54, Centimeter, Inch), 1.0);
+    assert_float_eq!(convert_test(12.0, Inch, Foot), 1.0);
+    assert_float_eq!(convert_test(3.0, Foot, Yard), 1.0);
+    assert_float_eq!(convert_test(1760.0, Yard, Mile), 1.0);
+    assert_float_eq!(convert_test(1852.0, Meter, NauticalMile), 1.0);
+    assert_float_eq!(convert_test(9460730472580800.0, Meter, LightYear), 1.0);
+    assert_float_eq!(convert_test(299792458.0, Meter, LightSecond), 1.0);
 
-    assert_eq!(convert_test(1000.0, Milligram, Gram), 1.0);
-    assert_eq!(convert_test(100.0, Gram, Hectogram), 1.0);
-    assert_eq!(convert_test(1000.0, Gram, Kilogram), 1.0);
-    assert_eq!(convert_test(1000.0, Kilogram, MetricTon), 1.0);
-    assert_eq!(convert_test(0.45359237, Kilogram, Pound), 1.0);
-    assert_eq!(convert_test(16.0, Ounce, Pound), 1.0);
-    assert_eq!(convert_test(14.0, Pound, Stone), 1.0);
-    assert_eq!(convert_test(2000.0, Pound, ShortTon), 1.0);
-    assert_eq!(convert_test(2240.0, Pound, LongTon), 1.0);
+    assert_float_eq!(convert_test(100.0, SquareMillimeter, SquareCentimeter), 1.0);
+    assert_float_eq!(convert_test(100.0, SquareCentimeter, SquareDecimeter), 1.0);
+    assert_float_eq!(convert_test(100.0, SquareDecimeter, SquareMeter), 1.0);
+    assert_float_eq!(convert_test(1000000.0, SquareMeter, SquareKilometer), 1.0);
+    assert_float_eq!(convert_test(645.16, SquareMillimeter, SquareInch), 1.0);
+    assert_float_eq!(convert_test(144.0, SquareInch, SquareFoot), 1.0);
+    assert_float_eq!(convert_test(9.0, SquareFoot, SquareYard), 1.0);
+    assert_float_eq!(convert_test(3097600.0, SquareYard, SquareMile), 1.0);
+    assert_float_eq!(convert_test(100.0, SquareMeter, Are), 1.0);
+    assert_float_eq!(convert_test(10.0, Are, Decare), 1.0);
+    assert_float_eq!(convert_test(10.0, Decare, Hectare), 1.0);
+    assert_float_eq!(convert_test(640.0, Acre, SquareMile), 1.0);
 
-    assert_eq!(convert_test(1000.0, Bit, Kilobit), 1.0);
-    assert_eq!(convert_test(1000.0, Kilobit, Megabit), 1.0);
-    assert_eq!(convert_test(1000.0, Megabit, Gigabit), 1.0);
-    assert_eq!(convert_test(1000.0, Gigabit, Terabit), 1.0);
-    assert_eq!(convert_test(1000.0, Terabit, Petabit), 1.0);
-    assert_eq!(convert_test(1000.0, Petabit, Exabit), 1.0);
-    assert_eq!(convert_test(1000.0, Exabit, Zettabit), 1.0);
-    assert_eq!(convert_test(1000.0, Zettabit, Yottabit), 1.0);
-    assert_eq!(convert_test(1024.0, Bit, Kibibit), 1.0);
-    assert_eq!(convert_test(1024.0, Kibibit, Mebibit), 1.0);
-    assert_eq!(convert_test(1024.0, Mebibit, Gibibit), 1.0);
-    assert_eq!(convert_test(1024.0, Gibibit, Tebibit), 1.0);
-    assert_eq!(convert_test(1024.0, Tebibit, Pebibit), 1.0);
-    assert_eq!(convert_test(1024.0, Pebibit, Exbibit), 1.0);
-    assert_eq!(convert_test(1024.0, Exbibit, Zebibit), 1.0);
-    assert_eq!(convert_test(1024.0, Zebibit, Yobibit), 1.0);
-    assert_eq!(convert_test(8.0, Bit, Byte), 1.0);
-    assert_eq!(convert_test(1000.0, Byte, Kilobyte), 1.0);
-    assert_eq!(convert_test(1000.0, Kilobyte, Megabyte), 1.0);
-    assert_eq!(convert_test(1000.0, Megabyte, Gigabyte), 1.0);
-    assert_eq!(convert_test(1000.0, Gigabyte, Terabyte), 1.0);
-    assert_eq!(convert_test(1000.0, Terabyte, Petabyte), 1.0);
-    assert_eq!(convert_test(1000.0, Petabyte, Exabyte), 1.0);
-    assert_eq!(convert_test(1000.0, Exabyte, Zettabyte), 1.0);
-    assert_eq!(convert_test(1000.0, Zettabyte, Yottabyte), 1.0);
-    assert_eq!(convert_test(1024.0, Kibibyte, Mebibyte), 1.0);
-    assert_eq!(convert_test(1024.0, Mebibyte, Gibibyte), 1.0);
-    assert_eq!(convert_test(1024.0, Gibibyte, Tebibyte), 1.0);
-    assert_eq!(convert_test(1024.0, Tebibyte, Pebibyte), 1.0);
-    assert_eq!(convert_test(1024.0, Pebibyte, Exbibyte), 1.0);
-    assert_eq!(convert_test(1024.0, Exbibyte, Zebibyte), 1.0);
-    assert_eq!(convert_test(1024.0, Zebibyte, Yobibyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, CubicMillimeter, CubicCentimeter), 1.0);
+    assert_float_eq!(convert_test(1000.0, CubicCentimeter, CubicDecimeter), 1.0);
+    assert_float_eq!(convert_test(1000.0, CubicDecimeter, CubicMeter), 1.0);
+    assert_float_eq!(convert_test(1000000000.0, CubicMeter, CubicKilometer), 1.0);
+    assert_float_eq!(convert_test(1728.0, CubicInch, CubicFoot), 1.0);
+    assert_float_eq!(convert_test(27.0, CubicFoot, CubicYard), 1.0);
+    assert_float_eq!(convert_test(5451776000.0, CubicYard, CubicMile), 1.0);
+    assert_float_eq!(convert_test(1.0, Milliliter, CubicCentimeter), 1.0);
+    assert_float_eq!(convert_test(10.0, Milliliter, Centiliter), 1.0);
+    assert_float_eq!(convert_test(10.0, Centiliter, Deciliter), 1.0);
+    assert_float_eq!(convert_test(10.0, Deciliter, Liter), 1.0);
+    assert_float_eq!(convert_test(4.92892159375, Milliliter, Teaspoon), 1.0);
+    assert_float_eq!(convert_test(3.0, Teaspoon, Tablespoon), 1.0);
+    assert_float_eq!(convert_test(2.0, Tablespoon, FluidOunce), 1.0);
+    assert_float_eq!(convert_test(8.0, FluidOunce, Cup), 1.0);
+    assert_float_eq!(convert_test(2.0, Cup, Pint), 1.0);
+    assert_float_eq!(convert_test(2.0, Pint, Quart), 1.0);
+    assert_float_eq!(convert_test(4.0, Quart, Gallon), 1.0);
+    assert_float_eq!(convert_test(42.0, Gallon, OilBarrel), 1.0);
 
+    assert_float_eq!(convert_test(1000.0, Milligram, Gram), 1.0);
+    assert_float_eq!(convert_test(100.0, Gram, Hectogram), 1.0);
+    assert_float_eq!(convert_test(1000.0, Gram, Kilogram), 1.0);
+    assert_float_eq!(convert_test(1000.0, Kilogram, MetricTon), 1.0);
+    assert_float_eq!(convert_test(0.45359237, Kilogram, Pound), 1.0);
+    assert_float_eq!(convert_test(16.0, Ounce, Pound), 1.0);
+    assert_float_eq!(convert_test(14.0, Pound, Stone), 1.0);
+    assert_float_eq!(convert_test(2000.0, Pound, ShortTon), 1.0);
+    assert_float_eq!(convert_test(2240.0, Pound, LongTon), 1.0);
 
-    assert_eq!(convert_test(1000.0, Millijoule, Joule), 1.0);
-    assert_eq!(convert_test(1000.0, Joule, Kilojoule), 1.0);
-    assert_eq!(convert_test(1.0, NewtonMeter, Joule), 1.0);
-    assert_eq!(convert_test(1000.0, Kilojoule, Megajoule), 1.0);
-    assert_eq!(convert_test(1000.0, Megajoule, Gigajoule), 1.0);
-    assert_eq!(convert_test(1000.0, Gigajoule, Terajoule), 1.0);
-    assert_eq!(convert_test(4.1868, Joule, Calorie), 1.0);
-    assert_eq!(convert_test(1000.0, Calorie, KiloCalorie), 1.0);
-    assert_eq!(convert_test(1055.05585262, Joule, BritishThermalUnit), 1.0);
-    assert_eq!(convert_test(3600.0, Joule, WattHour), 1.0);
-    assert_eq!(convert_test(1000.0, WattHour, KilowattHour), 1.0);
-    assert_eq!(convert_test(1000.0, KilowattHour, MegawattHour), 1.0);
-    assert_eq!(convert_test(1000.0, MegawattHour, GigawattHour), 1.0);
-    assert_eq!(convert_test(1000.0, GigawattHour, TerawattHour), 1.0);
-    assert_eq!(convert_test(1000.0, TerawattHour, PetawattHour), 1.0);
+    assert_float_eq!(convert_test(1000.0, Bit, Kilobit), 1.0);
+    assert_float_eq!(convert_test(1000.0, Kilobit, Megabit), 1.0);
+    assert_float_eq!(convert_test(1000.0, Megabit, Gigabit), 1.0);
+    assert_float_eq!(convert_test(1000.0, Gigabit, Terabit), 1.0);
+    assert_float_eq!(convert_test(1000.0, Terabit, Petabit), 1.0);
+    assert_float_eq!(convert_test(1000.0, Petabit, Exabit), 1.0);
+    assert_float_eq!(convert_test(1000.0, Exabit, Zettabit), 1.0);
+    assert_float_eq!(convert_test(1000.0, Zettabit, Yottabit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Bit, Kibibit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Kibibit, Mebibit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Mebibit, Gibibit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Gibibit, Tebibit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Tebibit, Pebibit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Pebibit, Exbibit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Exbibit, Zebibit), 1.0);
+    assert_float_eq!(convert_test(1024.0, Zebibit, Yobibit), 1.0);
+    assert_float_eq!(convert_test(8.0, Bit, Byte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Byte, Kilobyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Kilobyte, Megabyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Megabyte, Gigabyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Gigabyte, Terabyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Terabyte, Petabyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Petabyte, Exabyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Exabyte, Zettabyte), 1.0);
+    assert_float_eq!(convert_test(1000.0, Zettabyte, Yottabyte), 1.0);
+    assert_float_eq!(convert_test(1024.0, Kibibyte, Mebibyte), 1.0);
+    assert_float_eq!(convert_test(1024.0, Mebibyte, Gibibyte), 1.0);
+    assert_float_eq!(convert_test(1024.0, Gibibyte, Tebibyte), 1.0);
+    assert_float_eq!(convert_test(1024.0, Tebibyte, Pebibyte), 1.0);
+    assert_float_eq!(convert_test(1024.0, Pebibyte, Exbibyte), 1.0);
+    assert_float_eq!(convert_test(1024.0, Exbibyte, Zebibyte), 1.0);
+    assert_float_eq!(convert_test(1024.0, Zebibyte, Yobibyte), 1.0);
 
-    assert_eq!(convert_test(1000.0, Milliwatt, Watt), 1.0);
-    assert_eq!(convert_test(1000.0, Watt, Kilowatt), 1.0);
-    assert_eq!(convert_test(1000.0, Kilowatt, Megawatt), 1.0);
-    assert_eq!(convert_test(1000.0, Megawatt, Gigawatt), 1.0);
-    assert_eq!(convert_test(1000.0, Gigawatt, Terawatt), 1.0);
-    assert_eq!(convert_test(1000.0, Terawatt, Petawatt), 1.0);
-    assert_eq!(convert_test(0.0568690272188, Watt, BritishThermalUnitsPerMinute), 1.0);
-    assert_eq!(convert_test(60.0, BritishThermalUnitsPerMinute, BritishThermalUnitsPerHour), 1.0);
-    assert_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
-    assert_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
+    assert_float_eq!(convert_test(1000.0, Millijoule, Joule), 1.0);
+    assert_float_eq!(convert_test(1000.0, Joule, Kilojoule), 1.0);
+    assert_float_eq!(convert_test(1.0, NewtonMeter, Joule), 1.0);
+    assert_float_eq!(convert_test(1000.0, Kilojoule, Megajoule), 1.0);
+    assert_float_eq!(convert_test(1000.0, Megajoule, Gigajoule), 1.0);
+    assert_float_eq!(convert_test(1000.0, Gigajoule, Terajoule), 1.0);
+    assert_float_eq!(convert_test(4.1868, Joule, Calorie), 1.0);
+    assert_float_eq!(convert_test(1000.0, Calorie, KiloCalorie), 1.0);
+    assert_float_eq!(convert_test(1055.05585262, Joule, BritishThermalUnit), 1.0);
+    assert_float_eq!(convert_test(3600.0, Joule, WattHour), 1.0);
+    assert_float_eq!(convert_test(1000.0, WattHour, KilowattHour), 1.0);
+    assert_float_eq!(convert_test(1000.0, KilowattHour, MegawattHour), 1.0);
+    assert_float_eq!(convert_test(1000.0, MegawattHour, GigawattHour), 1.0);
+    assert_float_eq!(convert_test(1000.0, GigawattHour, TerawattHour), 1.0);
+    assert_float_eq!(convert_test(1000.0, TerawattHour, PetawattHour), 1.0);
 
-    assert_eq!(convert_test(1000.0, Milliampere, Ampere), 1.0);
-    assert_eq!(convert_test(1000.0, Ampere, Kiloampere), 1.0);
-    assert_eq!(convert_test(10.0, Ampere, Abampere), 1.0);
+    assert_float_eq!(convert_test(1000.0, Milliwatt, Watt), 1.0);
+    assert_float_eq!(convert_test(1000.0, Watt, Kilowatt), 1.0);
+    assert_float_eq!(convert_test(1000.0, Kilowatt, Megawatt), 1.0);
+    assert_float_eq!(convert_test(1000.0, Megawatt, Gigawatt), 1.0);
+    assert_float_eq!(convert_test(1000.0, Gigawatt, Terawatt), 1.0);
+    assert_float_eq!(convert_test(1000.0, Terawatt, Petawatt), 1.0);
+    assert_float_eq!(convert_test(0.0568690272188, Watt, BritishThermalUnitsPerMinute), 1.0);
+    assert_float_eq!(convert_test(60.0, BritishThermalUnitsPerMinute, BritishThermalUnitsPerHour), 1.0);
+    assert_float_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
+    assert_float_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
 
-    assert_eq!(convert_test(1000.0, Milliohm, Ohm), 1.0);
-    assert_eq!(convert_test(1000.0, Ohm, Kiloohm), 1.0);
+    assert_float_eq!(convert_test(1000.0, Milliampere, Ampere), 1.0);
+    assert_float_eq!(convert_test(1000.0, Ampere, Kiloampere), 1.0);
+    assert_float_eq!(convert_test(10.0, Ampere, Abampere), 1.0);
 
-    assert_eq!(convert_test(1000.0, Millivolt, Volt), 1.0);
-    assert_eq!(convert_test(1000.0, Volt, Kilovolt), 1.0);
+    assert_float_eq!(convert_test(1000.0, Milliohm, Ohm), 1.0);
+    assert_float_eq!(convert_test(1000.0, Ohm, Kiloohm), 1.0);
 
-    assert_eq!(convert_test(1000.0, Pascal, Kilopascal), 1.0);
-    assert_eq!(convert_test(101325.0, Pascal, Atmosphere), 1.0);
-    assert_eq!(convert_test(100.0, Pascal, Millibar), 1.0);
-    assert_eq!(convert_test(1000.0, Millibar, Bar), 1.0);
-    assert_eq!(convert_test(3386.389, Pascal, InchOfMercury), 1.0);
-    assert_eq!(convert_test(6894.757293168361, Pascal, PoundsPerSquareInch), 1.0);
-    assert_eq!(convert_test(162.12, Pascal, Torr), 1.0);
+    assert_float_eq!(convert_test(1000.0, Millivolt, Volt), 1.0);
+    assert_float_eq!(convert_test(1000.0, Volt, Kilovolt), 1.0);
 
-    assert_eq!(convert_test(1000.0, Hertz, Kilohertz), 1.0);
-    assert_eq!(convert_test(1000.0, Kilohertz, Megahertz), 1.0);
-    assert_eq!(convert_test(1000.0, Megahertz, Gigahertz), 1.0);
-    assert_eq!(convert_test(1000.0, Gigahertz, Terahertz), 1.0);
-    assert_eq!(convert_test(1000.0, Terahertz, Petahertz), 1.0);
-    assert_eq!(convert_test(60.0, Hertz, RevolutionsPerMinute), 1.0);
+    assert_float_eq!(convert_test(1000.0, Pascal, Kilopascal), 1.0);
+    assert_float_eq!(convert_test(101325.0, Pascal, Atmosphere), 1.0);
+    assert_float_eq!(convert_test(100.0, Pascal, Millibar), 1.0);
+    assert_float_eq!(convert_test(1000.0, Millibar, Bar), 1.0);
+    assert_float_eq!(convert_test(3386.389, Pascal, InchOfMercury), 1.0);
+    assert_float_eq!(convert_test(6894.757293168361, Pascal, PoundsPerSquareInch), 1.0);
+    assert_float_eq!(convert_test(162.12, Pascal, Torr), 1.0);
 
-    assert_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
-    assert_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);
-    assert_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
-    assert_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
+    assert_float_eq!(convert_test(1000.0, Hertz, Kilohertz), 1.0);
+    assert_float_eq!(convert_test(1000.0, Kilohertz, Megahertz), 1.0);
+    assert_float_eq!(convert_test(1000.0, Megahertz, Gigahertz), 1.0);
+    assert_float_eq!(convert_test(1000.0, Gigahertz, Terahertz), 1.0);
+    assert_float_eq!(convert_test(1000.0, Terahertz, Petahertz), 1.0);
+    assert_float_eq!(convert_test(60.0, Hertz, RevolutionsPerMinute), 1.0);
 
-    assert_eq!(convert_test(274.15, Kelvin, Celsius), 1.0);
-    assert_eq!(convert_test(300.0, Kelvin, Fahrenheit), 80.33);
-    assert_eq!(convert_test(-272.15, Celsius, Kelvin), 1.0);
-    assert_eq!(convert_test(-15.0, Celsius, Fahrenheit), 5.0);
-    assert_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
-    assert_eq!(convert_test(5.0, Fahrenheit, Celsius), -15.0);
+    assert_float_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
+    assert_float_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);
+    assert_float_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
+    assert_float_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
+
+    assert_float_eq!(convert_test(274.15, Kelvin, Celsius), 1.0);
+    assert_float_eq!(convert_test(300.0, Kelvin, Fahrenheit), 80.33);
+    assert_float_eq!(convert_test(-272.15, Celsius, Kelvin), 1.0);
+    assert_float_eq!(convert_test(-15.0, Celsius, Fahrenheit), 5.0);
+    assert_float_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
+    assert_float_eq!(convert_test(5.0, Fahrenheit, Celsius), -15.0);
   }
 }
