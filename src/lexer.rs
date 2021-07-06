@@ -127,6 +127,7 @@ pub fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
       // right_paren_count += 1;
       tokens.push(Token::Operator(RightParen));
     },
+    "π" => tokens.push(Token::Constant(Pi)),
     "'" => tokens.push(Token::Unit(Foot)),
     "\"" | "“" | "”" | "″" => tokens.push(Token::LexerKeyword(DoubleQuotes)),
     "Ω" | "Ω" => tokens.push(Token::Unit(Ohm)),
@@ -167,7 +168,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "centillion" => Token::NamedNumber(Centillion),
     "googol" => Token::NamedNumber(Googol),
 
-    "π" | "pi" => Token::Constant(Pi),
+    "pi" => Token::Constant(Pi),
     "e" => Token::Constant(E),
 
     "plus" => Token::Operator(Plus),
@@ -961,5 +962,7 @@ mod tests {
     run_lex("(2 + 3) * 4", vec![Token::Operator(LeftParen), numtok!(2), Token::Operator(Plus), numtok!(3), Token::Operator(RightParen), Token::Operator(Multiply), numtok!(4)]);
     run_lex("52 weeks * (12 hrs + 12 hours)", vec![numtok!(52), Token::Unit(Week), Token::Operator(Multiply), Token::Operator(LeftParen), numtok!(12), Token::Unit(Hour), Token::Operator(Plus), numtok!(12), Token::Unit(Hour), Token::Operator(RightParen)]);
     run_lex("12 pound+", vec![numtok!(12), Token::Unit(Pound), Token::Operator(Plus)]);
+
+    run_lex("5 π m", vec![numtok!(5), Token::Constant(Pi), Token::Unit(Meter)]);
   }
 }
