@@ -127,7 +127,6 @@ pub fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
       // right_paren_count += 1;
       tokens.push(Token::Operator(RightParen));
     },
-    "π" => tokens.push(Token::Constant(Pi)),
     "'" => tokens.push(Token::Unit(Foot)),
     "\"" | "“" | "”" | "″" => tokens.push(Token::LexerKeyword(DoubleQuotes)),
     "Ω" | "Ω" => tokens.push(Token::Unit(Ohm)),
@@ -168,7 +167,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "centillion" => Token::NamedNumber(Centillion),
     "googol" => Token::NamedNumber(Googol),
 
-    "pi" => Token::Constant(Pi),
+    "π" | "pi" => Token::Constant(Pi),
     "e" => Token::Constant(E),
 
     "plus" => Token::Operator(Plus),
@@ -464,7 +463,6 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(WattHour),
         other => {
           lexer.tokens.push(Token::Unit(Watt));
-          println!("parse_token({})", other);
           parse_token(other, lexer)?;
           return Ok(());
         },
