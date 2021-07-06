@@ -13,13 +13,6 @@ use crate::units::Unit;
 use crate::units::Unit::*;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
-pub const fn is_alphabetic_extended(input: &char) -> bool {
-  match input {
-    'A'..='Z' | 'a'..='z' | 'Ω' | 'Ω' | 'µ' | 'μ' | 'π' => true,
-    _ => false,
-  }
-}
-
 pub fn is_alphabetic_extended_str(input: &str) -> bool {
   let x = match input {
     value if value.chars().all(|c| ('a'..='z').contains(&c)) => true,
@@ -61,7 +54,7 @@ pub fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
     // skip whitespace
     while let Some(current_char) = chars.peek() {
       if current_char.trim().is_empty() {
-      chars.next();
+        chars.next();
       } else {
         break;
       }
@@ -316,7 +309,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "pt" | "pint" | "pints" => Token::Unit(Pint),
     "qt" | "quart" | "quarts" => Token::Unit(Quart),
     "gal" | "gallon" | "gallons" => Token::Unit(Gallon),
-    "bbl" | "oil barrel" | "oil barrels" => Token::Unit(OilBarrel),
+    "bbl" => Token::Unit(OilBarrel),
     "oil" => {
       match read_word("", lexer).as_str() {
         "barrel" | "barrels" => Token::Unit(OilBarrel),
@@ -596,7 +589,6 @@ pub struct Lexer<'a> {
 pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
 
   let mut input = input.replace(",", ""); // ignore commas
-
   input = input.to_lowercase();
 
   if remove_trailing_operator {
@@ -678,7 +670,7 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
           },
         }
       },
-      // decide if " is inch or inch of mercury
+      // decide if " is 'inch' or 'inch of mercury'
       Token::LexerKeyword(DoubleQuotes) => {
         match tokens.get(token_index + 1) {
           Some(Token::LexerKeyword(Hg)) => {
