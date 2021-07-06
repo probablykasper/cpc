@@ -60,10 +60,7 @@ pub struct Number {
 
 impl Number {
   pub fn new(value: d128, unit: Unit) -> Number {
-    Number {
-      value: value,
-      unit: unit,
-    }
+    Number { value, unit }
   }
 }
 impl Display for Number {
@@ -258,13 +255,10 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, v
             },
             Err(e) => Err(format!("Eval error: {}", e)),
           }
-          
         },
         Err(e) => Err(format!("Parsing error: {}", e)),
       }
-
     },
     Err(e) => Err(format!("Lexing error: {}", e)),
   }
-  
 }

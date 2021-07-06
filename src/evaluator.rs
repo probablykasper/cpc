@@ -114,7 +114,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
             let result = cbrt(child_answer.value);
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("log() only accepts UnitType::NoType").to_string())
+            return Err("log() only accepts UnitType::NoType".to_string())
           }
         },
         Sqrt => {
@@ -122,7 +122,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
             let result = sqrt(child_answer.value);
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("log() only accepts UnitType::NoType").to_string())
+            return Err("log() only accepts UnitType::NoType".to_string())
           }
         },
         Log => {
@@ -130,7 +130,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
             let result = child_answer.value.log10();
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("log() only accepts UnitType::NoType").to_string())
+            return Err("log() only accepts UnitType::NoType".to_string())
           }
         },
         Ln => {
@@ -138,7 +138,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
             let result = child_answer.value.ln();
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("ln() only accepts UnitType::NoType").to_string())
+            return Err("ln() only accepts UnitType::NoType".to_string())
           }
         },
         Exp => {
@@ -146,7 +146,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
             let result = child_answer.value.exp(child_answer.value);
             return Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err(format!("exp() only accepts UnitType::NoType").to_string())
+            return Err("exp() only accepts UnitType::NoType".to_string())
           }
         },
         Round => {
@@ -229,7 +229,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
     Token::TextOperator(operator) => {
       let left_child = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
       let right_child = children.get(1).ok_or(format!("Token {:?} has no child[1]", token))?;
-      
+
       match operator {
         To => {
           if let Token::Unit(right_unit) = right_child.token {
