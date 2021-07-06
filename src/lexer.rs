@@ -181,6 +181,9 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "pi" => Token::Constant(Pi),
     "e" => Token::Constant(E),
 
+    "plus" => Token::Operator(Plus),
+    "minus" => Token::Operator(Minus),
+    "times" => Token::Operator(Multiply),
     "mod" => Token::Operator(Modulo),
 
     "sqrt" => Token::FunctionIdentifier(Sqrt),
@@ -471,7 +474,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(WattHour),
         other => {
           lexer.tokens.push(Token::Unit(Watt));
-          parse_token(word, lexer)?;
+          parse_token(other, lexer)?;
           return Ok(());
         },
       }
@@ -481,7 +484,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(KilowattHour),
         other => {
           lexer.tokens.push(Token::Unit(Kilowatt));
-          parse_token(word, lexer)?;
+          parse_token(other, lexer)?;
           return Ok(());
         },
       }
@@ -491,7 +494,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(MegawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Megawatt));
-          parse_token(word, lexer)?;
+          parse_token(other, lexer)?;
           return Ok(());
         },
       }
@@ -501,7 +504,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(GigawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Gigawatt));
-          parse_token(word, lexer)?;
+          parse_token(other, lexer)?;
           return Ok(());
         },
       }
@@ -511,7 +514,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(TerawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Terawatt));
-          parse_token(word, lexer)?;
+          parse_token(other, lexer)?;
           return Ok(());
         },
       }
@@ -521,7 +524,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(PetawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Petawatt));
-          parse_token(word, lexer)?;
+          parse_token(other, lexer)?;
           return Ok(());
         },
       }
