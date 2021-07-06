@@ -179,6 +179,8 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "pi" => Token::Constant(Pi),
     "e" => Token::Constant(E),
   
+    "plus" => Token::Operator(Plus),
+  
     "mod" => Token::Operator(Modulo),
 
     "sqrt" => Token::FunctionIdentifier(Sqrt),
@@ -352,7 +354,10 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
           parse_token(c, lexer)?;
           return Ok(());
         },
-        None => return Ok(()),
+        None => {
+          lexer.tokens.push(Token::Unit(Pound));
+          return Ok(());
+        },
       }
     },
     "stone" | "stones" => Token::Unit(Stone),
@@ -569,13 +574,13 @@ pub struct Lexer<'a> {
 }
 
 /// Lex an input string and returns [`Token`]s
-pub fn lex(input: &str, allow_trailing_operators: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
+pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
 
   let mut input = input.replace(",", ""); // ignore commas
 
   input = input.to_lowercase();
 
-  if allow_trailing_operators {
+  if remove_trailing_operator {
     match &input.chars().last().unwrap_or('x') {
       '+' | '-' | '*' | '/' | '^' | '(' => {
         input.pop();
@@ -773,5 +778,6 @@ mod tests {
     run_lex("50 metric tonnes", vec![numtok!(50), Token::Unit(MetricTon)]);
     run_lex("5432 newton metres", vec![numtok!(5432), Token::Unit(NewtonMeter)]);
     run_lex("2345 newton-meters", vec![numtok!(2345), Token::Unit(NewtonMeter)]);
+    run_lex("12 pound+", vec![numtok!(12), Token::Unit(Pound), Token::Operator(Plus)]);
   }
 }
