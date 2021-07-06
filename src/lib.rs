@@ -8,7 +8,7 @@
 //! 
 //! # Example usage
 //! ```rust
-//! use cpc::{eval};
+//! use cpc::eval;
 //! use cpc::units::Unit;
 //! 
 //! match eval("3m + 1cm", true, Unit::Celsius, false) {
@@ -214,7 +214,7 @@ macro_rules! numtok {
 /// 
 /// Example:
 /// ```rust
-/// use cpc::{eval};
+/// use cpc::eval;
 /// use cpc::units::Unit;
 /// 
 /// match eval("3m + 1cm", true, Unit::Celsius, false) {
@@ -230,12 +230,14 @@ macro_rules! numtok {
 pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, verbose: bool) -> Result<Number, String> {
 
   let lex_start = Instant::now();
+  println!("lex");
 
   match lexer::lex(input, allow_trailing_operators, default_degree) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
       if verbose == true { println!("Lexed TokenVector: {:?}", tokens); }
 
+      println!("parse");
       let parse_start = Instant::now();
       match parser::parse(&tokens) {
         Ok(ast) => {
@@ -243,6 +245,7 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, v
           if verbose == true { println!("Parsed AstNode: {:#?}", ast); }
 
           let eval_start = Instant::now();
+          println!("eval");
           match evaluator::evaluate(&ast) {
             Ok(answer) => {
               let eval_time = Instant::now().duration_since(eval_start).as_nanos() as f32;

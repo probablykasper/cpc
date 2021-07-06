@@ -32,7 +32,7 @@ Add `cpc` as a dependency in `Cargo.toml`.
 ## API Usage
 
 ```rust
-use cpc::{eval};
+use cpc::eval;
 use cpc::units::Unit;
 
 match eval("3m + 1cm", true, Unit::Celsius, false) {

@@ -13,17 +13,21 @@ use crate::units::Unit;
 use crate::units::Unit::*;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
-pub fn is_alphabetic_extended_str(input: &str) -> bool {
+fn is_word_char_str(input: &str) -> bool {
   let x = match input {
-    value if value.chars().all(|c| ('a'..='z').contains(&c)) => true,
-    value if value.chars().all(|c| ('A'..='Z').contains(&c)) => true,
-    "Ω" | "Ω" | "µ" | "μ" | "π" => true,
+    "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
+    | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
+    | "Y" | "Z" => true,
+    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l"
+    | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x"
+    | "y" | "z" => true,
+    "Ω" | "Ω" | "µ" | "μ" => true,
     _ => false,
   };
   return x;
 }
 
-pub fn is_numeric_str(input: &str) -> bool {
+fn is_numeric_str(input: &str) -> bool {
   match input {
     "." => true,
     "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => true,
@@ -33,10 +37,10 @@ pub fn is_numeric_str(input: &str) -> bool {
 
 /// Read next characters as a word, otherwise return empty string.
 /// Returns an empty string if there's leading whitespace.
-pub fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
+fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
   let mut word = String::new();
   while let Some(next_char) = chars.peek() {
-    if is_alphabetic_extended_str(&next_char) {
+    if is_word_char_str(&next_char) {
       word += chars.next().unwrap();
     } else {
       break;
@@ -47,7 +51,7 @@ pub fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
 
 /// Read next as a word, otherwise return empty string.
 /// Leading whitespace is ignored. A trailing digit may be included.
-pub fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
+fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
   let chars = &mut lexer.chars;
   let mut word = first_c.trim().to_owned();
   if word == "" {
@@ -61,31 +65,33 @@ pub fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
     }
   }
   while let Some(next_char) = chars.peek() {
-    if is_alphabetic_extended_str(&next_char) {
+    if is_word_char_str(&next_char) {
       word += chars.next().unwrap();
     } else {
       break;
     }
   }
-  match *chars.peek().unwrap_or(&"") {
-    "2" | "²" => {
-      word += "2";
-      chars.next();
-    },
-    "3" | "³" => {
-      word += "3";
-      chars.next();
-    },
-    _ => {},
+  if word != "" {
+    match *chars.peek().unwrap_or(&"") {
+      "2" | "²" => {
+        word += "2";
+        chars.next();
+      },
+      "3" | "³" => {
+        word += "3";
+        chars.next();
+      },
+      _ => {},
+    }
   }
   return word;
 }
 
-pub fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
+fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
   let tokens = &mut lexer.tokens;
   match c {
     value if value.trim().is_empty() => {},
-    value if is_alphabetic_extended_str(&value) => {
+    value if is_word_char_str(&value) => {
       parse_word(read_word(c, lexer).as_str(), lexer)?;
     },
     value if is_numeric_str(value) => {
@@ -138,7 +144,15 @@ pub fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
   Ok(())
 }
 
-pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
+fn parse_word_if_non_empty(word: &str, lexer: &mut Lexer) -> Result<(), String> {
+  match word {
+    "" => Ok(()),
+    _ => parse_word(word, lexer)
+  }
+}
+
+fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
+  println!("word {}", word);
   let token = match word {
     "to" => Token::TextOperator(To),
     "of" => Token::TextOperator(Of),
@@ -337,7 +351,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
             other => {
               lexer.tokens.push(Token::Unit(Pound));
               lexer.tokens.push(Token::Operator(Minus));
-              parse_token(&other, lexer)?;
+              parse_word_if_non_empty(&other, lexer)?;
               return Ok(());
             }
           }
@@ -464,7 +478,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(WattHour),
         other => {
           lexer.tokens.push(Token::Unit(Watt));
-          parse_token(other, lexer)?;
+          parse_word_if_non_empty(other, lexer)?;
           return Ok(());
         },
       }
@@ -474,7 +488,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(KilowattHour),
         other => {
           lexer.tokens.push(Token::Unit(Kilowatt));
-          parse_token(other, lexer)?;
+          parse_word_if_non_empty(other, lexer)?;
           return Ok(());
         },
       }
@@ -484,7 +498,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(MegawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Megawatt));
-          parse_token(other, lexer)?;
+          parse_word_if_non_empty(other, lexer)?;
           return Ok(());
         },
       }
@@ -494,7 +508,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(GigawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Gigawatt));
-          parse_token(other, lexer)?;
+          parse_word_if_non_empty(other, lexer)?;
           return Ok(());
         },
       }
@@ -504,7 +518,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(TerawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Terawatt));
-          parse_token(other, lexer)?;
+          parse_word_if_non_empty(other, lexer)?;
           return Ok(());
         },
       }
@@ -514,7 +528,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
         "hr" | "hrs" | "hour" | "hours" => Token::Unit(PetawattHour),
         other => {
           lexer.tokens.push(Token::Unit(Petawatt));
-          parse_token(other, lexer)?;
+          parse_word_if_non_empty(other, lexer)?;
           return Ok(());
         },
       }
@@ -574,7 +588,7 @@ pub fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
   return Ok(());
 }
 
-pub struct Lexer<'a> {
+struct Lexer<'a> {
   left_paren_count: u16,
   right_paren_count: u16,
   chars: Peekable<Graphemes<'a>>,
