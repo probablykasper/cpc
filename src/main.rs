@@ -39,27 +39,31 @@ fn main() {
     }
   }
   let mut verbose = false;
-  let mut expression_opt = None;
+  // let mut expression_opt = None;
   for arg in get_args() {
     match arg.as_str() {
       "-v" | "--verbose" => verbose = true,
       _ => {
-        if expression_opt == None {
-          expression_opt = Some(arg);
-        } else {
-          eprintln!("Unexpected argument: {}", arg);
-          exit(1);
-        }
+        // if expression_opt == None {
+        //   expression_opt = Some(arg);
+        // } else {
+        //   eprintln!("Unexpected argument: {}", arg);
+        //   exit(1);
+        // }
       }
     }
   }
-  let expression = match expression_opt {
-    Some(expression) => expression,
-    None => {
-      print_help();
-      exit(0);
-    },
-  };
+  // let expression = match expression_opt {
+  //   Some(expression) => expression,
+  //   None => {
+  //     print_help();
+  //     exit(0);
+  //   },
+  // };
+  let mut expression = "0 watt".to_string();
+  for _ in 0..10 {
+    expression.push_str(" plus 1watt");
+  }
   match eval(&expression, true, Unit::Celsius, verbose) {
     Ok(answer) => {
       if !verbose {

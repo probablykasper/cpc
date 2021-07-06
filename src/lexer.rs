@@ -152,7 +152,6 @@ fn parse_word_if_non_empty(word: &str, lexer: &mut Lexer) -> Result<(), String> 
 }
 
 fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
-  println!("word {}", word);
   let token = match word {
     "to" => Token::TextOperator(To),
     "of" => Token::TextOperator(Of),
