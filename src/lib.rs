@@ -8,7 +8,7 @@
 //! 
 //! # Example usage
 //! ```rust
-//! use cpc::{eval};
+//! use cpc::eval;
 //! use cpc::units::Unit;
 //! 
 //! match eval("3m + 1cm", true, Unit::Celsius, false) {
@@ -211,7 +211,7 @@ macro_rules! numtok {
 /// 
 /// Example:
 /// ```rust
-/// use cpc::{eval};
+/// use cpc::eval;
 /// use cpc::units::Unit;
 /// 
 /// match eval("3m + 1cm", true, Unit::Celsius, false) {
