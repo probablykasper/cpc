@@ -135,9 +135,6 @@ pub fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
       return Err(format!("Invalid character: {}", c));
     },
   }
-  if let Some(next_c) = lexer.chars.next() {
-    parse_token(next_c, lexer)?;
-  }
   Ok(())
 }
 
@@ -608,7 +605,7 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
     default_degree,
   };
 
-  if let Some(c) = lexer.chars.next() {
+  while let Some(c) = lexer.chars.next() {
     parse_token(c, &mut lexer)?;
   }
   let tokens = &mut lexer.tokens;
