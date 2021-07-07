@@ -7,7 +7,7 @@ use crate::UnaryOperator::{Percent, Factorial};
 use crate::TextOperator::{Of, To};
 use crate::NamedNumber::*;
 use crate::Constant::{E, Pi};
-use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, Force, DoubleQuotes};
+use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, Force, DoubleQuotes, Revolution};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
 use crate::units::Unit;
 use crate::units::Unit::*;
@@ -121,7 +121,7 @@ fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
     "+" => tokens.push(Token::Operator(Plus)),
     "-" => tokens.push(Token::Operator(Minus)),
     "*" => tokens.push(Token::Operator(Multiply)),
-    "/" => tokens.push(Token::Operator(Divide)),
+    "/" | "÷" => tokens.push(Token::Operator(Divide)),
     "%" => tokens.push(Token::LexerKeyword(PercentChar)),
     "^" => tokens.push(Token::Operator(Caret)),
     "!" => tokens.push(Token::UnaryOperator(Factorial)),
@@ -186,6 +186,18 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "plus" => Token::Operator(Plus),
     "minus" => Token::Operator(Minus),
     "times" => Token::Operator(Multiply),
+    "multiplied" => {
+      match read_word("", lexer).as_str() {
+        "by" => Token::Operator(Multiply),
+        string => return Err(format!("Invalid string: {}", string)),
+      }
+    },
+    "divided" => {
+      match read_word("", lexer).as_str() {
+        "by" => Token::Operator(Divide),
+        string => return Err(format!("Invalid string: {}", string)),
+      }
+    },
     "mod" => Token::Operator(Modulo),
 
     "sqrt" => Token::FunctionIdentifier(Sqrt),
@@ -565,7 +577,8 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     "ghz" | "gigahertz" => Token::Unit(Gigahertz),
     "thz" | "terahertz" => Token::Unit(Terahertz),
     "phz" | "petahertz" => Token::Unit(Petahertz),
-    "rpm" | "r/min" | "rev/min" => Token::Unit(RevolutionsPerMinute),
+    "rpm" => Token::Unit(RevolutionsPerMinute),
+    "r" | "rev" | "revolution" | "revolutions" => Token::LexerKeyword(Revolution),
 
     "kph" | "kmh" => Token::Unit(KilometersPerHour),
     "mps" => Token::Unit(MetersPerSecond),
@@ -753,6 +766,10 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
         (Token::Unit(Inch), Token::TextOperator(Of), Token::LexerKeyword(Mercury)) => {
           tokens[token_index-2] = Token::Unit(InchOfMercury);
         },
+        // revolutions per minute
+        (Token::LexerKeyword(Revolution), Token::LexerKeyword(Per), Token::Unit(Minute)) => {
+          tokens[token_index-2] = Token::Unit(RevolutionsPerMinute);
+        },
         _ => {
           replaced = false;
         },
@@ -927,15 +944,15 @@ mod tests {
     run_lex("20 lbf", vec![numtok!(20), Token::LexerKeyword(PoundForce)]);
     run_lex("60 hz", vec![numtok!(60), Token::Unit(Hertz)]);
     run_lex("1100 rpm", vec![numtok!(1100), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1150 revolutions per minute", vec![numtok!(1150), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1 revolution per min", vec![numtok!(1), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("4 revolution / mins", vec![numtok!(4), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1250 r / min", vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1300 rev / min", vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1350 rev / minute", vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1250 r per min", vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1300 rev per min", vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)]);
-    // run_lex("1350 rev per minute", vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1150 revolutions per minute", vec![numtok!(1150), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1 revolution per min", vec![numtok!(1), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("4 revolution / mins", vec![numtok!(4), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1250 r / min", vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1300 rev / min", vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1350 rev / minute", vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1250 r per min", vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1300 rev per min", vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)]);
+    run_lex("1350 rev per minute", vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)]);
     run_lex("100 kph", vec![numtok!(100), Token::Unit(KilometersPerHour)]);
     run_lex("100 kmh", vec![numtok!(100), Token::Unit(KilometersPerHour)]);
     run_lex("100 kilometers per hour", vec![numtok!(100), Token::Unit(KilometersPerHour)]);
@@ -965,10 +982,11 @@ mod tests {
     run_lex("12 minus 4", vec![numtok!(12), Token::Operator(Minus), numtok!(4)]);
     run_lex("50.5 * 2", vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)]);
     run_lex("50.5 times 2", vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)]);
-    // run_lex("50.5 multiplied by 2", vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)]);
+    run_lex("50.5 multiplied by 2", vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)]);
     run_lex("6 / 3", vec![numtok!(6), Token::Operator(Divide), numtok!(3)]);
     run_lex("50 / 10", vec![numtok!(50), Token::Operator(Divide), numtok!(10)]);
-    // run_lex("6 divided by 3", vec![numtok!(6), Token::Operator(Divide), numtok!(3)]);
+    run_lex("52 ÷ 12", vec![numtok!(52), Token::Operator(Divide), numtok!(12)]);
+    run_lex("6 divided by 3", vec![numtok!(6), Token::Operator(Divide), numtok!(3)]);
     run_lex("7 mod 5", vec![numtok!(7), Token::Operator(Modulo), numtok!(5)]);
 
     run_lex("(2 + 3) * 4", vec![Token::Operator(LeftParen), numtok!(2), Token::Operator(Plus), numtok!(3), Token::Operator(RightParen), Token::Operator(Multiply), numtok!(4)]);
