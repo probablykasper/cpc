@@ -221,8 +221,14 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
     },
     Token::NamedNumber(named_number) => {
       let child_node = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
-      let child_answer = evaluate_node(child_node)?;
       let named_number_value = lookup_named_number(named_number);
+      if let Token::NamedNumber(child_nn) = &child_node.token {
+        let child_nn_value = lookup_named_number(child_nn);
+        if child_nn_value > named_number_value {
+          return Err(format!("Unexpected smaller token {:?}", token));
+        }
+      }
+      let child_answer = evaluate_node(child_node)?;
       let result = child_answer.value * named_number_value;
       Ok(Number::new(result, child_answer.unit))
     }
