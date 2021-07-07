@@ -1,9 +1,12 @@
 ## Next
 - Add operator words `plus`, `minus` and `times`
+- Add operator phrases `multiplied by` and `divided by`
+- Add operator symbol `÷`
 - Disallow named number followed by smaller named number (like 1 million thousand)
 - Fix/improve parsing of multi-word units
 - Fix light second parsed as light year
 - Fix `Ω` lexing
+- Fix lexing of rpm units
 
 ## 1.6.0 - 2021 Jul 3
 - Add support for non-US "metre" and "litre" spellings
