@@ -23,7 +23,7 @@
 //! ```
 
 use std::fmt::{self, Display};
-use std::time::{Instant};
+use std::time::Instant;
 use decimal::d128;
 use crate::units::Unit;
 

@@ -136,7 +136,6 @@ fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
     "π" => tokens.push(Token::Constant(Pi)),
     "'" => tokens.push(Token::Unit(Foot)),
     "\"" | "“" | "”" | "″" => tokens.push(Token::LexerKeyword(DoubleQuotes)),
-    "Ω" | "Ω" => tokens.push(Token::Unit(Ohm)),
     _ => {
       return Err(format!("Invalid character: {}", c));
     },
@@ -597,7 +596,7 @@ struct Lexer<'a> {
 
 /// Lex an input string and returns [`Token`]s
 pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
-  let mut input = input.replace(",", "").to_lowercase();
+  let mut input = input.replace(",", "").to_ascii_lowercase();
 
   if remove_trailing_operator {
     match &input.chars().last().unwrap_or('x') {
@@ -977,5 +976,6 @@ mod tests {
     run_lex("12 pound+", vec![numtok!(12), Token::Unit(Pound), Token::Operator(Plus)]);
 
     run_lex("5 π m", vec![numtok!(5), Token::Constant(Pi), Token::Unit(Meter)]);
+    run_lex("5 Ω + 2 mΩ", vec![numtok!(5), Token::Unit(Ohm), Token::Operator(Plus), numtok!(2), Token::Unit(Milliohm)]);
   }
 }

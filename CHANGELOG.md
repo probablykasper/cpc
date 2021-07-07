@@ -3,6 +3,7 @@
 - Disallow named number followed by smaller named number (like 1 million thousand)
 - Fix/improve parsing of multi-word units
 - Fix light second parsed as light year
+- Fix `Ω` lexing
 
 ## 1.6.0 - 2021 Jul 3
 - Add support for non-US "metre" and "litre" spellings
