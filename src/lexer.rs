@@ -12,27 +12,19 @@ use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round
 use crate::units::Unit;
 use crate::units::Unit::*;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
+use std::cmp::Ordering;
 
 fn is_word_char_str(input: &str) -> bool {
-  let x = match input {
-    "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
+  matches!(input, "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
     | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
-    | "Y" | "Z" => true,
-    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l"
+    | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l"
     | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x"
-    | "y" | "z" => true,
-    "Ω" | "Ω" | "µ" | "μ" => true,
-    _ => false,
-  };
-  return x;
+    | "y" | "z" | "Ω" | "Ω" | "µ" | "μ")
+
 }
 
 fn is_numeric_str(input: &str) -> bool {
-  match input {
-    "." => true,
-    "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => true,
-    _ => false,
-  }
+  matches!(input, "." | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")
 }
 
 /// Read next characters as a word, otherwise return empty string.
@@ -54,7 +46,7 @@ fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
 fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
   let chars = &mut lexer.chars;
   let mut word = first_c.trim().to_owned();
-  if word == "" {
+  if word.is_empty() {
     // skip whitespace
     while let Some(current_char) = chars.peek() {
       if current_char.trim().is_empty() {
@@ -71,7 +63,7 @@ fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
       break;
     }
   }
-  if word != "" {
+  if !word.is_empty() {
     match *chars.peek().unwrap_or(&"") {
       "2" | "²" => {
         word += "2";
@@ -633,15 +625,19 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
   }
   let tokens = &mut lexer.tokens;
   // auto insert missing parentheses in first and last position
-  if lexer.left_paren_count > lexer.right_paren_count {
-    let missing_right_parens = lexer.left_paren_count - lexer.right_paren_count;
-    for _ in 0..missing_right_parens {
-      tokens.push(Token::Operator(RightParen));
+  match lexer.left_paren_count.cmp(&lexer.right_paren_count) {
+    Ordering::Less => {
+      let missing_left_parens = lexer.right_paren_count - lexer.left_paren_count;
+      for _ in 0..missing_left_parens {
+        tokens.insert(0, Token::Operator(LeftParen));
+      }
     }
-  } else if lexer.left_paren_count < lexer.right_paren_count {
-    let missing_left_parens = lexer.right_paren_count - lexer.left_paren_count;
-    for _ in 0..missing_left_parens {
-      tokens.insert(0, Token::Operator(LeftParen));
+    Ordering::Equal => {}
+    Ordering::Greater => {
+      let missing_right_parens = lexer.left_paren_count - lexer.right_paren_count;
+      for _ in 0..missing_right_parens {
+        tokens.push(Token::Operator(RightParen));
+      }
     }
   }
 

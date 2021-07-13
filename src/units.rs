@@ -544,15 +544,13 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
     // 1 watt * 1 second = 1 joule
     let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight() / Unit::Second.weight());
     match right.unit {
-      Second => return Ok(to_ideal_joule_unit(Number::new(result, Joule))),
-      _ => return Ok(to_ideal_unit(Number::new(result, Joule))),
-    };
-  } else {
-    if swapped == true {
-      Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
-    } else {
-      actual_multiply(right, left, true)
+      Second => Ok(to_ideal_joule_unit(Number::new(result, Joule))),
+      _ => Ok(to_ideal_unit(Number::new(result, Joule))),
     }
+  } else if swapped {
+    Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
+  } else {
+    actual_multiply(right, left, true)
   }
 }
 
