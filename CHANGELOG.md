@@ -1,4 +1,4 @@
-## Next
+## 1.7.0 - 2021 Jul 14
 - Add operator words `plus`, `minus` and `times`
 - Add operator phrases `multiplied by` and `divided by`
 - Add operator symbol `÷`
