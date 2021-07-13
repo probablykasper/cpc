@@ -494,7 +494,7 @@ pub fn to_ideal_joule_unit(number: Number) -> Number {
 /// - If you multiply [`ElectricCurrent`] with [`Resistance`], the result has a unit of [`Voltage`]
 /// - If you multiply [`Power`] with [`Time`], the result has a unit of [`Energy`]
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
-  Ok(actual_multiply(left, right, false)?)
+  actual_multiply(left, right, false)
 }
 
 fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number, String> {

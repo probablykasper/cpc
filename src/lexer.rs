@@ -642,7 +642,7 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
   }
 
   if tokens.is_empty() {
-    Err("Input was empty".to_string())
+    return Err("Input was empty".to_string());
   }
 
   let mut token_index = 0;

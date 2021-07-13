@@ -17,7 +17,7 @@ impl AstNode {
   pub fn new(token: Token) -> AstNode {
     AstNode {
       children: Vec::new(),
-      token: token,
+      token,
     }
   }
 }

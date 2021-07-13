@@ -93,7 +93,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
   let children = &ast_node.children;
   match token {
     Token::Number(number) => {
-      Ok(Number::new(number.clone(), Unit::NoUnit))
+      Ok(Number::new(*number, Unit::NoUnit))
     },
     Token::Constant(constant) => {
       match constant {
@@ -192,7 +192,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
     Token::Unit(unit) => {
       let child_node = children.get(0).ok_or("Unit has no child[0]")?;
       let child_answer = evaluate_node(child_node)?;
-      Ok(Number::new(child_answer.value, unit.clone()))
+      Ok(Number::new(child_answer.value, *unit))
     },
     Token::Negative => {
       let child_node = children.get(0).ok_or("Negative has no child[0]")?;
