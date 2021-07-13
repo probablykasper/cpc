@@ -63,7 +63,7 @@ fn main() {
   match eval(&expression, true, Unit::Celsius, verbose) {
     Ok(answer) => {
       if !verbose {
-        println!("{}", answer);
+        println!("{}", answer.to_string());
       }
     },
     Err(e) => {

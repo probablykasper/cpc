@@ -69,7 +69,13 @@ impl Display for Number {
     let fixed_value = self.value + d128!(0);
     let output = match self.unit {
       Unit::NoUnit => format!("{}", fixed_value),
-      unit => format!("{} {:?}", fixed_value, unit),
+      unit => {
+        if self.value > d128!(1) {
+          format!("{} {}s", self.value, unit.to_string())
+        } else {
+          format!("{} {}", self.value, unit.to_string())
+        }
+      },
     };
     return write!(f, "{}", output);
   }
@@ -232,27 +238,27 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, v
   match lexer::lex(input, allow_trailing_operators, default_degree) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
-      if verbose == true { println!("Lexed TokenVector: {:?}", tokens); }
+      if verbose { println!("Lexed TokenVector: {:?}", tokens); }
 
       let parse_start = Instant::now();
       match parser::parse(&tokens) {
         Ok(ast) => {
           let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
-          if verbose == true { println!("Parsed AstNode: {:#?}", ast); }
+          if verbose { println!("Parsed AstNode: {:#?}", ast); }
 
           let eval_start = Instant::now();
           match evaluator::evaluate(&ast) {
             Ok(answer) => {
               let eval_time = Instant::now().duration_since(eval_start).as_nanos() as f32;
 
-              if verbose == true {
-                println!("Evaluated value: {} {:?}", answer.value, answer.unit);
+              if verbose {
+                println!("Evaluated value: {}", answer.to_string());
                 println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
                 println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
                 println!("\u{23f1}  {:.3}ms evaluation", eval_time/1000.0/1000.0);
               }
 
-              return Ok(answer)
+              Ok(answer)
             },
             Err(e) => Err(format!("Eval error: {}", e)),
           }

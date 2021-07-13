@@ -1,5 +1,6 @@
 use decimal::d128;
 use crate::Number;
+use std::fmt;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// An enum of all possible unit types, like [`Length`], [`DigitalStorage`] etc.
@@ -40,6 +41,19 @@ pub enum UnitType {
 }
 use UnitType::*;
 
+pub fn ccbreaker (value: &str) -> String {
+  value.chars()
+      .into_iter()
+      .enumerate()
+      .map(|(i, c)|
+          if c.is_uppercase() && i != 0 {
+            format!(" {}", c.to_lowercase())
+          } else {
+            c.to_string()
+          })
+      .collect::<String>()
+}
+
 // Macro for creating units. Not possible to extend/change the default units
 // with this because the default units are imported into the lexer, parser
 // and evaluator
@@ -64,6 +78,18 @@ macro_rules! create_units {
         match self {
           $(
             Unit::$variant => $properties.1
+          ),*
+        }
+      }
+    }
+
+    impl fmt::Display for Unit {
+      fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+          $(
+            Unit::$variant => {
+              write!(f, "{}", &*ccbreaker(stringify!($variant)))
+            }
           ),*
         }
       }
