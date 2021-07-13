@@ -46,7 +46,7 @@ fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
       break;
     }
   }
-  return word;
+  word
 }
 
 /// Read next as a word, otherwise return empty string.
@@ -84,7 +84,7 @@ fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
       _ => {},
     }
   }
-  return word;
+  word
 }
 
 fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
@@ -596,7 +596,7 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
     }
   };
   lexer.tokens.push(token);
-  return Ok(());
+  Ok(())
 }
 
 struct Lexer<'a> {
@@ -645,8 +645,8 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
     }
   }
 
-  if tokens.len() == 0 {
-    return Err(format!("Input was empty"))
+  if tokens.is_empty() {
+    Err("Input was empty".to_string())
   }
 
   let mut token_index = 0;

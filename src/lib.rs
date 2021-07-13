@@ -252,7 +252,7 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, v
                 println!("\u{23f1}  {:.3}ms evaluation", eval_time/1000.0/1000.0);
               }
 
-              return Ok(answer)
+              Ok(answer)
             },
             Err(e) => Err(format!("Eval error: {}", e)),
           }

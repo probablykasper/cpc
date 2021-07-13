@@ -253,11 +253,9 @@ pub fn parse_level_5(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
       let (right_node, next_pos) = parse_level_6(tokens, pos + 1)?;
       let mut new_node = AstNode::new(Token::Negative);
       new_node.children.push(right_node);
-      return Ok((new_node, next_pos));
+      Ok((new_node, next_pos))
     },
-    _ => {
-      return Ok(parse_level_6(tokens, pos)?);
-    }
+    _ => parse_level_6(tokens, pos)
   }
 }
 

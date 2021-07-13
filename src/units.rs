@@ -288,7 +288,7 @@ fn get_inverted_millivolt_weight() -> d128 {
 /// 
 /// This is not sufficient for [`Temperature`] units.
 pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> d128 {
-  return unit.weight() / to_unit.weight();
+  unit.weight() / to_unit.weight()
 }
 
 /// Convert a [`Number`] to a specified [`Unit`].
