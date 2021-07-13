@@ -41,6 +41,7 @@ pub enum UnitType {
 }
 use UnitType::*;
 
+// Converts a string from camelCase to a better readable format
 pub fn ccbreaker (value: &str) -> String {
   value.chars()
       .into_iter()
