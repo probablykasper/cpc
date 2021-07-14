@@ -14,16 +14,25 @@ use crate::units::Unit::*;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
 fn is_word_char_str(input: &str) -> bool {
-  matches!(input, "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
+  let x = match input {
+    "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
     | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
-    | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l"
+    | "Y" | "Z" => true,
+    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l"
     | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x"
-    | "y" | "z" | "Ω" | "Ω" | "µ" | "μ")
-
+    | "y" | "z" => true,
+    "Ω" | "Ω" | "µ" | "μ" => true,
+    _ => false,
+  };
+  return x;
 }
 
 fn is_numeric_str(input: &str) -> bool {
-  matches!(input, "." | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")
+  match input {
+    "." => true,
+    "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => true,
+    _ => false,
+  }
 }
 
 /// Read next characters as a word, otherwise return empty string.
