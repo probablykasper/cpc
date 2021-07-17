@@ -361,8 +361,9 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 /// 
 /// If you have 1,000,000 millimeters, this will return 1 kilometer.
 /// 
-/// This only affects units of `Length`, `Area`, `Volume`, `Energy`, `Power`,
-/// `ElectricCurrent`, `Resistance` and `Voltage`. Other units are passed through.
+/// This only affects units of `Length`, `Time`, `Area`, `Volume`,
+/// `Energy`, `Power`, `ElectricCurrent`, `Resistance`, and `Voltage`.
+/// Other units are passed through.
 pub fn to_ideal_unit(number: Number) -> Number {
   let value = number.value * number.unit.weight();
   if number.unit.category() == Length {
@@ -376,6 +377,24 @@ pub fn to_ideal_unit(number: Number) -> Number {
       return Number::new(value/Centimeter.weight(), Centimeter)
     } else {
       return Number::new(value, Millimeter)
+    }
+  } else if number.unit.category() == Time {
+    if value >= d128!(31556952000000000) {
+      return Number::new(value/Year.weight(), Year);
+    } else if value >= d128!(86400000000000) {
+      return Number::new(value/Day.weight(), Day);
+    } else if value >= d128!(3600000000000) {
+      return Number::new(value/Hour.weight(), Hour);
+    } else if value >= d128!(60000000000) {
+      return Number::new(value/Minute.weight(), Minute);
+    } else if value >= d128!(1000000000) {
+      return Number::new(value/Second.weight(), Second);
+    } else if value >= d128!(1000000) {
+      return Number::new(value/Millisecond.weight(), Millisecond);
+    } else if value >= d128!(1000) {
+      return Number::new(value/Microsecond.weight(), Microsecond);
+    } else {
+      return Number::new(value, Nanosecond);
     }
   } else if number.unit.category() == Area {
     if value >= d128!(1000000000000) { // 1 km2
@@ -562,6 +581,7 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 /// - If you divide a unit by that same unit, the result has a unit of [`NoType`]
 /// - If you divide [`Volume`] by [`Length`], the result has a unit of [`Area`], etc.
 /// - If you divide [`Length`] by [`Time`], the result has a unit of [`Speed`]
+/// - If you divide [`Length`] by [`Speed`], the result has a unit of [`Time`]
 /// - If you divide [`Power`] by [`ElectricCurrent`], the result has a unit of [`Volt`]
 /// - If you divide [`Voltage`] by [`ElectricCurrent`], the result has a unit of [`Ohm`]
 /// - If you divide [`Voltage`] by [`Resistance`], the result has a unit of [`Ampere`]
@@ -605,6 +625,12 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     let hours = convert(right, Hour)?;
     let kph = Number::new(kilometers.value / hours.value, KilometersPerHour);
     Ok(convert(kph, final_unit)?)
+  } else if lcat == Length && rcat == Speed {
+    // 12 km / 100 kph
+    let kilometers = convert(left, Kilometer)?;
+    let kilometers_per_hour = convert(right, KilometersPerHour)?;
+    let hour = Number::new(kilometers.value / kilometers_per_hour.value, Hour);
+    Ok(to_ideal_unit(hour))
   } else if lcat == Power && rcat == ElectricCurrent {
     // 1 watt / 1 ampere = 1 volt
     let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
