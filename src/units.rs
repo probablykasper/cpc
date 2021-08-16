@@ -19,6 +19,8 @@ pub enum UnitType {
   Mass,
   /// A unit of digital storage, for example [`Kilobyte`]
   DigitalStorage,
+  /// A unit of data rate transfer, for example [`KilobytesPerSecond`]
+  DataTransferRate,
   /// A unit of energy, for example [`Joule`] or [`KilowattHour`]
   Energy,
   /// A unit of power, for example [`Watt`]
@@ -186,6 +188,41 @@ create_units!(
   Exbibyte:           (DigitalStorage, d128!(9223372036854775808)),
   Zebibyte:           (DigitalStorage, d128!(9444732965739290427392)),
   Yobibyte:           (DigitalStorage, d128!(9671406556917033397649408)),
+
+  BitsPerSecond:        (DataTransferRate, d128!(1)),
+  KilobitsPerSecond:    (DataTransferRate, d128!(1000)),
+  MegabitsPerSecond:    (DataTransferRate, d128!(1000000)),
+  GigabitsPerSecond:    (DataTransferRate, d128!(1000000000)),
+  TerabitsPerSecond:    (DataTransferRate, d128!(1000000000000)),
+  PetabitsPerSecond:    (DataTransferRate, d128!(1000000000000000)),
+  ExabitsPerSecond:     (DataTransferRate, d128!(1000000000000000000)),
+  ZettabitsPerSecond:   (DataTransferRate, d128!(1000000000000000000000)),
+  YottabitsPerSecond:   (DataTransferRate, d128!(1000000000000000000000000)),
+  KibibitsPerSecond:    (DataTransferRate, d128!(1024)),
+  MebibitsPerSecond:    (DataTransferRate, d128!(1048576)),
+  GibibitsPerSecond:    (DataTransferRate, d128!(1073741824)),
+  TebibitsPerSecond:    (DataTransferRate, d128!(1099511627776)),
+  PebibitsPerSecond:    (DataTransferRate, d128!(1125899906842624)),
+  ExbibitsPerSecond:    (DataTransferRate, d128!(1152921504606846976)),
+  ZebibitsPerSecond:    (DataTransferRate, d128!(1180591620717411303424)),
+  YobibitsPerSecond:    (DataTransferRate, d128!(1208925819614629174706176)),
+  BytesPerSecond:       (DataTransferRate, d128!(8)),
+  KilobytesPerSecond:   (DataTransferRate, d128!(8000)),
+  MegabytesPerSecond:   (DataTransferRate, d128!(8000000)),
+  GigabytesPerSecond:   (DataTransferRate, d128!(8000000000)),
+  TerabytesPerSecond:   (DataTransferRate, d128!(8000000000000)),
+  PetabytesPerSecond:   (DataTransferRate, d128!(8000000000000000)),
+  ExabytesPerSecond:    (DataTransferRate, d128!(8000000000000000000)),
+  ZettabytesPerSecond:  (DataTransferRate, d128!(8000000000000000000000)),
+  YottabytesPerSecond:  (DataTransferRate, d128!(8000000000000000000000000)),
+  KibibytesPerSecond:   (DataTransferRate, d128!(8192)),
+  MebibytesPerSecond:   (DataTransferRate, d128!(8388608)),
+  GibibytesPerSecond:   (DataTransferRate, d128!(8589934592)),
+  TebibytesPerSecond:   (DataTransferRate, d128!(8796093022208)),
+  PebibytesPerSecond:   (DataTransferRate, d128!(9007199254740992)),
+  ExbibytesPerSecond:   (DataTransferRate, d128!(9223372036854775808)),
+  ZebibytesPerSecond:   (DataTransferRate, d128!(9444732965739290427392)),
+  YobibytesPerSecond:   (DataTransferRate, d128!(9671406556917033397649408)),
 
   // ! If updating Millijoule, also update get_inverted_millijoule_weight()
   Millijoule:         (Energy, d128!(0.001)),
@@ -551,6 +588,50 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
     };
     let kilometers = Number::new(result, Kilometer);
     Ok(convert(kilometers, final_unit)?)
+  } else if lcat == DataTransferRate && rcat == Time {
+    // 8 megabytes per second * 1 minute
+    let data_rate_value = left.value * left.unit.weight();
+    let seconds = convert(right, Second)?;
+    let result = data_rate_value * seconds.value;
+    let final_unit = match left.unit {
+      BitsPerSecond => Bit,
+      KilobitsPerSecond => Kilobit,
+      MegabitsPerSecond => Megabit,
+      GigabitsPerSecond => Gigabit,
+      TerabitsPerSecond => Terabit,
+      PetabitsPerSecond => Petabit,
+      ExabitsPerSecond => Exabit,
+      ZettabitsPerSecond => Zettabit,
+      YottabitsPerSecond => Yottabit,
+      KibibitsPerSecond => Kibibit,
+      MebibitsPerSecond => Mebibit,
+      GibibitsPerSecond => Gibibit,
+      TebibitsPerSecond => Tebibit,
+      PebibitsPerSecond => Pebibit,
+      ExbibitsPerSecond => Exbibit,
+      ZebibitsPerSecond => Zebibit,
+      YobibitsPerSecond => Yobibit,
+      BytesPerSecond => Byte,
+      KilobytesPerSecond => Kilobyte,
+      MegabytesPerSecond => Megabyte,
+      GigabytesPerSecond => Gigabyte,
+      TerabytesPerSecond => Terabyte,
+      PetabytesPerSecond => Petabyte,
+      ExabytesPerSecond => Exabyte,
+      ZettabytesPerSecond => Zettabyte,
+      YottabytesPerSecond => Yottabyte,
+      KibibytesPerSecond => Kibibyte,
+      MebibytesPerSecond => Mebibyte,
+      GibibytesPerSecond => Gibibyte,
+      TebibytesPerSecond => Tebibyte,
+      PebibytesPerSecond => Pebibyte,
+      ExbibytesPerSecond => Exbibyte,
+      ZebibytesPerSecond => Zebibyte,
+      YobibytesPerSecond => Yobibyte,
+      _ => Bit,
+    };
+    let data_storage = Number::new(result, Bit);
+    Ok(convert(data_storage, final_unit)?)
   } else if lcat == Voltage && rcat == ElectricCurrent {
     // 1 volt * 1 ampere = 1 watt
     let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
@@ -631,6 +712,12 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
     let kilometers_per_hour = convert(right, KilometersPerHour)?;
     let hour = Number::new(kilometers.value / kilometers_per_hour.value, Hour);
     Ok(to_ideal_unit(hour))
+  } else if lcat == DigitalStorage && rcat == DataTransferRate {
+    // 1 kilobit / 1 bit per second
+    let bits = convert(left, Bit)?;
+    let bits_per_second = convert(right, BitsPerSecond)?;
+    let seconds = Number::new(bits.value / bits_per_second.value, Second);
+    Ok(to_ideal_unit(seconds))
   } else if lcat == Power && rcat == ElectricCurrent {
     // 1 watt / 1 ampere = 1 volt
     let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
@@ -839,6 +926,39 @@ mod tests {
     assert_float_eq!(convert_test(1024.0, Pebibyte, Exbibyte), 1.0);
     assert_float_eq!(convert_test(1024.0, Exbibyte, Zebibyte), 1.0);
     assert_float_eq!(convert_test(1024.0, Zebibyte, Yobibyte), 1.0);
+
+    assert_float_eq!(convert_test(1000.0, BitsPerSecond, KilobitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, KilobitsPerSecond, MegabitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, MegabitsPerSecond, GigabitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, GigabitsPerSecond, TerabitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, TerabitsPerSecond, PetabitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, PetabitsPerSecond, ExabitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, ExabitsPerSecond, ZettabitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, ZettabitsPerSecond, YottabitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, BitsPerSecond, KibibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, KibibitsPerSecond, MebibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, MebibitsPerSecond, GibibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, GibibitsPerSecond, TebibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, TebibitsPerSecond, PebibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, PebibitsPerSecond, ExbibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, ExbibitsPerSecond, ZebibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, ZebibitsPerSecond, YobibitsPerSecond), 1.0);
+    assert_float_eq!(convert_test(8.0, BitsPerSecond, BytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, BytesPerSecond, KilobytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, KilobytesPerSecond, MegabytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, MegabytesPerSecond, GigabytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, GigabytesPerSecond, TerabytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, TerabytesPerSecond, PetabytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, PetabytesPerSecond, ExabytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, ExabytesPerSecond, ZettabytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1000.0, ZettabytesPerSecond, YottabytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, KibibytesPerSecond, MebibytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, MebibytesPerSecond, GibibytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, GibibytesPerSecond, TebibytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, TebibytesPerSecond, PebibytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, PebibytesPerSecond, ExbibytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, ExbibytesPerSecond, ZebibytesPerSecond), 1.0);
+    assert_float_eq!(convert_test(1024.0, ZebibytesPerSecond, YobibytesPerSecond), 1.0);
 
     assert_float_eq!(convert_test(1000.0, Millijoule, Joule), 1.0);
     assert_float_eq!(convert_test(1000.0, Joule, Kilojoule), 1.0);
