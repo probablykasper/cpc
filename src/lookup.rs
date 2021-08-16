@@ -4,7 +4,7 @@ use decimal::d128;
 
 /// Returns the corresponding [`d128`] of a [`NamedNumber`]
 pub fn lookup_named_number(named_number: &NamedNumber) -> d128 {
-  return match named_number {
+  match named_number {
     Hundred           => d128!(100),
     Thousand          => d128!(1000),
     Million           => d128!(1000000),
@@ -34,7 +34,7 @@ pub fn lookup_named_number(named_number: &NamedNumber) -> d128 {
 
 /// Returns the factorial of an `i32` as a [`struct@d128`]
 pub fn lookup_factorial(n: i32) -> d128 {
-  return match n {
+  match n {
     0 => d128!(1),
     1 => d128!(1),
     2 => d128!(2),
@@ -1037,5 +1037,5 @@ pub fn lookup_factorial(n: i32) -> d128 {
     999 => d128!(4.023872600770937735437024339230041E+2564),
     1000 => d128!(4.023872600770937735437024339230041E+2567),
     _ => d128!("NaN"),
-  };
+  }
 }

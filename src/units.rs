@@ -325,7 +325,7 @@ fn get_inverted_millivolt_weight() -> d128 {
 /// 
 /// This is not sufficient for [`Temperature`] units.
 pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> d128 {
-  return unit.weight() / to_unit.weight();
+  unit.weight() / to_unit.weight()
 }
 
 /// Convert a [`Number`] to a specified [`Unit`].
@@ -550,7 +550,7 @@ pub fn to_ideal_joule_unit(number: Number) -> Number {
 /// - If you multiply [`ElectricCurrent`] with [`Resistance`], the result has a unit of [`Voltage`]
 /// - If you multiply [`Power`] with [`Time`], the result has a unit of [`Energy`]
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
-  Ok(actual_multiply(left, right, false)?)
+  actual_multiply(left, right, false)
 }
 
 fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number, String> {
@@ -644,15 +644,13 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
     // 1 watt * 1 second = 1 joule
     let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight() / Unit::Second.weight());
     match right.unit {
-      Second => return Ok(to_ideal_joule_unit(Number::new(result, Joule))),
-      _ => return Ok(to_ideal_unit(Number::new(result, Joule))),
-    };
-  } else {
-    if swapped == true {
-      Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
-    } else {
-      actual_multiply(right, left, true)
+      Second => Ok(to_ideal_joule_unit(Number::new(result, Joule))),
+      _ => Ok(to_ideal_unit(Number::new(result, Joule))),
     }
+  } else if swapped {
+    Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
+  } else {
+    actual_multiply(right, left, true)
   }
 }
 

@@ -21,7 +21,7 @@ pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
 /// 
 /// All return values of this function are hard-coded.
 pub fn factorial(input: d128) -> d128 {
-  return lookup_factorial(input.into());
+  lookup_factorial(input.into())
 }
 
 /// Returns the square root of a [`struct@d128`]
@@ -31,7 +31,7 @@ pub fn sqrt(input: d128) -> d128 {
   for _ in 0..10 {
     n = (n + input/n) * half;
   }
-  return n
+  n
 }
 
 /// Returns the cube root of a [`struct@d128`]
@@ -43,7 +43,7 @@ pub fn cbrt(input: d128) -> d128 {
     let z2 = n*n;
     n = n - ((n*z2 - input) / (three*z2));
   }
-  return n
+  n
 }
 
 /// Returns the sine of a [`struct@d128`]
@@ -72,19 +72,19 @@ pub fn sin(mut input: d128) -> d128 {
     result += neg_one.pow(i) * (input.pow(calc_result) / factorial(calc_result));
   }
 
-  return negative_correction * result;
+  negative_correction * result
   
 }
 
 /// Returns the cosine of a [`struct@d128`]
 pub fn cos(input: d128) -> d128 {
   let half_pi = d128!(1.570796326794896619231321691639751);
-  return sin(half_pi - input);
+  sin(half_pi - input)
 }
 
 /// Returns the tangent of a [`struct@d128`]
 pub fn tan(input: d128) -> d128 {
-  return sin(input) / cos(input);
+  sin(input) / cos(input)
 }
 
 /// Evaluate an [`AstNode`] into a [`Number`]
@@ -93,7 +93,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
   let children = &ast_node.children;
   match token {
     Token::Number(number) => {
-      Ok(Number::new(number.clone(), Unit::NoUnit))
+      Ok(Number::new(*number, Unit::NoUnit))
     },
     Token::Constant(constant) => {
       match constant {
@@ -112,41 +112,41 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
         Cbrt => {
           if child_answer.unit.category() == UnitType::NoType {
             let result = cbrt(child_answer.value);
-            return Ok(Number::new(result, child_answer.unit))
+            Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err("log() only accepts UnitType::NoType".to_string())
+            Err("log() only accepts UnitType::NoType".to_string())
           }
         },
         Sqrt => {
           if child_answer.unit.category() == UnitType::NoType {
             let result = sqrt(child_answer.value);
-            return Ok(Number::new(result, child_answer.unit))
+            Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err("log() only accepts UnitType::NoType".to_string())
+            Err("log() only accepts UnitType::NoType".to_string())
           }
         },
         Log => {
           if child_answer.unit.category() == UnitType::NoType {
             let result = child_answer.value.log10();
-            return Ok(Number::new(result, child_answer.unit))
+            Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err("log() only accepts UnitType::NoType".to_string())
+            Err("log() only accepts UnitType::NoType".to_string())
           }
         },
         Ln => {
           if child_answer.unit.category() == UnitType::NoType {
             let result = child_answer.value.ln();
-            return Ok(Number::new(result, child_answer.unit))
+            Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err("ln() only accepts UnitType::NoType".to_string())
+            Err("ln() only accepts UnitType::NoType".to_string())
           }
         },
         Exp => {
           if child_answer.unit.category() == UnitType::NoType {
             let result = child_answer.value.exp(child_answer.value);
-            return Ok(Number::new(result, child_answer.unit))
+            Ok(Number::new(result, child_answer.unit))
           } else {
-            return Err("exp() only accepts UnitType::NoType".to_string())
+            Err("exp() only accepts UnitType::NoType".to_string())
           }
         },
         Round => {
@@ -155,44 +155,44 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
           let rounding_change = result - child_answer.value;
           // If the result was rounded down by 0.5, correct by +1
           if rounding_change == d128!(-0.5) { result += d128!(1); }
-          return Ok(Number::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
         Ceil => {
           let mut result = child_answer.value.quantize(d128!(1));
           let rounding_change = result - child_answer.value;
           if rounding_change.is_negative() { result += d128!(1); }
-          return Ok(Number::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
         Floor => {
           let mut result = child_answer.value.quantize(d128!(1));
           let rounding_change = result - child_answer.value;
           if !rounding_change.is_negative() { result -= d128!(1); }
-          return Ok(Number::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
         Abs => {
           let mut result = child_answer.value.abs();
           let rounding_change = result - child_answer.value;
           if rounding_change == d128!(-0.5) { result += d128!(1); }
-          return Ok(Number::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
         Sin => {
           let result = sin(child_answer.value);
-          return Ok(Number::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
         Cos => {
           let result = cos(child_answer.value);
-          return Ok(Number::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
         Tan => {
           let result = tan(child_answer.value);
-          return Ok(Number::new(result, child_answer.unit))
+          Ok(Number::new(result, child_answer.unit))
         },
       }
     }
     Token::Unit(unit) => {
       let child_node = children.get(0).ok_or("Unit has no child[0]")?;
       let child_answer = evaluate_node(child_node)?;
-      Ok(Number::new(child_answer.value, unit.clone()))
+      Ok(Number::new(child_answer.value, *unit))
     },
     Token::Negative => {
       let child_node = children.get(0).ok_or("Negative has no child[0]")?;
@@ -201,7 +201,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
     },
     Token::Paren => {
       let child_node = children.get(0).ok_or("Paren has no child[0]")?;
-      return evaluate_node(child_node)
+      evaluate_node(child_node)
     },
     Token::UnaryOperator(operator) => {
       let child_node = children.get(0).ok_or(format!("Token {:?} has no child[0]", token))?;
@@ -241,18 +241,18 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
           if let Token::Unit(right_unit) = right_child.token {
             let left = evaluate_node(left_child)?;
             let result = convert(left, right_unit)?;
-            return Ok(result)
+            Ok(result)
           } else {
-            return Err("Right side of To operator needs to be a unit".to_string())
+            Err("Right side of To operator needs to be a unit".to_string())
           }
         },
         Of => {
           let left = evaluate_node(left_child)?;
           let right = evaluate_node(right_child)?;
           if left.unit == Unit::NoUnit {
-            return Ok(Number::new(left.value * right.value, right.unit))
+            Ok(Number::new(left.value * right.value, right.unit))
           } else {
-            return Err("Left side of the Of operator must be NoUnit".to_string())
+            Err("Left side of the Of operator must be NoUnit".to_string())
           }
         },
       }
