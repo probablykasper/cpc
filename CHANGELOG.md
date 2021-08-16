@@ -1,6 +1,6 @@
-## Next
-- Add support for dividing length units by speed units (like 10 km / 100 kph)
-- Add support for data transfer rate units (eg. megabytes per second)
+## 1.8.0 - 2021 Aug 16
+- Add support for data transfer rate units (like mb/s)
+- Add support for dividing length by speed (like 10 km / 100 kph)
 
 ## 1.7.0 - 2021 Jul 14
 - Add operator words `plus`, `minus` and `times`

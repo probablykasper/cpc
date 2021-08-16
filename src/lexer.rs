@@ -126,11 +126,11 @@ fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
     "^" => tokens.push(Token::Operator(Caret)),
     "!" => tokens.push(Token::UnaryOperator(Factorial)),
     "(" => {
-      // left_paren_count += 1;
+      lexer.left_paren_count += 1;
       tokens.push(Token::Operator(LeftParen));
     },
     ")" => {
-      // right_paren_count += 1;
+      lexer.right_paren_count += 1;
       tokens.push(Token::Operator(RightParen));
     },
     "π" => tokens.push(Token::Constant(Pi)),
