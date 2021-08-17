@@ -6,7 +6,7 @@ calculation + conversion
 
 cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
 
-It also lets you mix units, so for example `1 km - 1m` results in `Number { value: 999, unit: Meter }`.
+It also lets you mix units, so for example `1 km - 1m` results in `999 Meter`.
 
 [![Crates.io](https://img.shields.io/crates/v/cpc.svg)](https://crates.io/crates/cpc)
 [![Documentation](https://docs.rs/cpc/badge.svg)](https://docs.rs/cpc)
