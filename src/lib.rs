@@ -204,7 +204,7 @@ pub enum Token {
 #[macro_export]
 macro_rules! numtok {
   ( $num:literal ) => {
-    Token::Number(d128!($num));
+    Token::Number(d128!($num))
   }
 }
 
