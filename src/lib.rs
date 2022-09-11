@@ -1,10 +1,10 @@
 #![cfg_attr(
-  feature = "cargo-clippy",
-  allow(
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::match_like_matches_macro,
-  )
+	feature = "cargo-clippy",
+	allow(
+		clippy::comparison_chain,
+		clippy::if_same_then_else,
+		clippy::match_like_matches_macro,
+	)
 )]
 //! calculation + conversion
 //!
@@ -63,110 +63,110 @@ pub mod units;
 /// };
 /// ```
 pub struct Number {
-  /// The number part of a [`Number`] struct
-  pub value: d128,
-  /// The unit of a [`Number`] struct. This can be [`NoType`](units::UnitType::NoType)
-  pub unit: Unit,
+	/// The number part of a [`Number`] struct
+	pub value: d128,
+	/// The unit of a [`Number`] struct. This can be [`NoType`](units::UnitType::NoType)
+	pub unit: Unit,
 }
 
 impl Number {
-  pub const fn new(value: d128, unit: Unit) -> Number {
-    Number { value, unit }
-  }
+	pub const fn new(value: d128, unit: Unit) -> Number {
+		Number { value, unit }
+	}
 }
 impl Display for Number {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    // 0.2/0.01 results in 2E+1, but if we add zero it becomes 20
-    let fixed_value = self.value + d128!(0);
-    let output = match self.unit {
-      Unit::NoUnit => format!("{}", fixed_value),
-      unit => format!("{} {:?}", fixed_value, unit),
-    };
-    write!(f, "{}", output)
-  }
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		// 0.2/0.01 results in 2E+1, but if we add zero it becomes 20
+		let fixed_value = self.value + d128!(0);
+		let output = match self.unit {
+			Unit::NoUnit => format!("{}", fixed_value),
+			unit => format!("{} {:?}", fixed_value, unit),
+		};
+		write!(f, "{}", output)
+	}
 }
 
 #[derive(Clone, Debug, PartialEq)]
 /// Math operators like [`Multiply`](Operator::Multiply), parentheses, etc.
 pub enum Operator {
-  Plus,
-  Minus,
-  Multiply,
-  Divide,
-  Modulo,
-  Caret,
-  LeftParen,  // lexer only
-  RightParen, // lexer only
+	Plus,
+	Minus,
+	Multiply,
+	Divide,
+	Modulo,
+	Caret,
+	LeftParen,  // lexer only
+	RightParen, // lexer only
 }
 
 #[derive(Clone, Debug, PartialEq)]
 /// Unary operators like [`Percent`](UnaryOperator::Percent) and [`Factorial`](UnaryOperator::Factorial).
 pub enum UnaryOperator {
-  Percent,
-  Factorial,
+	Percent,
+	Factorial,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 /// A Text operator like [`To`](TextOperator::To) or [`Of`](TextOperator::Of).
 pub enum TextOperator {
-  To,
-  Of,
+	To,
+	Of,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 /// A named number like [`Million`](NamedNumber::Million).
 pub enum NamedNumber {
-  Hundred,
-  Thousand,
-  Million,
-  Billion,
-  Trillion,
-  Quadrillion,
-  Quintillion,
-  Sextillion,
-  Septillion,
-  Octillion,
-  Nonillion,
-  Decillion,
-  Undecillion,
-  Duodecillion,
-  Tredecillion,
-  Quattuordecillion,
-  Quindecillion,
-  Sexdecillion,
-  Septendecillion,
-  Octodecillion,
-  Novemdecillion,
-  Vigintillion,
-  Centillion,
-  Googol,
+	Hundred,
+	Thousand,
+	Million,
+	Billion,
+	Trillion,
+	Quadrillion,
+	Quintillion,
+	Sextillion,
+	Septillion,
+	Octillion,
+	Nonillion,
+	Decillion,
+	Undecillion,
+	Duodecillion,
+	Tredecillion,
+	Quattuordecillion,
+	Quindecillion,
+	Sexdecillion,
+	Septendecillion,
+	Octodecillion,
+	Novemdecillion,
+	Vigintillion,
+	Centillion,
+	Googol,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 /// A constant like [`Pi`](Constant::Pi) or [`E`](Constant::E).
 pub enum Constant {
-  Pi,
-  E,
+	Pi,
+	E,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 /// Functions identifiers like [`Sqrt`](FunctionIdentifier::Sqrt), [`Sin`](FunctionIdentifier::Sin), [`Round`](FunctionIdentifier::Round), etc.
 pub enum FunctionIdentifier {
-  Sqrt,
-  Cbrt,
+	Sqrt,
+	Cbrt,
 
-  Log,
-  Ln,
-  Exp,
+	Log,
+	Ln,
+	Exp,
 
-  Round,
-  Ceil,
-  Floor,
-  Abs,
+	Round,
+	Ceil,
+	Floor,
+	Abs,
 
-  Sin,
-  Cos,
-  Tan,
+	Sin,
+	Cos,
+	Tan,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -178,15 +178,15 @@ pub enum FunctionIdentifier {
 /// dependingon them, turns it into a [`Percent`](UnaryOperator::Percent) or
 /// [`Modulo`](Operator::Modulo) [`Token`].
 pub enum LexerKeyword {
-  Per,
-  PercentChar,
-  In,
-  DoubleQuotes,
-  Mercury,
-  Hg,
-  PoundForce,
-  Force,
-  Revolution,
+	Per,
+	PercentChar,
+	In,
+	DoubleQuotes,
+	Mercury,
+	Hg,
+	PoundForce,
+	Force,
+	Revolution,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -194,29 +194,29 @@ pub enum LexerKeyword {
 ///
 /// Strings can be divided up into these tokens by the [`lexer`], and then put into the [`parser`].
 pub enum Token {
-  Operator(Operator),
-  UnaryOperator(UnaryOperator),
-  Number(d128),
-  FunctionIdentifier(FunctionIdentifier),
-  Constant(Constant),
-  /// Used by the parser only
-  Paren,
-  /// Used by the lexer only
-  Per,
-  /// Used by the parser only
-  LexerKeyword(LexerKeyword),
-  TextOperator(TextOperator),
-  NamedNumber(NamedNumber),
-  /// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
-  Negative,
-  Unit(units::Unit),
+	Operator(Operator),
+	UnaryOperator(UnaryOperator),
+	Number(d128),
+	FunctionIdentifier(FunctionIdentifier),
+	Constant(Constant),
+	/// Used by the parser only
+	Paren,
+	/// Used by the lexer only
+	Per,
+	/// Used by the parser only
+	LexerKeyword(LexerKeyword),
+	TextOperator(TextOperator),
+	NamedNumber(NamedNumber),
+	/// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
+	Negative,
+	Unit(units::Unit),
 }
 
 #[macro_export]
 macro_rules! numtok {
-  ( $num:literal ) => {
-    Token::Number(d128!($num))
-  };
+	( $num:literal ) => {
+		Token::Number(d128!($num))
+	};
 }
 
 /// Evaluates a string into a resulting [`Number`].
@@ -237,48 +237,52 @@ macro_rules! numtok {
 /// }
 /// ```
 pub fn eval(
-  input: &str,
-  allow_trailing_operators: bool,
-  default_degree: Unit,
-  verbose: bool,
+	input: &str,
+	allow_trailing_operators: bool,
+	default_degree: Unit,
+	verbose: bool,
 ) -> Result<Number, String> {
-  let lex_start = Instant::now();
+	let lex_start = Instant::now();
 
-  match lexer::lex(input, allow_trailing_operators, default_degree) {
-    Ok(tokens) => {
-      let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
-      if verbose {
-        println!("Lexed TokenVector: {:?}", tokens);
-      }
+	match lexer::lex(input, allow_trailing_operators, default_degree) {
+		Ok(tokens) => {
+			let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
+			if verbose {
+				println!("Lexed TokenVector: {:?}", tokens);
+			}
 
-      let parse_start = Instant::now();
-      match parser::parse(&tokens) {
-        Ok(ast) => {
-          let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
-          if verbose {
-            println!("Parsed AstNode: {:#?}", ast);
-          }
+			let parse_start = Instant::now();
+			match parser::parse(&tokens) {
+				Ok(ast) => {
+					let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
+					if verbose {
+						println!("Parsed AstNode: {:#?}", ast);
+					}
 
-          let eval_start = Instant::now();
-          match evaluator::evaluate(&ast) {
-            Ok(answer) => {
-              let eval_time = Instant::now().duration_since(eval_start).as_nanos() as f32;
+					let eval_start = Instant::now();
+					match evaluator::evaluate(&ast) {
+						Ok(answer) => {
+							let eval_time =
+								Instant::now().duration_since(eval_start).as_nanos() as f32;
 
-              if verbose {
-                println!("Evaluated value: {} {:?}", answer.value, answer.unit);
-                println!("\u{23f1}  {:.3}ms lexing", lex_time / 1000.0 / 1000.0);
-                println!("\u{23f1}  {:.3}ms parsing", parse_time / 1000.0 / 1000.0);
-                println!("\u{23f1}  {:.3}ms evaluation", eval_time / 1000.0 / 1000.0);
-              }
+							if verbose {
+								println!("Evaluated value: {} {:?}", answer.value, answer.unit);
+								println!("\u{23f1}  {:.3}ms lexing", lex_time / 1000.0 / 1000.0);
+								println!("\u{23f1}  {:.3}ms parsing", parse_time / 1000.0 / 1000.0);
+								println!(
+									"\u{23f1}  {:.3}ms evaluation",
+									eval_time / 1000.0 / 1000.0
+								);
+							}
 
-              Ok(answer)
-            }
-            Err(e) => Err(format!("Eval error: {}", e)),
-          }
-        }
-        Err(e) => Err(format!("Parsing error: {}", e)),
-      }
-    }
-    Err(e) => Err(format!("Lexing error: {}", e)),
-  }
+							Ok(answer)
+						}
+						Err(e) => Err(format!("Eval error: {}", e)),
+					}
+				}
+				Err(e) => Err(format!("Parsing error: {}", e)),
+			}
+		}
+		Err(e) => Err(format!("Lexing error: {}", e)),
+	}
 }
