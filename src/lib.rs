@@ -1,24 +1,24 @@
 #![cfg_attr(
   feature = "cargo-clippy",
   allow(
-      clippy::comparison_chain,
-      clippy::if_same_then_else,
-      clippy::match_like_matches_macro,
+    clippy::comparison_chain,
+    clippy::if_same_then_else,
+    clippy::match_like_matches_macro,
   )
 )]
 //! calculation + conversion
-//! 
+//!
 //! cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
-//! 
+//!
 //! cpc lets you mix units, so for example 1 km - 1m results in Number { value: 999, unit: Meter }.
-//! 
+//!
 //! Check out the [list of supported units](units/enum.Unit.html)
-//! 
+//!
 //! # Example usage
 //! ```rust
 //! use cpc::eval;
 //! use cpc::units::Unit;
-//! 
+//!
 //! match eval("3m + 1cm", true, Unit::Celsius, false) {
 //!     Ok(answer) => {
 //!         // answer: Number { value: 301, unit: Unit::Centimeter }
@@ -30,30 +30,33 @@
 //! }
 //! ```
 
+use crate::units::Unit;
+use decimal::d128;
 use std::fmt::{self, Display};
 use std::time::Instant;
-use decimal::d128;
-use crate::units::Unit;
 
-/// Units, and functions you can use with them
-pub mod units;
-/// Turns a string into [`Token`]s
-pub mod lexer;
-/// Turns [`Token`]s into an [`AstNode`](parser::AstNode)
-pub mod parser;
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
+/// Turns a string into [`Token`]s
+#[rustfmt::skip]
+pub mod lexer;
+#[rustfmt::skip]
 mod lookup;
+/// Turns [`Token`]s into an [`AstNode`](parser::AstNode)
+pub mod parser;
+/// Units, and functions you can use with them
+#[rustfmt::skip]
+pub mod units;
 
 #[derive(Clone, Debug)]
 /// A number with a `Unit`.
-/// 
+///
 /// Example:
 /// ```rust
 /// use cpc::{eval,Number};
 /// use cpc::units::Unit;
 /// use decimal::d128;
-/// 
+///
 /// let x = Number {
 ///   value: d128!(100),
 ///   unit: Unit::Meter,
@@ -92,7 +95,7 @@ pub enum Operator {
   Divide,
   Modulo,
   Caret,
-  LeftParen, // lexer only
+  LeftParen,  // lexer only
   RightParen, // lexer only
 }
 
@@ -155,7 +158,7 @@ pub enum FunctionIdentifier {
   Log,
   Ln,
   Exp,
-  
+
   Round,
   Ceil,
   Floor,
@@ -168,7 +171,7 @@ pub enum FunctionIdentifier {
 
 #[derive(Clone, Debug, PartialEq)]
 /// A temporary enum used by the [`lexer`] to later determine what [`Token`] it is.
-/// 
+///
 /// For example, when a symbol like `%` is found, the lexer turns it into a
 /// the [`PercentChar`](LexerKeyword::PercentChar) variant
 /// and then later it checks the surrounding [`Token`]s and,
@@ -188,7 +191,7 @@ pub enum LexerKeyword {
 
 #[derive(Clone, Debug, PartialEq)]
 /// A token like a [`Number`](Token::Number), [`Operator`](Token::Operator), [`Unit`](Token::Unit) etc.
-/// 
+///
 /// Strings can be divided up into these tokens by the [`lexer`], and then put into the [`parser`].
 pub enum Token {
   Operator(Operator),
@@ -213,16 +216,16 @@ pub enum Token {
 macro_rules! numtok {
   ( $num:literal ) => {
     Token::Number(d128!($num))
-  }
+  };
 }
 
 /// Evaluates a string into a resulting [`Number`].
-/// 
+///
 /// Example:
 /// ```rust
 /// use cpc::eval;
 /// use cpc::units::Unit;
-/// 
+///
 /// match eval("3m + 1cm", true, Unit::Celsius, false) {
 ///     Ok(answer) => {
 ///         // answer: Number { value: 301, unit: Unit::Centimeter }
@@ -233,20 +236,28 @@ macro_rules! numtok {
 ///     }
 /// }
 /// ```
-pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, verbose: bool) -> Result<Number, String> {
-
+pub fn eval(
+  input: &str,
+  allow_trailing_operators: bool,
+  default_degree: Unit,
+  verbose: bool,
+) -> Result<Number, String> {
   let lex_start = Instant::now();
 
   match lexer::lex(input, allow_trailing_operators, default_degree) {
     Ok(tokens) => {
       let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
-      if verbose { println!("Lexed TokenVector: {:?}", tokens); }
+      if verbose {
+        println!("Lexed TokenVector: {:?}", tokens);
+      }
 
       let parse_start = Instant::now();
       match parser::parse(&tokens) {
         Ok(ast) => {
           let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
-          if verbose { println!("Parsed AstNode: {:#?}", ast); }
+          if verbose {
+            println!("Parsed AstNode: {:#?}", ast);
+          }
 
           let eval_start = Instant::now();
           match evaluator::evaluate(&ast) {
@@ -255,19 +266,19 @@ pub fn eval(input: &str, allow_trailing_operators: bool, default_degree: Unit, v
 
               if verbose {
                 println!("Evaluated value: {} {:?}", answer.value, answer.unit);
-                println!("\u{23f1}  {:.3}ms lexing", lex_time/1000.0/1000.0);
-                println!("\u{23f1}  {:.3}ms parsing", parse_time/1000.0/1000.0);
-                println!("\u{23f1}  {:.3}ms evaluation", eval_time/1000.0/1000.0);
+                println!("\u{23f1}  {:.3}ms lexing", lex_time / 1000.0 / 1000.0);
+                println!("\u{23f1}  {:.3}ms parsing", parse_time / 1000.0 / 1000.0);
+                println!("\u{23f1}  {:.3}ms evaluation", eval_time / 1000.0 / 1000.0);
               }
 
               Ok(answer)
-            },
+            }
             Err(e) => Err(format!("Eval error: {}", e)),
           }
-        },
+        }
         Err(e) => Err(format!("Parsing error: {}", e)),
       }
-    },
+    }
     Err(e) => Err(format!("Lexing error: {}", e)),
   }
 }

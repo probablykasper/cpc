@@ -1,7 +1,7 @@
 use cpc::eval;
 use cpc::units::Unit;
-use std::process::exit;
 use std::env;
+use std::process::exit;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -30,12 +30,12 @@ fn main() {
       "--version" => {
         println!("{}", VERSION);
         exit(0);
-      },
+      }
       "--help" => {
         print_help();
         exit(0);
-      },
-      _ => {},
+      }
+      _ => {}
     }
   }
   let mut verbose = false;
@@ -58,7 +58,7 @@ fn main() {
     None => {
       print_help();
       exit(0);
-    },
+    }
   };
 
   match eval(&expression, true, Unit::Celsius, verbose) {
@@ -66,10 +66,10 @@ fn main() {
       if !verbose {
         println!("{}", answer);
       }
-    },
+    }
     Err(e) => {
       eprintln!("{}", e);
       exit(1);
-    },
+    }
   }
 }
