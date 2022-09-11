@@ -53,10 +53,12 @@ fn main() {
       }
     }
   }
-  #[allow(clippy::option_if_let_else)]
-  let expression = if let Some(expression) = expression_opt { expression } else {
-    print_help();
-    exit(0);
+  let expression = match expression_opt {
+    Some(expression) => expression,
+    None => {
+      print_help();
+      exit(0);
+    },
   };
 
   match eval(&expression, true, Unit::Celsius, verbose) {
