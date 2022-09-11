@@ -2,12 +2,8 @@
   feature = "cargo-clippy",
   allow(
       clippy::comparison_chain,
-      clippy::derive_partial_eq_without_eq,
-      // clippy::equatable_if_let,
       clippy::if_same_then_else,
       clippy::match_like_matches_macro,
-      // clippy::option_if_let_else,
-      // clippy::use_self,
   )
 )]
 //! calculation + conversion
