@@ -36,6 +36,7 @@ use decimal::d128;
 use crate::units::Unit;
 
 /// Units, and functions you can use with them
+#[rustfmt::skip]
 pub mod units;
 /// Turns a string into [`Token`]s
 pub mod lexer;
@@ -43,6 +44,7 @@ pub mod lexer;
 pub mod parser;
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
+#[rustfmt::skip]
 mod lookup;
 
 #[derive(Clone, Debug)]
