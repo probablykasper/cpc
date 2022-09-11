@@ -285,22 +285,10 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			match operator {
 				Plus => Ok(add(left, right)?),
 				Minus => Ok(subtract(left, right)?),
-				Multiply => {
-					Ok(multiply(left, right)?)
-					// }
-				}
-				Divide => {
-					Ok(divide(left, right)?)
-					// }
-				}
-				Modulo => {
-					Ok(modulo(left, right)?)
-					// }
-				}
-				Caret => {
-					Ok(pow(left, right)?)
-					// }
-				}
+				Multiply => Ok(multiply(left, right)?),
+				Divide => Ok(divide(left, right)?),
+				Modulo => Ok(modulo(left, right)?),
+				Caret => Ok(pow(left, right)?),
 				_ => Err(format!("Unexpected operator {:?}", operator)),
 			}
 		}
