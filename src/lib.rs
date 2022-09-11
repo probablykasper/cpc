@@ -1,3 +1,11 @@
+#![cfg_attr(
+  feature = "cargo-clippy",
+  allow(
+      clippy::comparison_chain,
+      clippy::if_same_then_else,
+      clippy::match_like_matches_macro,
+  )
+)]
 //! calculation + conversion
 //! 
 //! cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
@@ -59,7 +67,7 @@ pub struct Number {
 }
 
 impl Number {
-  pub fn new(value: d128, unit: Unit) -> Number {
+  pub const fn new(value: d128, unit: Unit) -> Number {
     Number { value, unit }
   }
 }
@@ -71,7 +79,7 @@ impl Display for Number {
       Unit::NoUnit => format!("{}", fixed_value),
       unit => format!("{} {:?}", fixed_value, unit),
     };
-    return write!(f, "{}", output);
+    write!(f, "{}", output)
   }
 }
 

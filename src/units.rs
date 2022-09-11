@@ -302,19 +302,19 @@ create_units!(
 // These functions are here to avoid dividing by small numbers like 0.01,
 // because d128 gives numbers in E notation in that case.
 fn get_inverted_millijoule_weight() -> d128 {
-  return d128!(1000);
+  d128!(1000)
 }
 fn get_inverted_milliwatt_weight() -> d128 {
-  return d128!(1000);
+  d128!(1000)
 }
 fn get_inverted_milliohm_weight() -> d128 {
-  return d128!(1000);
+  d128!(1000)
 }
 fn get_inverted_milliampere_weight() -> d128 {
-  return d128!(1000);
+  d128!(1000)
 }
 fn get_inverted_millivolt_weight() -> d128 {
-  return d128!(1000);
+  d128!(1000)
 }
 
 /// Returns the conversion factor between two units.
@@ -378,7 +378,7 @@ pub fn add(left: Number, right: Number) -> Result<Number, String> {
     let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value + right.value, left.unit))
   } else {
-    return Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
+    Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
   }
 }
 
@@ -390,7 +390,7 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
     let (left, right) = convert_to_lowest(left, right)?;
     Ok(Number::new(left.value - right.value, left.unit))
   } else {
-    return Err(format!("Cannot subtract {:?} by {:?}", left.unit, right.unit))
+    Err(format!("Cannot subtract {:?} by {:?}", left.unit, right.unit))
   }
 }
 

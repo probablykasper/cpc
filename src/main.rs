@@ -3,7 +3,7 @@ use cpc::units::Unit;
 use std::process::exit;
 use std::env;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn print_help() {
   println!(concat!(
@@ -17,9 +17,9 @@ fn print_help() {
 }
 
 fn get_args() -> env::Args {
-  let mut args = env::args().into_iter();
+  let mut args = env::args();
   args.next(); // skip binary name
-  return args;
+  args
 }
 
 /// CLI interface
@@ -44,7 +44,7 @@ fn main() {
     match arg.as_str() {
       "-v" | "--verbose" => verbose = true,
       _ => {
-        if expression_opt == None {
+        if expression_opt.is_none() {
           expression_opt = Some(arg);
         } else {
           eprintln!("Unexpected argument: {}", arg);
@@ -60,6 +60,7 @@ fn main() {
       exit(0);
     },
   };
+
   match eval(&expression, true, Unit::Celsius, verbose) {
     Ok(answer) => {
       if !verbose {
