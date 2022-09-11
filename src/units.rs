@@ -404,7 +404,6 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 pub fn to_ideal_unit(number: Number) -> Number {
   let value = number.value * number.unit.weight();
   if number.unit.category() == Length {
-    #[allow(clippy::if_same_then_else)]
     if value >= d128!(1000000000000000000) { // ≈ 0.1 light years
       return Number::new(value/Kilometer.weight(), Kilometer)
     } else if value >= d128!(1000000) { // 1 km
@@ -557,7 +556,6 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
-  #[allow(clippy::if_same_then_else)]
   if left.unit == NoUnit && right.unit == NoUnit {
     // 3 * 2
     Ok(Number::new(left.value * right.value, left.unit))
@@ -671,7 +669,6 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
   let lcat = left.unit.category();
   let rcat = right.unit.category();
-  #[allow(clippy::if_same_then_else)]
   if left.unit == NoUnit && right.unit == NoUnit {
     // 3 / 2
     Ok(Number::new(left.value / right.value, left.unit))

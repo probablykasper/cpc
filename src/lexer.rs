@@ -14,7 +14,6 @@ use crate::units::Unit::*;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
 fn is_word_char_str(input: &str) -> bool {
-  #[allow(clippy::match_like_matches_macro)]
   match input {
     "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
     | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
@@ -639,7 +638,6 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
   }
   let tokens = &mut lexer.tokens;
   // auto insert missing parentheses in first and last position
-  #[allow(clippy::comparison_chain)]
   if lexer.left_paren_count > lexer.right_paren_count {
     let missing_right_parens = lexer.left_paren_count - lexer.right_paren_count;
     for _ in 0..missing_right_parens {
