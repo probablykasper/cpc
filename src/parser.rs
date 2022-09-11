@@ -14,7 +14,7 @@ pub struct AstNode {
 }
 
 impl AstNode {
-  pub fn new(token: Token) -> AstNode {
+  pub const fn new(token: Token) -> AstNode {
     AstNode {
       children: Vec::new(),
       token,
@@ -331,7 +331,7 @@ pub fn parse_level_7(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
           })
         },
         _ => {
-          return Err(format!("Expected ( after {} at {:?} but found {:?}", left_paren_pos, token, left_paren_token));
+          Err(format!("Expected ( after {} at {:?} but found {:?}", left_paren_pos, token, left_paren_token))
         }
       }
     },

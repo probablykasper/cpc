@@ -14,7 +14,8 @@ use crate::units::Unit::*;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
 fn is_word_char_str(input: &str) -> bool {
-  let x = match input {
+  #[allow(clippy::match_like_matches_macro)]
+  match input {
     "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
     | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
     | "Y" | "Z" => true,
@@ -23,16 +24,11 @@ fn is_word_char_str(input: &str) -> bool {
     | "y" | "z" => true,
     "Ω" | "Ω" | "µ" | "μ" => true,
     _ => false,
-  };
-  return x;
+  }
 }
 
 fn is_numeric_str(input: &str) -> bool {
-  match input {
-    "." => true,
-    "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => true,
-    _ => false,
-  }
+  matches!(input, "." | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")
 }
 
 /// Read next characters as a word, otherwise return empty string.
@@ -40,7 +36,7 @@ fn is_numeric_str(input: &str) -> bool {
 fn read_word_plain(chars: &mut Peekable<Graphemes>) -> String {
   let mut word = String::new();
   while let Some(next_char) = chars.peek() {
-    if is_word_char_str(&next_char) {
+    if is_word_char_str(next_char) {
       word += chars.next().unwrap();
     } else {
       break;
@@ -65,7 +61,7 @@ fn read_word(first_c: &str, lexer: &mut Lexer) -> String {
     }
   }
   while let Some(next_char) = chars.peek() {
-    if is_word_char_str(&next_char) {
+    if is_word_char_str(next_char) {
       word += chars.next().unwrap();
     } else {
       break;
@@ -91,7 +87,7 @@ fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
   let tokens = &mut lexer.tokens;
   match c {
     value if value.trim().is_empty() => {},
-    value if is_word_char_str(&value) => {
+    value if is_word_char_str(value) => {
       parse_word(read_word(c, lexer).as_str(), lexer)?;
     },
     value if is_numeric_str(value) => {
@@ -361,7 +357,7 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
             other => {
               lexer.tokens.push(Token::Unit(Pound));
               lexer.tokens.push(Token::Operator(Minus));
-              parse_word_if_non_empty(&other, lexer)?;
+              parse_word_if_non_empty(other, lexer)?;
               return Ok(());
             }
           }
@@ -619,7 +615,7 @@ struct Lexer<'a> {
 
 /// Lex an input string and returns [`Token`]s
 pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
-  let mut input = input.replace(",", "").to_ascii_lowercase();
+  let mut input = input.replace(',', "").to_ascii_lowercase();
 
   if remove_trailing_operator {
     match &input.chars().last().unwrap_or('x') {
@@ -643,6 +639,7 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
   }
   let tokens = &mut lexer.tokens;
   // auto insert missing parentheses in first and last position
+  #[allow(clippy::comparison_chain)]
   if lexer.left_paren_count > lexer.right_paren_count {
     let missing_right_parens = lexer.left_paren_count - lexer.right_paren_count;
     for _ in 0..missing_right_parens {
