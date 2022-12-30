@@ -48,7 +48,7 @@ jobs:
       - name: Build & upload
         uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: csv-pipeline
+          bin: cpc
           target: ${{ matrix.target }}
           archive: ${{ matrix.archive }}
           zip: all

@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.9.0 - 2022 Dec 30
 - Add `marathon` unit
 - Add `macos-aarch64` (Apple Silicon) and `linux-aarch64` release binaries
 
