@@ -1,5 +1,3 @@
-[documentation]: https://docs.rs/cpc
-
 # cpc
 
 calculation + conversion
@@ -183,41 +181,11 @@ match string {
   - Angles
   - Flow rate
 
-### Cross-compiling (from x86_64 macOS)
-1. [Install Docker](https://docs.docker.com/get-docker/)
-2. Install [`cross`](https://github.com/rust-embedded/cross). `cross` works by installing toolchains for whatever target you're building for, then using those toolchains to compile in Docker containers
-    ```
-    cargo install cross
-    ```
-3. Set rustup profile to minimal. This means things like `rustdoc` won't be included in new toolchain installations. You can run `rustup set profile default` to reset this afterwards.
-    ```
-    rustup set profile minimal
-    ```
-4. Build for x86_64 macOS, Linux and Windows. For more targets, check out [the targets `cross` supports](https://github.com/rust-embedded/cross#supported-targets)
-    ```
-    cargo build --release --target x86_64-apple-darwin &&
-    cross build --release --target x86_64-unknown-linux-musl &&
-    cross build --release --target x86_64-pc-windows-gnu
-    ```
-5. The compiled binaries will now be available inside `target/<target>/release/`. The filename will be either `cpc` or `cpc.exe`.
-
 ### Releasing a new version
 
 1. Update `CHANGELOG.md`
 2. Bump the version number in `Cargo.toml`
 3. Run `cargo test`
-4. Cross-compile cpc by following [the steps above](#cross-compiling)
-5. Commit and tag in format `v#.#.#`
-6. Publish on crates.io:
-    1. Login by running `cargo login` and following the instructions
-    2. Test publish to ensure there are no issues
-        ```
-        cargo publish --dry-run
-        ```
-    3. Publish
-        ```
-        cargo publish
-        ```
-7. Publish on GitHub
-    1. Zip the binaries and rename them like `cpc-v#.#.#-macos-x64`
-    2. Create GitHub release with release notes and attach the zipped binaries
+4. Create a git tag in format `v#.#.#`
+5. Add release notes to the generated GitHub release and publish it
+6. Run `cargo publish`

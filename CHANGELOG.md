@@ -1,3 +1,9 @@
+# Changelog
+
+## Next
+- Add `marathon` unit
+- Add `macos-aarch64` (Apple Silicon) and `linux-aarch64` release binaries
+
 ## 1.8.0 - 2021 Aug 16
 - Add support for data transfer rate units (like mb/s)
 - Add support for dividing length by speed (like 10 km / 100 kph)
