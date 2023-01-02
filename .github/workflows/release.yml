@@ -42,6 +42,9 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-gnu
             archive: $bin-$tag-windows-x64
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            archive: $bin-$tag-windows-aarch64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
