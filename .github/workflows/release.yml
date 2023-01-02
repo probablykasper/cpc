@@ -29,22 +29,22 @@ jobs:
         include:
           - os: macos-latest
             target: x86_64-apple-darwin
-            archive: $bin-$tag-macos-x64
+            archive: macos-x64
           - os: macos-latest
             target: aarch64-apple-darwin
-            archive: $bin-$tag-macos-aarch64
+            archive: macos-aarch64
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            archive: $bin-$tag-linux-x64
+            archive: linux-x64
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            archive: $bin-$tag-linux-aarch64
+            archive: linux-aarch64
           - os: windows-latest
             target: x86_64-pc-windows-gnu
-            archive: $bin-$tag-windows-x64
+            archive: windows-x64
           - os: windows-latest
             target: aarch64-pc-windows-msvc
-            archive: $bin-$tag-windows-aarch64
+            archive: windows-aarch64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -53,7 +53,7 @@ jobs:
         with:
           bin: cpc
           target: ${{ matrix.target }}
-          archive: ${{ matrix.archive }}
+          archive: $bin-$tag-${{ matrix.archive }}
           zip: all
           tar: none
           token: ${{ secrets.GITHUB_TOKEN }}
