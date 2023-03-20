@@ -10,10 +10,19 @@ homepage = "https://github.com/probablykasper/cpc#readme"
 repository = "https://github.com/probablykasper/cpc"
 documentation = "https://docs.rs/cpc"
 keywords = ["math", "expression", "evaluate", "units", "convert"]
-categories = ["mathematics", "science", "parsing", "text-processing", "value-formatting"]
+categories = [
+    "mathematics",
+    "science",
+    "parsing",
+    "text-processing",
+    "value-formatting",
+]
 
 [dependencies]
-decimal = { version = "2.1", default-features = false }
+decimal = { version = "2.1", default-features = false, features = [
+    "serde",
+    "ord_subset",
+] }
 unicode-segmentation = "1.9"
 
 [dev-dependencies]
