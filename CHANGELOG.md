@@ -1,3 +1,9 @@
+# Changelog
+
+## 1.9.0 - 2022 Dec 30
+- Add `marathon` unit
+- Add `aarch64` binaries
+
 ## 1.8.0 - 2021 Aug 16
 - Add support for data transfer rate units (like mb/s)
 - Add support for dividing length by speed (like 10 km / 100 kph)

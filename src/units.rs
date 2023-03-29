@@ -101,6 +101,7 @@ create_units!(
 	Yard:               (Length, d128!(914.4)),
 	Mile:               (Length, d128!(1609344)),
 	// 1-dimensional only:
+	Marathon:           (Length, d128!(42195000)),
 	NauticalMile:       (Length, d128!(1852000)),
 	LightYear:          (Length, d128!(9460730472580800000)),
 	LightSecond:        (Length, d128!(299792458000)),
@@ -845,6 +846,7 @@ mod tests {
 		assert_float_eq!(convert_test(12.0, Inch, Foot), 1.0);
 		assert_float_eq!(convert_test(3.0, Foot, Yard), 1.0);
 		assert_float_eq!(convert_test(1760.0, Yard, Mile), 1.0);
+		assert_float_eq!(convert_test(42195.0, Meter, Marathon), 1.0);
 		assert_float_eq!(convert_test(1852.0, Meter, NauticalMile), 1.0);
 		assert_float_eq!(convert_test(9460730472580800.0, Meter, LightYear), 1.0);
 		assert_float_eq!(convert_test(299792458.0, Meter, LightSecond), 1.0);

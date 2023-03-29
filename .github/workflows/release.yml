@@ -1,0 +1,59 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ''
+          draft: true
+
+  upload:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive: macos-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: macos-aarch64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: linux-x64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            archive: linux-aarch64
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
+            archive: windows-x64
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            archive: windows-aarch64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build & upload
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: cpc
+          target: ${{ matrix.target }}
+          archive: $bin-$tag-${{ matrix.archive }}
+          zip: all
+          tar: none
+          token: ${{ secrets.GITHUB_TOKEN }}

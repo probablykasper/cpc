@@ -240,6 +240,7 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"ft" | "foot" | "feet" => Token::Unit(Foot),
 		"yd" | "yard" | "yards" => Token::Unit(Yard),
 		"mi" | "mile" | "miles" => Token::Unit(Mile),
+		"marathon" | "marathons" => Token::Unit(Marathon),
 		"nmi" => Token::Unit(NauticalMile),
 		"nautical" => {
 			match read_word("", lexer).as_str() {
@@ -980,6 +981,7 @@ mod tests {
 		};
 
 		run_lex("88 kilometres * 2", vec![numtok!(88), Token::Unit(Kilometer), Token::Operator(Multiply), numtok!(2)]);
+		run_lex("0.5 marathon", vec![numtok!(0.5), Token::Unit(Marathon)]);
 		run_lex("100 nmi", vec![numtok!(100), Token::Unit(NauticalMile)]);
 		run_lex("101 nautical miles", vec![numtok!(101), Token::Unit(NauticalMile)]);
 		run_lex("2 lightyears", vec![numtok!(2), Token::Unit(LightYear)]);
