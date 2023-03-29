@@ -1,7 +1,8 @@
 # Changelog
 
-## Next
+## 1.9.1 - 2023 Mar 30
 - Improve formatting of numbers
+- Remove unnecessary dependencies (@jqnatividad)
 
 ## 1.9.0 - 2022 Dec 30
 - Add `marathon` unit
