@@ -25,7 +25,7 @@
 //!         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
 //!     },
 //!     Err(e) => {
-//!         println!("{}", e)
+//!         println!("{e}")
 //!     }
 //! }
 //! ```
@@ -77,12 +77,16 @@ impl Number {
 impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		// 0.2/0.01 results in 2E+1, but if we add zero it becomes 20
-		let fixed_value = self.value + d128!(0);
-		let output = match self.unit {
-			Unit::NoUnit => format!("{}", fixed_value),
-			unit => format!("{} {:?}", fixed_value, unit),
+		let value = self.value + d128!(0);
+		let word = match self.value == d128!(1) {
+			true => self.unit.singular(),
+			false => self.unit.plural(),
 		};
-		write!(f, "{}", output)
+		let output = match word {
+			"" => format!("{value}"),
+			_ => format!("{value} {word}"),
+		};
+		write!(f, "{output}")
 	}
 }
 
@@ -232,7 +236,7 @@ macro_rules! numtok {
 ///         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
 ///     },
 ///     Err(e) => {
-///         println!("{}", e)
+///         println!("{e}")
 ///     }
 /// }
 /// ```

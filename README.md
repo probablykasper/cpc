@@ -39,7 +39,7 @@ match eval("3m + 1cm", true, Unit::Celsius, false) {
         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
     },
     Err(e) => {
-        println!("{}", e)
+        println!("{e}")
     }
 }
 ```

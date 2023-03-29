@@ -28,7 +28,7 @@ fn main() {
 	for arg in get_args() {
 		match arg.as_str() {
 			"--version" => {
-				println!("{}", VERSION);
+				println!("{VERSION}");
 				exit(0);
 			}
 			"--help" => {
@@ -64,11 +64,11 @@ fn main() {
 	match eval(&expression, true, Unit::Celsius, verbose) {
 		Ok(answer) => {
 			if !verbose {
-				println!("{}", answer);
+				println!("{answer}");
 			}
 		}
 		Err(e) => {
-			eprintln!("{}", e);
+			eprintln!("{e}");
 			exit(1);
 		}
 	}

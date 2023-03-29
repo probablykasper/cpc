@@ -952,22 +952,22 @@ mod tests {
 				}
 			};
 			let info_msg = format!("run_lex input: {}\nexpected: {:?}\nreceived: {:?}", input, expected_tokens, tokens);
-			assert!(tokens == expected_tokens, "{}", info_msg);
+			assert!(tokens == expected_tokens, "{info_msg}");
 
 			// Prove we can handle multiple spaces wherever we handle a single space
 			let input_extra_spaces = input.replace(" ", "   ");
 			let tokens_extra_spaces = lex(&input_extra_spaces, false, Unit::Celsius).unwrap();
-			assert!(tokens_extra_spaces == expected_tokens, "{}", info_msg);
+			assert!(tokens_extra_spaces == expected_tokens, "{info_msg}");
 
 			// Prove we don't need spaces around operators
 			let input_stripped_spaces = strip_operator_spacing.replace_all(input, "$1");
 			let tokens_stripped_spaces = lex(&input_stripped_spaces, false, Unit::Celsius).unwrap();
-			assert!(tokens_stripped_spaces == expected_tokens, "{}", info_msg);
+			assert!(tokens_stripped_spaces == expected_tokens, "{info_msg}");
 
 			// Prove we don't need a space after a digit
 			let input_afterdigit_stripped_spaces = strip_afterdigit_spacing.replace_all(input, "$1");
 			let tokens_afterdigit_stripped_spaces = lex(&input_afterdigit_stripped_spaces, false, Unit::Celsius).unwrap();
-			assert!(tokens_afterdigit_stripped_spaces == expected_tokens, "{}", info_msg);
+			assert!(tokens_afterdigit_stripped_spaces == expected_tokens, "{info_msg}");
 		};
 
 		let run_datarate_lex = |input: &str, expected_tokens: Vec<Token>| {
@@ -977,7 +977,7 @@ mod tests {
 			let input_nonplural_units = nonplural_data_units.replace_all(input, "$1");
 			let tokens_nonplural_units = lex(&input_nonplural_units, false, Unit::Celsius).unwrap();
 			let info_msg = format!("run_datarate_lex input: {}\nexpected: {:?}\nreceived: {:?}", input, expected_tokens, tokens_nonplural_units);
-			assert!(tokens_nonplural_units == expected_tokens, "{}", info_msg);
+			assert!(tokens_nonplural_units == expected_tokens, "{info_msg}");
 		};
 
 		run_lex("88 kilometres * 2", vec![numtok!(88), Token::Unit(Kilometer), Token::Operator(Multiply), numtok!(2)]);

@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Improve formatting of numbers
+
 ## 1.9.0 - 2022 Dec 30
 - Add `marathon` unit
 - Add `aarch64` binaries
