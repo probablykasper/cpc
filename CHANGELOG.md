@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.9.2 - 2023 Jul 11
+- Fix automatic light year unit not chosen for large distances
+
 ## 1.9.1 - 2023 Mar 30
 - Improve formatting of numbers
 - Remove unnecessary dependencies (@jqnatividad)
