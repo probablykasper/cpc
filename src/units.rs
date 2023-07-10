@@ -424,7 +424,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 	let value = number.value * number.unit.weight();
 	if number.unit.category() == Length {
 		if value >= d128!(1000000000000000000) { // ≈ 0.1 light years
-			return Number::new(value/Kilometer.weight(), Kilometer)
+			return Number::new(value/LightYear.weight(), LightYear)
 		} else if value >= d128!(1000000) { // 1 km
 			return Number::new(value/Kilometer.weight(), Kilometer)
 		} else if value >= d128!(1000) { // 1 m
