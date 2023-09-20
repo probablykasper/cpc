@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Fix negative unary `-` always having higher precedence than `^`. This resulted in `-3^2` returning `9` instead of `-9`
+
 ## 1.9.2 - 2023 Jul 11
 - Fix automatic light year unit not chosen for large distances (@gcomte)
 

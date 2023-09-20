@@ -48,7 +48,7 @@ pub mod parser;
 #[rustfmt::skip]
 pub mod units;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// A number with a `Unit`.
 ///
 /// Example:
@@ -288,5 +288,25 @@ pub fn eval(
 			}
 		}
 		Err(e) => Err(format!("Lexing error: {}", e)),
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	fn default_eval(input: &str) -> Number {
+		eval(input, true, units::Unit::Celsius, false).unwrap()
+	}
+
+	#[test]
+	fn test_evaluations() {
+		assert_eq!(default_eval("-2(-3)"), Number::new(d128!(6), Unit::NoUnit));
+		assert_eq!(default_eval("-2(3)"), Number::new(d128!(-6), Unit::NoUnit));
+		assert_eq!(default_eval("(3)-2"), Number::new(d128!(1), Unit::NoUnit));
+		assert_eq!(default_eval("-1km to m"), Number::new(d128!(-1000), Unit::Meter));
+		assert_eq!(default_eval("2*-3*0.5"), Number::new(d128!(-3), Unit::NoUnit));
+		assert_eq!(default_eval("-3^2"), Number::new(d128!(-9), Unit::NoUnit));
+		assert_eq!(default_eval("-1+2"), Number::new(d128!(1), Unit::NoUnit));
 	}
 }

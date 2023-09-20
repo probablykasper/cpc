@@ -24,7 +24,7 @@ impl AstNode {
 
 /// Parse [`Token`]s into an Abstract Syntax Tree ([`AstNode`])
 pub fn parse(tokens: &[Token]) -> Result<AstNode, String> {
-	parse_level_1(tokens, 0).and_then(|(ast, next_pos)| {
+	parse_text_operators(tokens, 0).and_then(|(ast, next_pos)| {
 		if next_pos == tokens.len() {
 			Ok(ast)
 		} else {
@@ -38,9 +38,9 @@ pub fn parse(tokens: &[Token]) -> Result<AstNode, String> {
 
 // level 1 precedence (lowest): to, of
 /// Parse [`To`](crate::TextOperator::To) and [`Of`](crate::TextOperator::Of)
-pub fn parse_level_1(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+pub fn parse_text_operators(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
 	// do higher precedences first, then come back down
-	let (mut node, mut pos) = parse_level_2(tokens, pos)?;
+	let (mut node, mut pos) = parse_plus(tokens, pos)?;
 	// now we loop through the next tokens
 	loop {
 		let token = tokens.get(pos);
@@ -48,15 +48,14 @@ pub fn parse_level_1(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 			// if there's a match, we once again do higher precedences, then come
 			// back down again and continue the loop
 			Some(&Token::TextOperator(To)) | Some(&Token::TextOperator(Of)) => {
-				let (right_node, next_pos) = parse_level_2(tokens, pos + 1)?;
+				let (right_node, next_pos) = parse_plus(tokens, pos + 1)?;
 				let mut new_node = AstNode::new(token.unwrap().clone());
 				new_node.children.push(node);
 				new_node.children.push(right_node);
 				node = new_node;
 				pos = next_pos;
 			}
-			// if there's no match, we go down to a lower precedence (or, in this
-			// case, we're done)
+			// if there's no match, we go down to a lower precedence
 			_ => {
 				return Ok((node, pos));
 			}
@@ -64,15 +63,14 @@ pub fn parse_level_1(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 	}
 }
 
-// level 2 precedence: +, -
-/// Parse [`Plus`](crate::Operator::Plus) and [`Minus`](crate::Operator::Minus)
-pub fn parse_level_2(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
-	let (mut node, mut pos) = parse_level_3(tokens, pos)?;
+/// Parse [`+`](crate::Operator::Plus), [`-`](crate::Operator::Minus)
+pub fn parse_plus(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+	let (mut node, mut pos) = parse_unary(tokens, pos)?;
 	loop {
 		let token = tokens.get(pos);
 		match token {
 			Some(&Token::Operator(Plus)) | Some(&Token::Operator(Minus)) => {
-				let (right_node, next_pos) = parse_level_3(tokens, pos + 1)?;
+				let (right_node, next_pos) = parse_unary(tokens, pos + 1)?;
 				let mut new_node = AstNode::new(token.unwrap().clone());
 				new_node.children.push(node);
 				new_node.children.push(right_node);
@@ -86,9 +84,23 @@ pub fn parse_level_2(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 	}
 }
 
-// level 3 precedence: *, /, modulo, implicative multiplication, foot-inch 6'4"
-/// Parse [`Multiply`](crate::Operator::Multiply), [`Divide`](crate::Operator::Divide), [`Modulo`](crate::Operator::Modulo) and implicative multiplication (for example`2pi`)
-pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+/// Parse [`unary -`](Token::Negative) (for example -5)
+pub fn parse_unary(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+	// Since a unary operator has no left side, we parse the the unary operator immediately
+	let token = tokens.get(pos);
+	match token {
+		Some(&Token::Operator(Minus)) => {
+			let (right_node, next_pos) = parse_mult_level(tokens, pos + 1)?;
+			let mut new_node = AstNode::new(Token::Negative);
+			new_node.children.push(right_node);
+			Ok((new_node, next_pos))
+		}
+		_ => parse_mult_level(tokens, pos),
+	}
+}
+
+/// Parse [`*`](crate::Operator::Multiply), [`/`](crate::Operator::Divide), [`Modulo`](crate::Operator::Modulo), implicative multiplication (for example`2pi`), foot-inch syntax (for example `6'4"`)
+pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
 	// parse foot-inch syntax 6'4"
 	let token0 = tokens.get(pos);
 	if let Some(Token::Number(_number)) = token0 {
@@ -117,7 +129,7 @@ pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 		}
 	}
 
-	let (mut node, mut pos) = parse_level_4(tokens, pos)?;
+	let (mut node, mut pos) = parse_caret(tokens, pos)?;
 
 	loop {
 		let token = tokens.get(pos);
@@ -125,7 +137,7 @@ pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 			Some(&Token::Operator(Multiply))
 			| Some(&Token::Operator(Divide))
 			| Some(&Token::Operator(Modulo)) => {
-				let (right_node, next_pos) = parse_level_4(tokens, pos + 1)?;
+				let (right_node, next_pos) = parse_caret(tokens, pos + 1)?;
 				let mut new_node = AstNode::new(token.unwrap().clone());
 				new_node.children.push(node);
 				new_node.children.push(right_node);
@@ -145,7 +157,7 @@ pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 				let last_token = tokens.get(pos - 1);
 				match last_token {
 					Some(&Token::Constant(_)) | Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+						let (right_node, next_pos) = parse_caret(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -162,7 +174,7 @@ pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 				let last_token = tokens.get(pos - 1);
 				match last_token {
 					Some(&Token::Number(_)) | Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+						let (right_node, next_pos) = parse_caret(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -179,7 +191,7 @@ pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 				let last_token = tokens.get(pos - 1);
 				match last_token {
 					Some(&Token::Number(_)) | Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+						let (right_node, next_pos) = parse_caret(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -198,7 +210,7 @@ pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 					Some(&Token::Number(_))
 					| Some(&Token::Constant(_))
 					| Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_level_4(tokens, pos)?;
+						let (right_node, next_pos) = parse_caret(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -217,15 +229,14 @@ pub fn parse_level_3(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 	}
 }
 
-// level 4 precedence: ^
-/// Parse [`Caret`](crate::Operator::Caret)
-pub fn parse_level_4(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
-	let (mut node, mut pos) = parse_level_5(tokens, pos)?;
+/// Parse [`^`](crate::Operator::Caret)
+pub fn parse_caret(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+	let (mut node, mut pos) = parse_unary_high(tokens, pos)?;
 	loop {
 		let token = tokens.get(pos);
 		match token {
 			Some(&Token::Operator(Caret)) => {
-				let (right_node, next_pos) = parse_level_5(tokens, pos + 1)?;
+				let (right_node, next_pos) = parse_unary_high(tokens, pos + 1)?;
 				let mut new_node = AstNode::new(token.unwrap().clone());
 				new_node.children.push(node);
 				new_node.children.push(right_node);
@@ -239,35 +250,23 @@ pub fn parse_level_4(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 	}
 }
 
-// level 5 precedence: - (as in -5, but not 4-5)
-/// Parse [`Negative`](Token::Negative)
-pub fn parse_level_5(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
-	// Here we parse the negative unary operator. If the current token
-	// is a minus, we wrap the right_node inside a Negative AstNode.
-	//
-	// Why doesn't this parse 4-5? First, we will first get a 4. In which case,
-	// we just return the result of parse_level_6(), which will include the pos
-	// of +. This will then go down to level 2 and be parsed as a normal minus
-	// operator.
-	// The difference is that in other levels, we parse higher priorities
-	// immediately, while in this one we instead check if the current token
-	// is a minus, and if not, we then return the higher priority as normal.
+/// Parse [`unary -`](Token::Negative) at high precedence (for example in 3^-2)
+pub fn parse_unary_high(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
 	let token = tokens.get(pos);
 	match token {
 		Some(&Token::Operator(Minus)) => {
-			let (right_node, next_pos) = parse_level_6(tokens, pos + 1)?;
+			let (right_node, next_pos) = parse_suffix(tokens, pos + 1)?;
 			let mut new_node = AstNode::new(Token::Negative);
 			new_node.children.push(right_node);
 			Ok((new_node, next_pos))
 		}
-		_ => parse_level_6(tokens, pos),
+		_ => parse_suffix(tokens, pos),
 	}
 }
 
-// level 6 precedence: !, percent, units attached to values
-/// Parse [`Factorial`](crate::UnaryOperator::Factorial) and [`Percent`](crate::UnaryOperator::Percent)
-pub fn parse_level_6(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
-	let (mut node, mut pos) = parse_level_7(tokens, pos)?;
+/// Parse [`!!`](crate::UnaryOperator::Factorial), [`Percent`](crate::UnaryOperator::Percent), units attached to values
+pub fn parse_suffix(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+	let (mut node, mut pos) = parse_highest(tokens, pos)?;
 	loop {
 		let token = tokens.get(pos);
 		match token {
@@ -298,13 +297,8 @@ pub fn parse_level_6(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 	}
 }
 
-// level 7 precedence: numbers, standalone units, constants, functions, parens
-/// Parse [`Number`](Token::Number),
-/// [`Unit`](Token::Unit),
-/// [`Constant`](Token::Constant),
-/// [`FunctionIdentifier`](Token::FunctionIdentifier),
-/// [`Paren`](Token::Paren)
-pub fn parse_level_7(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+/// Parse [`Number`](Token::Number), standalone [`Unit`](Token::Unit), [`Constant`](Token::Constant), [`FunctionIdentifier`](Token::FunctionIdentifier), [`Paren`](Token::Paren)
+pub fn parse_highest(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
 	let token: &Token = tokens
 		.get(pos)
 		.ok_or(format!("Unexpected end of input at {}", pos))?;
@@ -329,7 +323,7 @@ pub fn parse_level_7(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 				Some(&Token::Operator(LeftParen)) => {
 					// parse everything inside as you would with normal parentheses,
 					// then put it inside an ast node.
-					parse_level_1(tokens, left_paren_pos + 1).and_then(|(node, next_pos)| {
+					parse_text_operators(tokens, left_paren_pos + 1).and_then(|(node, next_pos)| {
 						if let Some(&Token::Operator(RightParen)) = tokens.get(next_pos) {
 							let mut function_node = AstNode::new(token.clone());
 							function_node.children.push(node);
@@ -350,7 +344,7 @@ pub fn parse_level_7(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 			}
 		}
 		Token::Operator(LeftParen) => {
-			parse_level_1(tokens, pos + 1).and_then(|(node, next_pos)| {
+			parse_text_operators(tokens, pos + 1).and_then(|(node, next_pos)| {
 				if let Some(&Token::Operator(RightParen)) = tokens.get(next_pos) {
 					let mut paren_node = AstNode::new(Token::Paren);
 					paren_node.children.push(node);
