@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.9.3 - 2023 sep 20
 - Fix negative unary `-` always having higher precedence than `^`. This resulted in `-3^2` returning `9` instead of `-9`
 
 ## 1.9.2 - 2023 Jul 11
