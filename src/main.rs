@@ -1,5 +1,4 @@
 use cpc::eval;
-use cpc::units::Unit;
 use std::env;
 use std::process::exit;
 
@@ -61,7 +60,7 @@ fn main() {
 		}
 	};
 
-	match eval(&expression, true, Unit::Celsius, verbose) {
+	match eval(&expression, true, verbose) {
 		Ok(answer) => {
 			if !verbose {
 				println!("{answer}");

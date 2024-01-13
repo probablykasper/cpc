@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+- Remove the `degrees` keyword which referred to `celcius` by default
+- Remove the `default_degrees` argument from `eval()` and `lex()`. Not necessary now that the `degrees` keyword is removed
+
 ## 1.9.3 - 2023 sep 20
 - Fix negative unary `-` always having higher precedence than `^`. This resulted in `-3^2` returning `9` instead of `-9`
 

@@ -9,7 +9,6 @@ use crate::NamedNumber::*;
 use crate::Constant::{E, Pi};
 use crate::LexerKeyword::{In, PercentChar, Per, Mercury, Hg, PoundForce, Force, DoubleQuotes, Revolution};
 use crate::FunctionIdentifier::{Cbrt, Ceil, Cos, Exp, Abs, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
-use crate::units::Unit;
 use crate::units::Unit::*;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
@@ -595,7 +594,6 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"k" | "kelvin" | "kelvins" => Token::Unit(Kelvin),
 		"c" | "celsius" => Token::Unit(Celsius),
 		"f" | "fahrenheit" | "fahrenheits" => Token::Unit(Fahrenheit),
-		"deg" | "degree" | "degrees" => Token::Unit(lexer.default_degree),
 
 		string => {
 			return Err(format!("Invalid string: {}", string));
@@ -610,11 +608,10 @@ struct Lexer<'a> {
 	right_paren_count: u16,
 	chars: Peekable<Graphemes<'a>>,
 	tokens: Vec<Token>,
-	default_degree: Unit,
 }
 
 /// Lex an input string and returns [`Token`]s
-pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) -> Result<Vec<Token>, String> {
+pub fn lex(input: &str, remove_trailing_operator: bool) -> Result<Vec<Token>, String> {
 	let mut input = input.replace(',', "").to_ascii_lowercase();
 
 	if remove_trailing_operator {
@@ -631,7 +628,6 @@ pub fn lex(input: &str, remove_trailing_operator: bool, default_degree: Unit) ->
 		right_paren_count: 0,
 		chars: UnicodeSegmentation::graphemes(input.as_str(), true).peekable(),
 		tokens: Vec::new(),
-		default_degree,
 	};
 
 	while let Some(c) = lexer.chars.next() {
@@ -945,7 +941,7 @@ mod tests {
 		let nonplural_data_units = Regex::new(r"(bit|byte)s").unwrap();
 
 		let run_lex = |input: &str, expected_tokens: Vec<Token>| {
-			let tokens = match lex(input, false, Unit::Celsius) {
+			let tokens = match lex(input, false) {
 				Ok(tokens) => tokens,
 				Err(e) => {
 					panic!("lex error: {}\nrun_lex input: {}", e, input);
@@ -956,17 +952,17 @@ mod tests {
 
 			// Prove we can handle multiple spaces wherever we handle a single space
 			let input_extra_spaces = input.replace(" ", "   ");
-			let tokens_extra_spaces = lex(&input_extra_spaces, false, Unit::Celsius).unwrap();
+			let tokens_extra_spaces = lex(&input_extra_spaces, false).unwrap();
 			assert!(tokens_extra_spaces == expected_tokens, "{info_msg}");
 
 			// Prove we don't need spaces around operators
 			let input_stripped_spaces = strip_operator_spacing.replace_all(input, "$1");
-			let tokens_stripped_spaces = lex(&input_stripped_spaces, false, Unit::Celsius).unwrap();
+			let tokens_stripped_spaces = lex(&input_stripped_spaces, false).unwrap();
 			assert!(tokens_stripped_spaces == expected_tokens, "{info_msg}");
 
 			// Prove we don't need a space after a digit
 			let input_afterdigit_stripped_spaces = strip_afterdigit_spacing.replace_all(input, "$1");
-			let tokens_afterdigit_stripped_spaces = lex(&input_afterdigit_stripped_spaces, false, Unit::Celsius).unwrap();
+			let tokens_afterdigit_stripped_spaces = lex(&input_afterdigit_stripped_spaces, false).unwrap();
 			assert!(tokens_afterdigit_stripped_spaces == expected_tokens, "{info_msg}");
 		};
 
@@ -975,7 +971,7 @@ mod tests {
 
 			// Prove plural and non-plural data units behave identically
 			let input_nonplural_units = nonplural_data_units.replace_all(input, "$1");
-			let tokens_nonplural_units = lex(&input_nonplural_units, false, Unit::Celsius).unwrap();
+			let tokens_nonplural_units = lex(&input_nonplural_units, false).unwrap();
 			let info_msg = format!("run_datarate_lex input: {}\nexpected: {:?}\nreceived: {:?}", input, expected_tokens, tokens_nonplural_units);
 			assert!(tokens_nonplural_units == expected_tokens, "{info_msg}");
 		};

@@ -19,7 +19,7 @@
 //! use cpc::eval;
 //! use cpc::units::Unit;
 //!
-//! match eval("3m + 1cm", true, Unit::Celsius, false) {
+//! match eval("3m + 1cm", true, false) {
 //!     Ok(answer) => {
 //!         // answer: Number { value: 301, unit: Unit::Centimeter }
 //!         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
@@ -230,7 +230,7 @@ macro_rules! numtok {
 /// use cpc::eval;
 /// use cpc::units::Unit;
 ///
-/// match eval("3m + 1cm", true, Unit::Celsius, false) {
+/// match eval("3m + 1cm", true, false) {
 ///     Ok(answer) => {
 ///         // answer: Number { value: 301, unit: Unit::Centimeter }
 ///         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
@@ -243,12 +243,11 @@ macro_rules! numtok {
 pub fn eval(
 	input: &str,
 	allow_trailing_operators: bool,
-	default_degree: Unit,
 	verbose: bool,
 ) -> Result<Number, String> {
 	let lex_start = Instant::now();
 
-	match lexer::lex(input, allow_trailing_operators, default_degree) {
+	match lexer::lex(input, allow_trailing_operators) {
 		Ok(tokens) => {
 			let lex_time = Instant::now().duration_since(lex_start).as_nanos() as f32;
 			if verbose {
@@ -296,7 +295,7 @@ mod tests {
 	use super::*;
 
 	fn default_eval(input: &str) -> Number {
-		eval(input, true, units::Unit::Celsius, false).unwrap()
+		eval(input, true, false).unwrap()
 	}
 
 	#[test]
