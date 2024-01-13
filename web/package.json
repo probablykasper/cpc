@@ -1,0 +1,27 @@
+{
+	"name": "web",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "npm run wasm && vite dev",
+		"build": "npm run wasm && vite build",
+		"wasm": "wasm-pack build ../wasm",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^3.1.0",
+		"@sveltejs/kit": "^2.3.2",
+		"@sveltejs/vite-plugin-svelte": "^3.0.1",
+		"svelte": "^4.2.8",
+		"svelte-check": "^3.6.3",
+		"tslib": "^2.6.2",
+		"typescript": "^5.3.3",
+		"vite": "^5.0.11",
+		"vite-plugin-top-level-await": "^1.4.1",
+		"vite-plugin-wasm": "^3.3.0",
+		"wasm-pack": "^0.12.1"
+	},
+	"type": "module"
+}

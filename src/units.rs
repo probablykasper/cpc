@@ -69,14 +69,14 @@ macro_rules! create_units {
 					),*
 				}
 			}
-			pub(crate) fn singular(&self) -> &str {
+			pub fn singular(&self) -> &str {
 				match self {
 					$(
 						Unit::$variant => $properties.2
 					),*
 				}
 			}
-			pub(crate) fn plural(&self) -> &str {
+			pub fn plural(&self) -> &str {
 				match self {
 					$(
 						Unit::$variant => $properties.3

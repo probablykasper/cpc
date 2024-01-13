@@ -18,6 +18,9 @@ categories = [
     "value-formatting",
 ]
 
+[workspace]
+members = ["wasm"]
+
 [dependencies]
 decimal = { version = "2.1", default-features = false, features = [
     "serde",
