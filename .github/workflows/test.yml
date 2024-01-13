@@ -19,3 +19,20 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - run: cargo test
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Node.js setup
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - run: npm run build
