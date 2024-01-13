@@ -22,11 +22,16 @@ jobs:
 
   wasm:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
     steps:
       - uses: actions/checkout@v4
 
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
 
       - name: Node.js setup
         uses: actions/setup-node@v2
@@ -34,7 +39,5 @@ jobs:
           node-version: 20
 
       - run: npm install
-        working-directory: ./web
 
       - run: npm run build
-        working-directory: ./web
