@@ -11,6 +11,9 @@ It also lets you mix units, so for example `1 km - 1m` results in `999 Meter`.
 
 [List of all supported units](https://docs.rs/cpc/latest/cpc/units/enum.Unit.html)
 
+> [!TIP]
+> [fend](https://github.com/printfn/fend) is a great alternative to cpc
+
 ## CLI Installation
 Install using `cargo`:
 ```
