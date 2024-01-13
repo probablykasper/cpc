@@ -34,5 +34,7 @@ jobs:
           node-version: 20
 
       - run: npm install
+        working-directory: ./web
 
       - run: npm run build
+        working-directory: ./web
