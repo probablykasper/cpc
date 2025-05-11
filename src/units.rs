@@ -760,6 +760,14 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 		Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
 	}
 }
+
+pub fn inaccurate_modulo(left: Rational, right: Rational) -> Rational {
+	let left = f64::try_from(left).unwrap();
+	let right = f64::try_from(right).unwrap();
+	let result = left % right;
+	result.try_into().unwrap()
+}
+
 /// Modulo a [`Number`] by another [`Number`].
 /// 
 /// `left` and `right` need to have the same [`UnitType`], and the result will have that same [`UnitType`].
@@ -772,7 +780,7 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 	} else if left.unit.category() == right.unit.category() {
 		// 5 km % 3 m
 		let (left, right) = convert_to_lowest(left, right)?;
-		Ok(Number::new(left.value % right.value, left.unit))
+		Ok(Number::new(inaccurate_modulo(left.value,right.value), left.unit))
 	} else {
 		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
 	}

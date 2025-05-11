@@ -1,6 +1,6 @@
 use crate::lookup::lookup_named_number;
 use crate::parser::AstNode;
-use crate::units::{add, convert, divide, modulo, multiply, pow, subtract, Unit, UnitType};
+use crate::units::{add, convert, divide, inaccurate_modulo, modulo, multiply, pow, subtract, Unit, UnitType};
 use crate::Constant::{Pi, E};
 use crate::{r, FunctionIdentifier::*};
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
@@ -54,7 +54,8 @@ pub fn sin(mut input: Rational) -> Rational {
 	let pi = r("3.141592653589793238462643383279503");
 	let pi2 = r("6.283185307179586476925286766559006");
 
-	input %= pi2;
+	// input %= pi2;
+	input = inaccurate_modulo(input, pi2);
 
 	let negative_correction = if input < 0 {
 		input -= pi;
