@@ -848,8 +848,20 @@ mod tests {
 			use std::str::FromStr;
 
 			let value_string = &value.to_string();
-			let value_d128 = Rational::from_sci_string(value_string).unwrap();
-			let number = Number::new(value_d128, unit);
+			let value_num = Rational::from_sci_string(value_string).unwrap();
+			let number = Number::new(value_num, unit);
+
+			let result = convert(number, to_unit);
+			let string_result = &result.unwrap().value.to_string();
+			let float_result = f64::from_str(string_result).unwrap();
+
+			return float_result;
+		}
+		pub fn convert_test2(value: &str, unit: Unit, to_unit: Unit) -> f64 {
+			use std::str::FromStr;
+
+			let value_num = Rational::from_sci_string(value).unwrap();
+			let number = Number::new(value_num, unit);
 
 			let result = convert(number, to_unit);
 			let string_result = &result.unwrap().value.to_string();
@@ -1019,7 +1031,7 @@ mod tests {
 		assert_float_eq!(convert_test(1000.0, Terawatt, Petawatt), 1.0);
 		assert_float_eq!(convert_test(0.0568690272188, Watt, BritishThermalUnitsPerMinute), 1.0);
 		assert_float_eq!(convert_test(60.0, BritishThermalUnitsPerMinute, BritishThermalUnitsPerHour), 1.0);
-		assert_float_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
+		assert_float_eq!(convert_test2("745.69987158227022", Watt, Horsepower), 1.0);
 		assert_float_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
 
 		assert_float_eq!(convert_test(1000.0, Milliampere, Ampere), 1.0);
