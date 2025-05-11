@@ -126,64 +126,64 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						Err("log() only accepts UnitType::NoType".to_string())
 					}
 				}
-				Log => {
-					if child_answer.unit.category() == UnitType::NoType {
-						let result = child_answer.value.log10();
-						Ok(Number::new(result, child_answer.unit))
-					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
-					}
-				}
-				Ln => {
-					if child_answer.unit.category() == UnitType::NoType {
-						let result = child_answer.value.ln();
-						Ok(Number::new(result, child_answer.unit))
-					} else {
-						Err("ln() only accepts UnitType::NoType".to_string())
-					}
-				}
-				Exp => {
-					if child_answer.unit.category() == UnitType::NoType {
-						let result = child_answer.value.exp(child_answer.value);
-						Ok(Number::new(result, child_answer.unit))
-					} else {
-						Err("exp() only accepts UnitType::NoType".to_string())
-					}
-				}
-				Round => {
-					// .quantize() rounds .5 to nearest even integer, so we correct that
-					let mut result = child_answer.value.quantize(1);
-					let rounding_change = result - child_answer.value;
-					// If the result was rounded down by 0.5, correct by +1
-					if rounding_change == -0.5 {
-						result += 1;
-					}
-					Ok(Number::new(result, child_answer.unit))
-				}
-				Ceil => {
-					let mut result = child_answer.value.quantize(1);
-					let rounding_change = result - child_answer.value;
-					if rounding_change.is_negative() {
-						result += 1;
-					}
-					Ok(Number::new(result, child_answer.unit))
-				}
-				Floor => {
-					let mut result = child_answer.value.quantize(1);
-					let rounding_change = result - child_answer.value;
-					if !rounding_change.is_negative() {
-						result -= 1;
-					}
-					Ok(Number::new(result, child_answer.unit))
-				}
-				Abs => {
-					let mut result = child_answer.value.abs();
-					let rounding_change = result - child_answer.value;
-					if rounding_change == -0.5 {
-						result += 1;
-					}
-					Ok(Number::new(result, child_answer.unit))
-				}
+				// Log => {
+				// 	if child_answer.unit.category() == UnitType::NoType {
+				// 		let result = child_answer.value.log10();
+				// 		Ok(Number::new(result, child_answer.unit))
+				// 	} else {
+				// 		Err("log() only accepts UnitType::NoType".to_string())
+				// 	}
+				// }
+				// Ln => {
+				// 	if child_answer.unit.category() == UnitType::NoType {
+				// 		let result = child_answer.value.ln();
+				// 		Ok(Number::new(result, child_answer.unit))
+				// 	} else {
+				// 		Err("ln() only accepts UnitType::NoType".to_string())
+				// 	}
+				// }
+				// Exp => {
+				// 	if child_answer.unit.category() == UnitType::NoType {
+				// 		let result = child_answer.value.exp(child_answer.value);
+				// 		Ok(Number::new(result, child_answer.unit))
+				// 	} else {
+				// 		Err("exp() only accepts UnitType::NoType".to_string())
+				// 	}
+				// }
+				// Round => {
+				// 	// .quantize() rounds .5 to nearest even integer, so we correct that
+				// 	let mut result = child_answer.value.quantize(1);
+				// 	let rounding_change = result - child_answer.value;
+				// 	// If the result was rounded down by 0.5, correct by +1
+				// 	if rounding_change == -0.5 {
+				// 		result += 1;
+				// 	}
+				// 	Ok(Number::new(result, child_answer.unit))
+				// }
+				// Ceil => {
+				// 	let mut result = child_answer.value.quantize(1);
+				// 	let rounding_change = result - child_answer.value;
+				// 	if rounding_change.is_negative() {
+				// 		result += 1;
+				// 	}
+				// 	Ok(Number::new(result, child_answer.unit))
+				// }
+				// Floor => {
+				// 	let mut result = child_answer.value.quantize(1);
+				// 	let rounding_change = result - child_answer.value;
+				// 	if !rounding_change.is_negative() {
+				// 		result -= 1;
+				// 	}
+				// 	Ok(Number::new(result, child_answer.unit))
+				// }
+				// Abs => {
+				// 	let mut result = child_answer.value.abs();
+				// 	let rounding_change = result - child_answer.value;
+				// 	if rounding_change == -0.5 {
+				// 		result += 1;
+				// 	}
+				// 	Ok(Number::new(result, child_answer.unit))
+				// }
 				Sin => {
 					let result = sin(child_answer.value);
 					Ok(Number::new(result, child_answer.unit))
@@ -196,6 +196,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 					let result = tan(child_answer.value);
 					Ok(Number::new(result, child_answer.unit))
 				}
+				_ => todo!(),
 			}
 		}
 		Token::Unit(unit) => {
