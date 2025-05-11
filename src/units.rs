@@ -424,7 +424,7 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 pub fn to_ideal_unit(number: Number) -> Number {
 	let value = &number.value * number.unit.weight();
 	if number.unit.category() == Length {
-		if value >= 1000000000000000000 { // ≈ 0.1 light years
+		if value >= 1000000000000000000u64 { // ≈ 0.1 light years
 			return Number::new(value/LightYear.weight(), LightYear)
 		} else if value >= 1000000 { // 1 km
 			return Number::new(value/Kilometer.weight(), Kilometer)
@@ -436,13 +436,13 @@ pub fn to_ideal_unit(number: Number) -> Number {
 			return Number::new(value, Millimeter)
 		}
 	} else if number.unit.category() == Time {
-		if value >= 31556952000000000 {
+		if value >= 31556952000000000u64 {
 			return Number::new(value/Year.weight(), Year);
-		} else if value >= 86400000000000 {
+		} else if value >= 86400000000000u64 {
 			return Number::new(value/Day.weight(), Day);
-		} else if value >= 3600000000000 {
+		} else if value >= 3600000000000u64 {
 			return Number::new(value/Hour.weight(), Hour);
-		} else if value >= 60000000000 {
+		} else if value >= 60000000000u64 {
 			return Number::new(value/Minute.weight(), Minute);
 		} else if value >= 1000000000 {
 			return Number::new(value/Second.weight(), Second);
@@ -454,9 +454,9 @@ pub fn to_ideal_unit(number: Number) -> Number {
 			return Number::new(value, Nanosecond);
 		}
 	} else if number.unit.category() == Area {
-		if value >= 1000000000000 { // 1 km2
+		if value >= 1000000000000u64 { // 1 km2
 			return Number::new(value/SquareKilometer.weight(), SquareKilometer)
-		} else if value >= 10000000000 { // 1 hectare
+		} else if value >= 10000000000u64 { // 1 hectare
 			return Number::new(value/Hectare.weight(), Hectare)
 		} else if value >= 1000000 { // 1 m2
 			return Number::new(value/SquareMeter.weight(), SquareMeter)
@@ -466,7 +466,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 			return Number::new(value, SquareMillimeter)
 		}
 	} else if number.unit.category() == Volume {
-		if value >= 1000000000000000000 { // 1 km3
+		if value >= 1000000000000000000u64 { // 1 km3
 			return Number::new(value/CubicKilometer.weight(), CubicKilometer)
 		} else if value >= 1000000000 { // 1 m3
 			return Number::new(value/CubicMeter.weight(), CubicMeter)
@@ -478,13 +478,13 @@ pub fn to_ideal_unit(number: Number) -> Number {
 			return Number::new(value, CubicMillimeter)
 		}
 	} else if number.unit.category() == Energy {
-		if value >= 3600000000000000000 { // 1 petawatthour
+		if value >= 3600000000000000000u64 { // 1 petawatthour
 			return Number::new(value/PetawattHour.weight(), PetawattHour)
-		} else if value >= 3600000000000000 { // 1 terawatthour
+		} else if value >= 3600000000000000u64 { // 1 terawatthour
 			return Number::new(value/TerawattHour.weight(), TerawattHour)
-		} else if value >= 3600000000000 { // 1 gigawatthour
+		} else if value >= 3600000000000u64 { // 1 gigawatthour
 			return Number::new(value/GigawattHour.weight(), GigawattHour)
-		} else if value >= 3600000000 { // 1 megawatthour
+		} else if value >= 3600000000u64 { // 1 megawatthour
 			return Number::new(value/MegawattHour.weight(), MegawattHour)
 		} else if value >= 3600000 { // 1 kilowatthour
 			return Number::new(value/KilowattHour.weight(), KilowattHour)
@@ -496,9 +496,9 @@ pub fn to_ideal_unit(number: Number) -> Number {
 			return Number::new(value * get_inverted_millijoule_weight(), Millijoule)
 		}
 	} else if number.unit.category() == Power {
-		if value >= 1000000000000000 { // 1 petawatt
+		if value >= 1000000000000000u64 { // 1 petawatt
 			return Number::new(value/Petawatt.weight(), Petawatt)
-		} else if value >= 1000000000000 { // 1 terawatt
+		} else if value >= 1000000000000u64 { // 1 terawatt
 			return Number::new(value/Terawatt.weight(), Terawatt)
 		} else if value >= 1000000000 { // 1 gigawatt
 			return Number::new(value/Gigawatt.weight(), Gigawatt)
@@ -543,7 +543,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 pub fn to_ideal_joule_unit(number: Number) -> Number {
 	let value = &number.value * number.unit.weight();
 	if number.unit.category() == Energy {
-		if value >= 1000000000000 { // 1 terajoule
+		if value >= 1000000000000u64 { // 1 terajoule
 			return Number::new(value/Terajoule.weight(), Terajoule)
 		} else if value >= 1000000000 { // 1 gigajoule
 			return Number::new(value/Gigajoule.weight(), Gigajoule)
