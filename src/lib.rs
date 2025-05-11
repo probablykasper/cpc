@@ -31,9 +31,14 @@
 //! ```
 
 use crate::units::Unit;
-use decimal::d128;
+use malachite::rational::Rational;
 use std::fmt::{self, Display};
+use std::str::FromStr;
 use std::time::Instant;
+
+pub fn r(input: &str) -> Rational {
+	Rational::from_str(input).unwrap()
+}
 
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
@@ -55,7 +60,7 @@ pub mod units;
 /// ```rust
 /// use cpc::{eval,Number};
 /// use cpc::units::Unit;
-/// use decimal::d128;
+/// use malachite::rational::Rational;
 ///
 /// let x = Number {
 ///   value: d128!(100),
@@ -64,13 +69,13 @@ pub mod units;
 /// ```
 pub struct Number {
 	/// The number part of a [`Number`] struct
-	pub value: d128,
+	pub value: Rational,
 	/// The unit of a [`Number`] struct. This can be [`NoType`](units::UnitType::NoType)
 	pub unit: Unit,
 }
 
 impl Number {
-	pub const fn new(value: d128, unit: Unit) -> Number {
+	pub const fn new(value: Rational, unit: Unit) -> Number {
 		Number { value, unit }
 	}
 }
@@ -78,7 +83,7 @@ impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		// 0.2/0.01 results in 2E+1, but if we add zero it becomes 20
 		let value = self.value + d128!(0);
-		let word = match self.value == d128!(1) {
+		let word = match self.value == 1 {
 			true => self.unit.singular(),
 			false => self.unit.plural(),
 		};
@@ -200,7 +205,7 @@ pub enum LexerKeyword {
 pub enum Token {
 	Operator(Operator),
 	UnaryOperator(UnaryOperator),
-	Number(d128),
+	Number(Rational),
 	FunctionIdentifier(FunctionIdentifier),
 	Constant(Constant),
 	/// Used by the parser only
@@ -219,7 +224,7 @@ pub enum Token {
 #[macro_export]
 macro_rules! numtok {
 	( $num:literal ) => {
-		Token::Number(d128!($num))
+		Token::Number(Rational::try_from($num).unwrap())
 	};
 }
 
@@ -300,12 +305,12 @@ mod tests {
 
 	#[test]
 	fn test_evaluations() {
-		assert_eq!(default_eval("-2(-3)"), Number::new(d128!(6), Unit::NoUnit));
-		assert_eq!(default_eval("-2(3)"), Number::new(d128!(-6), Unit::NoUnit));
-		assert_eq!(default_eval("(3)-2"), Number::new(d128!(1), Unit::NoUnit));
-		assert_eq!(default_eval("-1km to m"), Number::new(d128!(-1000), Unit::Meter));
-		assert_eq!(default_eval("2*-3*0.5"), Number::new(d128!(-3), Unit::NoUnit));
-		assert_eq!(default_eval("-3^2"), Number::new(d128!(-9), Unit::NoUnit));
-		assert_eq!(default_eval("-1+2"), Number::new(d128!(1), Unit::NoUnit));
+		assert_eq!(default_eval("-2(-3)"), Number::new(r("6"), Unit::NoUnit));
+		assert_eq!(default_eval("-2(3)"), Number::new(r("-6"), Unit::NoUnit));
+		assert_eq!(default_eval("(3)-2"), Number::new(r("1"), Unit::NoUnit));
+		assert_eq!(default_eval("-1km to m"), Number::new(r("-1000"), Unit::Meter));
+		assert_eq!(default_eval("2*-3*0.5"), Number::new(r("-3"), Unit::NoUnit));
+		assert_eq!(default_eval("-3^2"), Number::new(r("-9"), Unit::NoUnit));
+		assert_eq!(default_eval("-1+2"), Number::new(r("1"), Unit::NoUnit));
 	}
 }

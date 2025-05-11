@@ -1,5 +1,6 @@
-use decimal::d128;
-use crate::Number;
+use malachite::rational::Rational;
+use crate::{Number, r};
+use malachite::base::num::arithmetic::traits::Pow;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// An enum of all possible unit types, like [`Length`], [`DigitalStorage`] etc.
@@ -62,7 +63,7 @@ macro_rules! create_units {
 					),*
 				}
 			}
-			pub fn weight(&self) -> d128 {
+			pub fn weight(&self) -> Rational {
 				match self {
 					$(
 						Unit::$variant => $properties.1
@@ -88,252 +89,252 @@ macro_rules! create_units {
 }
 
 create_units!(
-	NoUnit:             (NoType, d128!(1), "", ""),
+	NoUnit:             (NoType, r("1"), "", ""),
 
-	Nanosecond:         (Time, d128!(1), "nanosecond", "nanoseconds"),
-	Microsecond:        (Time, d128!(1000), "microsecond", "microseconds"),
-	Millisecond:        (Time, d128!(1000000), "millisecond", "milliseconds"),
-	Second:             (Time, d128!(1000000000), "second", "seconds"),
-	Minute:             (Time, d128!(60000000000), "minute", "minutes"),
-	Hour:               (Time, d128!(3600000000000), "hour", "hours"),
-	Day:                (Time, d128!(86400000000000), "day", "days"),
-	Week:               (Time, d128!(604800000000000), "week", "weeks"),
-	Month:              (Time, d128!(2629746000000000), "month", "months"),
-	Quarter:            (Time, d128!(7889238000000000), "quarter", "quarters"),
-	Year:               (Time, d128!(31556952000000000), "year", "years"),
-	Decade:             (Time, d128!(315569520000000000), "decade", "decades"),
-	Century:            (Time, d128!(3155695200000000000), "century", "centuries"),
-	Millenium:          (Time, d128!(31556952000000000000), "millenium", "millenia"),
+	Nanosecond:         (Time, r("1"), "nanosecond", "nanoseconds"),
+	Microsecond:        (Time, r("1000"), "microsecond", "microseconds"),
+	Millisecond:        (Time, r("1000000"), "millisecond", "milliseconds"),
+	Second:             (Time, r("1000000000"), "second", "seconds"),
+	Minute:             (Time, r("60000000000"), "minute", "minutes"),
+	Hour:               (Time, r("3600000000000"), "hour", "hours"),
+	Day:                (Time, r("86400000000000"), "day", "days"),
+	Week:               (Time, r("604800000000000"), "week", "weeks"),
+	Month:              (Time, r("2629746000000000"), "month", "months"),
+	Quarter:            (Time, r("7889238000000000"), "quarter", "quarters"),
+	Year:               (Time, r("31556952000000000"), "year", "years"),
+	Decade:             (Time, r("315569520000000000"), "decade", "decades"),
+	Century:            (Time, r("3155695200000000000"), "century", "centuries"),
+	Millenium:          (Time, r("31556952000000000000"), "millenium", "millenia"),
 
-	Millimeter:         (Length, d128!(1), "millimeter", "millimeters"),
-	Centimeter:         (Length, d128!(10), "centimeter", "centimeters"),
-	Decimeter:          (Length, d128!(100), "decimeter", "decimeters"),
-	Meter:              (Length, d128!(1000), "meter", "meters"),
-	Kilometer:          (Length, d128!(1000000), "kilometer", "kilometers"),
-	Inch:               (Length, d128!(25.4), "inch", "inches"),
-	Foot:               (Length, d128!(304.8), "foot", "feet"),
-	Yard:               (Length, d128!(914.4), "yard", "yards"),
-	Mile:               (Length, d128!(1609344), "mile", "miles"),
+	Millimeter:         (Length, r("1"), "millimeter", "millimeters"),
+	Centimeter:         (Length, r("10"), "centimeter", "centimeters"),
+	Decimeter:          (Length, r("100"), "decimeter", "decimeters"),
+	Meter:              (Length, r("1000"), "meter", "meters"),
+	Kilometer:          (Length, r("1000000"), "kilometer", "kilometers"),
+	Inch:               (Length, r("25.4"), "inch", "inches"),
+	Foot:               (Length, r("304.8"), "foot", "feet"),
+	Yard:               (Length, r("914.4"), "yard", "yards"),
+	Mile:               (Length, r("1609344"), "mile", "miles"),
 	// 1-dimensional only:
-	Marathon:           (Length, d128!(42195000), "marathon", "marathons"),
-	NauticalMile:       (Length, d128!(1852000), "nautical mile", "nautical miles"),
-	LightYear:          (Length, d128!(9460730472580800000), "light year", "light years"),
-	LightSecond:        (Length, d128!(299792458000), "light second", "light seconds"),
+	Marathon:           (Length, r("42195000"), "marathon", "marathons"),
+	NauticalMile:       (Length, r("1852000"), "nautical mile", "nautical miles"),
+	LightYear:          (Length, r("9460730472580800000"), "light year", "light years"),
+	LightSecond:        (Length, r("299792458000"), "light second", "light seconds"),
 
-	SquareMillimeter:   (Area, d128!(1), "square millimeter", "square millimeters"),
-	SquareCentimeter:   (Area, d128!(100), "square centimeter", "square centimeters"),
-	SquareDecimeter:    (Area, d128!(10000), "square decimeter", "square decimeters"),
-	SquareMeter:        (Area, d128!(1000000), "square meter", "square meters"),
-	SquareKilometer:    (Area, d128!(1000000000000), "square kilometer", "square kilometers"),
-	SquareInch:         (Area, d128!(645.16), "square inch", "square inches"),
-	SquareFoot:         (Area, d128!(92903.04), "square foot", "square feet"),
-	SquareYard:         (Area, d128!(836127.36), "square yard", "square yards"),
-	SquareMile:         (Area, d128!(2589988110336.00), "square mile", "square miles"),
+	SquareMillimeter:   (Area, r("1"), "square millimeter", "square millimeters"),
+	SquareCentimeter:   (Area, r("100"), "square centimeter", "square centimeters"),
+	SquareDecimeter:    (Area, r("10000"), "square decimeter", "square decimeters"),
+	SquareMeter:        (Area, r("1000000"), "square meter", "square meters"),
+	SquareKilometer:    (Area, r("1000000000000"), "square kilometer", "square kilometers"),
+	SquareInch:         (Area, r("645.16"), "square inch", "square inches"),
+	SquareFoot:         (Area, r("92903.04"), "square foot", "square feet"),
+	SquareYard:         (Area, r("836127.36"), "square yard", "square yards"),
+	SquareMile:         (Area, r("2589988110336.00"), "square mile", "square miles"),
 	// 2-dimensional only
-	Are:                (Area, d128!(100000000), "are", "ares"),
-	Decare:             (Area, d128!(1000000000), "decare", "decare"),
-	Hectare:            (Area, d128!(10000000000), "hectare", "hectares"),
-	Acre:               (Area, d128!(4046856422.40), "acre", "acres"),
+	Are:                (Area, r("100000000"), "are", "ares"),
+	Decare:             (Area, r("1000000000"), "decare", "decare"),
+	Hectare:            (Area, r("10000000000"), "hectare", "hectares"),
+	Acre:               (Area, r("4046856422.40"), "acre", "acres"),
 
-	CubicMillimeter:    (Volume, d128!(1), "cubic millimeter", "cubic millimeters"),
-	CubicCentimeter:    (Volume, d128!(1000), "cubic centimeter", "cubic centimeters"),
-	CubicDecimeter:     (Volume, d128!(1000000), "cubic decimeter", "cubic decimeters"),
-	CubicMeter:         (Volume, d128!(1000000000), "cubic meter", "cubic meters"),
-	CubicKilometer:     (Volume, d128!(1000000000000000000), "cubic kilometer", "cubic kilometers"),
-	CubicInch:          (Volume, d128!(16387.064), "cubic inch", "cubic inches"),
-	CubicFoot:          (Volume, d128!(28316846.592), "cubic foot", "cubic feet"),
-	CubicYard:          (Volume, d128!(764554857.984), "cubic yard", "cubic yards"),
-	CubicMile:          (Volume, d128!(4168181825440579584), "cubic mile", "cubic miles"),
+	CubicMillimeter:    (Volume, r("1"), "cubic millimeter", "cubic millimeters"),
+	CubicCentimeter:    (Volume, r("1000"), "cubic centimeter", "cubic centimeters"),
+	CubicDecimeter:     (Volume, r("1000000"), "cubic decimeter", "cubic decimeters"),
+	CubicMeter:         (Volume, r("1000000000"), "cubic meter", "cubic meters"),
+	CubicKilometer:     (Volume, r("1000000000000000000"), "cubic kilometer", "cubic kilometers"),
+	CubicInch:          (Volume, r("16387.064"), "cubic inch", "cubic inches"),
+	CubicFoot:          (Volume, r("28316846.592"), "cubic foot", "cubic feet"),
+	CubicYard:          (Volume, r("764554857.984"), "cubic yard", "cubic yards"),
+	CubicMile:          (Volume, r("4168181825440579584"), "cubic mile", "cubic miles"),
 	// 3-dimensional only
-	Milliliter:         (Volume, d128!(1000), "milliliter", "milliliters"),
-	Centiliter:         (Volume, d128!(10000), "centiliter", "centiliters"),
-	Deciliter:          (Volume, d128!(100000), "deciliter", "deciliters"),
-	Liter:              (Volume, d128!(1000000), "liter", "liters"),
-	Teaspoon:           (Volume, d128!(4928.92159375), "teaspoon", "teaspoons"),
-	Tablespoon:         (Volume, d128!(14786.76478125), "tablespoon", "tablespoons"),
-	FluidOunce:         (Volume, d128!(29573.5295625), "fluid ounce", "fluid ounces"),
-	Cup:                (Volume, d128!(236588.2365), "cup", "cups"),
-	Pint:               (Volume, d128!(473176.473), "pint", "pints"),
-	Quart:              (Volume, d128!(946352.946), "quart", "quarts"),
-	Gallon:             (Volume, d128!(3785411.784), "gallon", "gallons"),
-	OilBarrel:          (Volume, d128!(158987294.928), "oil barrel", "oil barrels"),
+	Milliliter:         (Volume, r("1000"), "milliliter", "milliliters"),
+	Centiliter:         (Volume, r("10000"), "centiliter", "centiliters"),
+	Deciliter:          (Volume, r("100000"), "deciliter", "deciliters"),
+	Liter:              (Volume, r("1000000"), "liter", "liters"),
+	Teaspoon:           (Volume, r("4928.92159375"), "teaspoon", "teaspoons"),
+	Tablespoon:         (Volume, r("14786.76478125"), "tablespoon", "tablespoons"),
+	FluidOunce:         (Volume, r("29573.5295625"), "fluid ounce", "fluid ounces"),
+	Cup:                (Volume, r("236588.2365"), "cup", "cups"),
+	Pint:               (Volume, r("473176.473"), "pint", "pints"),
+	Quart:              (Volume, r("946352.946"), "quart", "quarts"),
+	Gallon:             (Volume, r("3785411.784"), "gallon", "gallons"),
+	OilBarrel:          (Volume, r("158987294.928"), "oil barrel", "oil barrels"),
 
-	Milligram:          (Mass, d128!(0.001), "milligram", "milligrams"),
-	Gram:               (Mass, d128!(1), "gram", "grams"),
-	Hectogram:          (Mass, d128!(100), "hectogram", "hectograms"),
-	Kilogram:           (Mass, d128!(1000), "kilogram", "kilograms"),
-	MetricTon:          (Mass, d128!(1000000), "metric ton", "metric tons"),
-	Ounce:              (Mass, d128!(28.349523125), "ounce", "ounces"),
-	Pound:              (Mass, d128!(453.59237), "pound", "pounds"),
-	Stone:              (Mass, d128!(6350.29318), "stone", "stones"),
-	ShortTon:           (Mass, d128!(907184.74), "short ton", "short tons"),
-	LongTon:            (Mass, d128!(1016046.9088), "long ton", "long tons"),
+	Milligram:          (Mass, r("0.001"), "milligram", "milligrams"),
+	Gram:               (Mass, r("1"), "gram", "grams"),
+	Hectogram:          (Mass, r("100"), "hectogram", "hectograms"),
+	Kilogram:           (Mass, r("1000"), "kilogram", "kilograms"),
+	MetricTon:          (Mass, r("1000000"), "metric ton", "metric tons"),
+	Ounce:              (Mass, r("28.349523125"), "ounce", "ounces"),
+	Pound:              (Mass, r("453.59237"), "pound", "pounds"),
+	Stone:              (Mass, r("6350.29318"), "stone", "stones"),
+	ShortTon:           (Mass, r("907184.74"), "short ton", "short tons"),
+	LongTon:            (Mass, r("1016046.9088"), "long ton", "long tons"),
 
-	Bit:                (DigitalStorage, d128!(1), "bit", "bits"),
-	Kilobit:            (DigitalStorage, d128!(1000), "kilobit", "kilobits"),
-	Megabit:            (DigitalStorage, d128!(1000000), "megabit", "megabits"),
-	Gigabit:            (DigitalStorage, d128!(1000000000), "gigabit", "gigabits"),
-	Terabit:            (DigitalStorage, d128!(1000000000000), "terabit", "terabits"),
-	Petabit:            (DigitalStorage, d128!(1000000000000000), "petabit", "petabits"),
-	Exabit:             (DigitalStorage, d128!(1000000000000000000), "exabit", "exabits"),
-	Zettabit:           (DigitalStorage, d128!(1000000000000000000000), "zettabit", "zettabits"),
-	Yottabit:           (DigitalStorage, d128!(1000000000000000000000000), "yottabit", "yottabits"),
-	Kibibit:            (DigitalStorage, d128!(1024), "kibibit", "kibibits"),
-	Mebibit:            (DigitalStorage, d128!(1048576), "mebibit", "mebibits"),
-	Gibibit:            (DigitalStorage, d128!(1073741824), "gibibit", "gibibits"),
-	Tebibit:            (DigitalStorage, d128!(1099511627776), "tebibit", "tebibits"),
-	Pebibit:            (DigitalStorage, d128!(1125899906842624), "pebibit", "pebibits"),
-	Exbibit:            (DigitalStorage, d128!(1152921504606846976), "exbibit", "exbibits"),
-	Zebibit:            (DigitalStorage, d128!(1180591620717411303424), "zebibit", "zebibits"),
-	Yobibit:            (DigitalStorage, d128!(1208925819614629174706176), "yobibit", "yobibits"),
-	Byte:               (DigitalStorage, d128!(8), "byte", "bytes"),
-	Kilobyte:           (DigitalStorage, d128!(8000), "kilobyte", "kilobytes"),
-	Megabyte:           (DigitalStorage, d128!(8000000), "megabyte", "megabytes"),
-	Gigabyte:           (DigitalStorage, d128!(8000000000), "gigabyte", "gigabytes"),
-	Terabyte:           (DigitalStorage, d128!(8000000000000), "terabyte", "terabytes"),
-	Petabyte:           (DigitalStorage, d128!(8000000000000000), "petabyte", "petabytes"),
-	Exabyte:            (DigitalStorage, d128!(8000000000000000000), "exabyte", "exabytes"),
-	Zettabyte:          (DigitalStorage, d128!(8000000000000000000000), "zettabyte", "zettabytes"),
-	Yottabyte:          (DigitalStorage, d128!(8000000000000000000000000), "yottabyte", "yottabytes"),
-	Kibibyte:           (DigitalStorage, d128!(8192), "kibibyte", "kibibytes"),
-	Mebibyte:           (DigitalStorage, d128!(8388608), "mebibyte", "mebibytes"),
-	Gibibyte:           (DigitalStorage, d128!(8589934592), "gibibyte", "gibibytes"),
-	Tebibyte:           (DigitalStorage, d128!(8796093022208), "tebibyte", "tebibytes"),
-	Pebibyte:           (DigitalStorage, d128!(9007199254740992), "pebibyte", "pebibytes"),
-	Exbibyte:           (DigitalStorage, d128!(9223372036854775808), "exbibyte", "exbibytes"),
-	Zebibyte:           (DigitalStorage, d128!(9444732965739290427392), "zebibyte", "zebibytes"),
-	Yobibyte:           (DigitalStorage, d128!(9671406556917033397649408), "yobibyte", "yobibytes"),
+	Bit:                (DigitalStorage, r("1"), "bit", "bits"),
+	Kilobit:            (DigitalStorage, r("1000"), "kilobit", "kilobits"),
+	Megabit:            (DigitalStorage, r("1000000"), "megabit", "megabits"),
+	Gigabit:            (DigitalStorage, r("1000000000"), "gigabit", "gigabits"),
+	Terabit:            (DigitalStorage, r("1000000000000"), "terabit", "terabits"),
+	Petabit:            (DigitalStorage, r("1000000000000000"), "petabit", "petabits"),
+	Exabit:             (DigitalStorage, r("1000000000000000000"), "exabit", "exabits"),
+	Zettabit:           (DigitalStorage, r("1000000000000000000000"), "zettabit", "zettabits"),
+	Yottabit:           (DigitalStorage, r("1000000000000000000000000"), "yottabit", "yottabits"),
+	Kibibit:            (DigitalStorage, r("1024"), "kibibit", "kibibits"),
+	Mebibit:            (DigitalStorage, r("1048576"), "mebibit", "mebibits"),
+	Gibibit:            (DigitalStorage, r("1073741824"), "gibibit", "gibibits"),
+	Tebibit:            (DigitalStorage, r("1099511627776"), "tebibit", "tebibits"),
+	Pebibit:            (DigitalStorage, r("1125899906842624"), "pebibit", "pebibits"),
+	Exbibit:            (DigitalStorage, r("1152921504606846976"), "exbibit", "exbibits"),
+	Zebibit:            (DigitalStorage, r("1180591620717411303424"), "zebibit", "zebibits"),
+	Yobibit:            (DigitalStorage, r("1208925819614629174706176"), "yobibit", "yobibits"),
+	Byte:               (DigitalStorage, r("8"), "byte", "bytes"),
+	Kilobyte:           (DigitalStorage, r("8000"), "kilobyte", "kilobytes"),
+	Megabyte:           (DigitalStorage, r("8000000"), "megabyte", "megabytes"),
+	Gigabyte:           (DigitalStorage, r("8000000000"), "gigabyte", "gigabytes"),
+	Terabyte:           (DigitalStorage, r("8000000000000"), "terabyte", "terabytes"),
+	Petabyte:           (DigitalStorage, r("8000000000000000"), "petabyte", "petabytes"),
+	Exabyte:            (DigitalStorage, r("8000000000000000000"), "exabyte", "exabytes"),
+	Zettabyte:          (DigitalStorage, r("8000000000000000000000"), "zettabyte", "zettabytes"),
+	Yottabyte:          (DigitalStorage, r("8000000000000000000000000"), "yottabyte", "yottabytes"),
+	Kibibyte:           (DigitalStorage, r("8192"), "kibibyte", "kibibytes"),
+	Mebibyte:           (DigitalStorage, r("8388608"), "mebibyte", "mebibytes"),
+	Gibibyte:           (DigitalStorage, r("8589934592"), "gibibyte", "gibibytes"),
+	Tebibyte:           (DigitalStorage, r("8796093022208"), "tebibyte", "tebibytes"),
+	Pebibyte:           (DigitalStorage, r("9007199254740992"), "pebibyte", "pebibytes"),
+	Exbibyte:           (DigitalStorage, r("9223372036854775808"), "exbibyte", "exbibytes"),
+	Zebibyte:           (DigitalStorage, r("9444732965739290427392"), "zebibyte", "zebibytes"),
+	Yobibyte:           (DigitalStorage, r("9671406556917033397649408"), "yobibyte", "yobibytes"),
 
-	BitsPerSecond:        (DataTransferRate, d128!(1), "bit per second", "bits per second"),
-	KilobitsPerSecond:    (DataTransferRate, d128!(1000), "kilobit per second", "kilobits per second"),
-	MegabitsPerSecond:    (DataTransferRate, d128!(1000000), "megabit per second", "megabits per second"),
-	GigabitsPerSecond:    (DataTransferRate, d128!(1000000000), "gigabit per second", "gigabits per second"),
-	TerabitsPerSecond:    (DataTransferRate, d128!(1000000000000), "terabit per second", "terabits per second"),
-	PetabitsPerSecond:    (DataTransferRate, d128!(1000000000000000), "petabit per second", "petabits per second"),
-	ExabitsPerSecond:     (DataTransferRate, d128!(1000000000000000000), "exabit per second", "exabits per second"),
-	ZettabitsPerSecond:   (DataTransferRate, d128!(1000000000000000000000), "zettabit per second", "zettabits per second"),
-	YottabitsPerSecond:   (DataTransferRate, d128!(1000000000000000000000000), "yottabit per second", "yottabits per second"),
-	KibibitsPerSecond:    (DataTransferRate, d128!(1024), "kibibit per second", "kibibits per second"),
-	MebibitsPerSecond:    (DataTransferRate, d128!(1048576), "mebibit per second", "mebibits per second"),
-	GibibitsPerSecond:    (DataTransferRate, d128!(1073741824), "gibibit per second", "gibibits per second"),
-	TebibitsPerSecond:    (DataTransferRate, d128!(1099511627776), "tebibit per second", "tebibits per second"),
-	PebibitsPerSecond:    (DataTransferRate, d128!(1125899906842624), "pebibit per second", "pebibits per second"),
-	ExbibitsPerSecond:    (DataTransferRate, d128!(1152921504606846976), "exbibit per second", "exbibits per second"),
-	ZebibitsPerSecond:    (DataTransferRate, d128!(1180591620717411303424), "zebibit per second", "zebibits per second"),
-	YobibitsPerSecond:    (DataTransferRate, d128!(1208925819614629174706176), "yobibit per second", "yobibits per second"),
-	BytesPerSecond:       (DataTransferRate, d128!(8), "byte per second", "bytes per second"),
-	KilobytesPerSecond:   (DataTransferRate, d128!(8000), "kilobyte per second", "kilobytes per second"),
-	MegabytesPerSecond:   (DataTransferRate, d128!(8000000), "megabyte per second", "megabytes per second"),
-	GigabytesPerSecond:   (DataTransferRate, d128!(8000000000), "gigabyte per second", "gigabytes per second"),
-	TerabytesPerSecond:   (DataTransferRate, d128!(8000000000000), "terabyte per second", "terabytes per second"),
-	PetabytesPerSecond:   (DataTransferRate, d128!(8000000000000000), "petabyte per second", "petabytes per second"),
-	ExabytesPerSecond:    (DataTransferRate, d128!(8000000000000000000), "exabyte per second", "exabytes per second"),
-	ZettabytesPerSecond:  (DataTransferRate, d128!(8000000000000000000000), "zettabyte per second", "zettabytes per second"),
-	YottabytesPerSecond:  (DataTransferRate, d128!(8000000000000000000000000), "yottabyte per second", "yottabytes per second"),
-	KibibytesPerSecond:   (DataTransferRate, d128!(8192), "kibibyte per second", "kibibytes per second"),
-	MebibytesPerSecond:   (DataTransferRate, d128!(8388608), "mebibyte per second", "mebibytes per second"),
-	GibibytesPerSecond:   (DataTransferRate, d128!(8589934592), "gibibyte per second", "gibibytes per second"),
-	TebibytesPerSecond:   (DataTransferRate, d128!(8796093022208), "tebibyte per second", "tebibytes per second"),
-	PebibytesPerSecond:   (DataTransferRate, d128!(9007199254740992), "pebibyte per second", "pebibytes per second"),
-	ExbibytesPerSecond:   (DataTransferRate, d128!(9223372036854775808), "exbibyte per second", "exbibytes per second"),
-	ZebibytesPerSecond:   (DataTransferRate, d128!(9444732965739290427392), "zebibyte per second", "zebibytes per second"),
-	YobibytesPerSecond:   (DataTransferRate, d128!(9671406556917033397649408), "yobibyte per second", "yobibytes per second"),
+	BitsPerSecond:        (DataTransferRate, r("1"), "bit per second", "bits per second"),
+	KilobitsPerSecond:    (DataTransferRate, r("1000"), "kilobit per second", "kilobits per second"),
+	MegabitsPerSecond:    (DataTransferRate, r("1000000"), "megabit per second", "megabits per second"),
+	GigabitsPerSecond:    (DataTransferRate, r("1000000000"), "gigabit per second", "gigabits per second"),
+	TerabitsPerSecond:    (DataTransferRate, r("1000000000000"), "terabit per second", "terabits per second"),
+	PetabitsPerSecond:    (DataTransferRate, r("1000000000000000"), "petabit per second", "petabits per second"),
+	ExabitsPerSecond:     (DataTransferRate, r("1000000000000000000"), "exabit per second", "exabits per second"),
+	ZettabitsPerSecond:   (DataTransferRate, r("1000000000000000000000"), "zettabit per second", "zettabits per second"),
+	YottabitsPerSecond:   (DataTransferRate, r("1000000000000000000000000"), "yottabit per second", "yottabits per second"),
+	KibibitsPerSecond:    (DataTransferRate, r("1024"), "kibibit per second", "kibibits per second"),
+	MebibitsPerSecond:    (DataTransferRate, r("1048576"), "mebibit per second", "mebibits per second"),
+	GibibitsPerSecond:    (DataTransferRate, r("1073741824"), "gibibit per second", "gibibits per second"),
+	TebibitsPerSecond:    (DataTransferRate, r("1099511627776"), "tebibit per second", "tebibits per second"),
+	PebibitsPerSecond:    (DataTransferRate, r("1125899906842624"), "pebibit per second", "pebibits per second"),
+	ExbibitsPerSecond:    (DataTransferRate, r("1152921504606846976"), "exbibit per second", "exbibits per second"),
+	ZebibitsPerSecond:    (DataTransferRate, r("1180591620717411303424"), "zebibit per second", "zebibits per second"),
+	YobibitsPerSecond:    (DataTransferRate, r("1208925819614629174706176"), "yobibit per second", "yobibits per second"),
+	BytesPerSecond:       (DataTransferRate, r("8"), "byte per second", "bytes per second"),
+	KilobytesPerSecond:   (DataTransferRate, r("8000"), "kilobyte per second", "kilobytes per second"),
+	MegabytesPerSecond:   (DataTransferRate, r("8000000"), "megabyte per second", "megabytes per second"),
+	GigabytesPerSecond:   (DataTransferRate, r("8000000000"), "gigabyte per second", "gigabytes per second"),
+	TerabytesPerSecond:   (DataTransferRate, r("8000000000000"), "terabyte per second", "terabytes per second"),
+	PetabytesPerSecond:   (DataTransferRate, r("8000000000000000"), "petabyte per second", "petabytes per second"),
+	ExabytesPerSecond:    (DataTransferRate, r("8000000000000000000"), "exabyte per second", "exabytes per second"),
+	ZettabytesPerSecond:  (DataTransferRate, r("8000000000000000000000"), "zettabyte per second", "zettabytes per second"),
+	YottabytesPerSecond:  (DataTransferRate, r("8000000000000000000000000"), "yottabyte per second", "yottabytes per second"),
+	KibibytesPerSecond:   (DataTransferRate, r("8192"), "kibibyte per second", "kibibytes per second"),
+	MebibytesPerSecond:   (DataTransferRate, r("8388608"), "mebibyte per second", "mebibytes per second"),
+	GibibytesPerSecond:   (DataTransferRate, r("8589934592"), "gibibyte per second", "gibibytes per second"),
+	TebibytesPerSecond:   (DataTransferRate, r("8796093022208"), "tebibyte per second", "tebibytes per second"),
+	PebibytesPerSecond:   (DataTransferRate, r("9007199254740992"), "pebibyte per second", "pebibytes per second"),
+	ExbibytesPerSecond:   (DataTransferRate, r("9223372036854775808"), "exbibyte per second", "exbibytes per second"),
+	ZebibytesPerSecond:   (DataTransferRate, r("9444732965739290427392"), "zebibyte per second", "zebibytes per second"),
+	YobibytesPerSecond:   (DataTransferRate, r("9671406556917033397649408"), "yobibyte per second", "yobibytes per second"),
 
 	// ! If updating Millijoule, also update get_inverted_millijoule_weight()
-	Millijoule:         (Energy, d128!(0.001), "millijoule", "millijoules"),
-	Joule:              (Energy, d128!(1), "joule", "joules"),
-	NewtonMeter:        (Energy, d128!(1), "newton meter", "newton meters"),
-	Kilojoule:          (Energy, d128!(1000), "kilojoule", "kilojoules"),
-	Megajoule:          (Energy, d128!(1000000), "megajoule", "megajoules"),
-	Gigajoule:          (Energy, d128!(1000000000), "gigajoule", "gigajoules"),
-	Terajoule:          (Energy, d128!(1000000000000), "terajoule", "terajoules"),
-	Calorie:            (Energy, d128!(4.1868), "calorie", "calories"),
-	KiloCalorie:        (Energy, d128!(4186.8), "kilocalorie", "kilocalories"),
-	BritishThermalUnit: (Energy, d128!(1055.05585262), "British thermal unit", "British thermal units"),
-	WattHour:           (Energy, d128!(3600), "watt-hour", "watt-hours"),
-	KilowattHour:       (Energy, d128!(3600000), "kilowatt-hour", "kilowatt-hours"),
-	MegawattHour:       (Energy, d128!(3600000000),	"megawatt-hour", "megawatt-hours"),
-	GigawattHour:       (Energy, d128!(3600000000000), "gigawatt-hour", "gigawatt-hours"),
-	TerawattHour:       (Energy, d128!(3600000000000000), "terawatt-hour", "terawatt-hours"),
-	PetawattHour:       (Energy, d128!(3600000000000000000), "petawatt-hour", "petawatt-hours"),
+	Millijoule:         (Energy, r("0.001"), "millijoule", "millijoules"),
+	Joule:              (Energy, r("1"), "joule", "joules"),
+	NewtonMeter:        (Energy, r("1"), "newton meter", "newton meters"),
+	Kilojoule:          (Energy, r("1000"), "kilojoule", "kilojoules"),
+	Megajoule:          (Energy, r("1000000"), "megajoule", "megajoules"),
+	Gigajoule:          (Energy, r("1000000000"), "gigajoule", "gigajoules"),
+	Terajoule:          (Energy, r("1000000000000"), "terajoule", "terajoules"),
+	Calorie:            (Energy, r("4.1868"), "calorie", "calories"),
+	KiloCalorie:        (Energy, r("4186.8"), "kilocalorie", "kilocalories"),
+	BritishThermalUnit: (Energy, r("1055.05585262"), "British thermal unit", "British thermal units"),
+	WattHour:           (Energy, r("3600"), "watt-hour", "watt-hours"),
+	KilowattHour:       (Energy, r("3600000"), "kilowatt-hour", "kilowatt-hours"),
+	MegawattHour:       (Energy, r("3600000000"),	"megawatt-hour", "megawatt-hours"),
+	GigawattHour:       (Energy, r("3600000000000"), "gigawatt-hour", "gigawatt-hours"),
+	TerawattHour:       (Energy, r("3600000000000000"), "terawatt-hour", "terawatt-hours"),
+	PetawattHour:       (Energy, r("3600000000000000000"), "petawatt-hour", "petawatt-hours"),
 
 	// ! If updating Milliwatt, also update get_inverted_milliwatt_weight()
-	Milliwatt:                    (Power, d128!(0.001), "milliwatt", "milliwatts"),
-	Watt:                         (Power, d128!(1), "watt", "watts"),
-	Kilowatt:                     (Power, d128!(1000), "kilowatt", "kilowatts"),
-	Megawatt:                     (Power, d128!(1000000), "megawatt", "megawatts"),
-	Gigawatt:                     (Power, d128!(1000000000), "gigawatt", "gigawatts"),
-	Terawatt:                     (Power, d128!(1000000000000), "terawatt", "terawatts"),
-	Petawatt:                     (Power, d128!(1000000000000000), "petawatt", "petawatts"),
+	Milliwatt:                    (Power, r("0.001"), "milliwatt", "milliwatts"),
+	Watt:                         (Power, r("1"), "watt", "watts"),
+	Kilowatt:                     (Power, r("1000"), "kilowatt", "kilowatts"),
+	Megawatt:                     (Power, r("1000000"), "megawatt", "megawatts"),
+	Gigawatt:                     (Power, r("1000000000"), "gigawatt", "gigawatts"),
+	Terawatt:                     (Power, r("1000000000000"), "terawatt", "terawatts"),
+	Petawatt:                     (Power, r("1000000000000000"), "petawatt", "petawatts"),
 	// probably inexact:
-	BritishThermalUnitsPerMinute: (Power, d128!(0.0568690272188), "british thermal unit per minute", "british thermal units per minute"),
+	BritishThermalUnitsPerMinute: (Power, r("0.0568690272188"), "british thermal unit per minute", "british thermal units per minute"),
 	// probably inexact:
-	BritishThermalUnitsPerHour:   (Power, d128!(3.412141633128), "british thermal unit per hour", "british thermal units per hour"),
+	BritishThermalUnitsPerHour:   (Power, r("3.412141633128"), "british thermal unit per hour", "british thermal units per hour"),
 	// exact according to wikipedia:
-	Horsepower:                   (Power, d128!(745.69987158227022), "horsepower", "horsepower"),
-	MetricHorsepower:             (Power, d128!(735.49875), "metric horsepower", "metric horsepower"),
+	Horsepower:                   (Power, r("745.69987158227022"), "horsepower", "horsepower"),
+	MetricHorsepower:             (Power, r("735.49875"), "metric horsepower", "metric horsepower"),
 
 	// ! If updating Milliampere, also update get_inverted_milliampere_weight()
-	Milliampere:                  (ElectricCurrent, d128!(0.001), "milliampere", "milliamperes"),
-	Ampere:                       (ElectricCurrent, d128!(1), "ampere", "amperes"),
-	Kiloampere:                   (ElectricCurrent, d128!(1000), "kiloampere", "kiloamperes"),
-	Abampere:                     (ElectricCurrent, d128!(10), "abampere", "abamperes"),
+	Milliampere:                  (ElectricCurrent, r("0.001"), "milliampere", "milliamperes"),
+	Ampere:                       (ElectricCurrent, r("1"), "ampere", "amperes"),
+	Kiloampere:                   (ElectricCurrent, r("1000"), "kiloampere", "kiloamperes"),
+	Abampere:                     (ElectricCurrent, r("10"), "abampere", "abamperes"),
 
 	// ! If updating Milliohm, also update get_inverted_milliohm_weight()
-	Milliohm:                     (Resistance, d128!(0.001), "milliohm", "milliohms"),
-	Ohm:                          (Resistance, d128!(1), "ohm", "ohms"),
-	Kiloohm:                      (Resistance, d128!(1000), "kiloohm", "kiloohms"),
+	Milliohm:                     (Resistance, r("0.001"), "milliohm", "milliohms"),
+	Ohm:                          (Resistance, r("1"), "ohm", "ohms"),
+	Kiloohm:                      (Resistance, r("1000"), "kiloohm", "kiloohms"),
 
 	// ! If updating Millivolt, also update get_inverted_millivolt_weight()
-	Millivolt:                    (Voltage, d128!(0.001), "millivolt", "millivolts"),
-	Volt:                         (Voltage, d128!(1), "volt", "volts"),
-	Kilovolt:                     (Voltage, d128!(1000), "kilovolt", "kilovolts"),
+	Millivolt:                    (Voltage, r("0.001"), "millivolt", "millivolts"),
+	Volt:                         (Voltage, r("1"), "volt", "volts"),
+	Kilovolt:                     (Voltage, r("1000"), "kilovolt", "kilovolts"),
 
-	Pascal:                       (Pressure, d128!(1), "pascal", "pascals"),
-	Kilopascal:                   (Pressure, d128!(1000), "kilopascal", "kilopascals"),
-	Atmosphere:                   (Pressure, d128!(101325), "atmosphere", "atmospheres"),
-	Millibar:                     (Pressure, d128!(100), "millibar", "millibars"),
-	Bar:                          (Pressure, d128!(100000), "bar", "bars"),
-	InchOfMercury:                (Pressure, d128!(3386.389), "inch of mercury", "inches of mercury"),
+	Pascal:                       (Pressure, r("1"), "pascal", "pascals"),
+	Kilopascal:                   (Pressure, r("1000"), "kilopascal", "kilopascals"),
+	Atmosphere:                   (Pressure, r("101325"), "atmosphere", "atmospheres"),
+	Millibar:                     (Pressure, r("100"), "millibar", "millibars"),
+	Bar:                          (Pressure, r("100000"), "bar", "bars"),
+	InchOfMercury:                (Pressure, r("3386.389"), "inch of mercury", "inches of mercury"),
 	// inexact:
-	PoundsPerSquareInch:          (Pressure, d128!(6894.757293168361), "pound per square inch", "pounds per square inch"),
-	Torr:                         (Pressure, d128!(162.12), "torr", "torr"),
+	PoundsPerSquareInch:          (Pressure, r("6894.757293168361"), "pound per square inch", "pounds per square inch"),
+	Torr:                         (Pressure, r("162.12"), "torr", "torr"),
 
-	Hertz:                        (Frequency, d128!(1), "hertz", "hertz"),
-	Kilohertz:                    (Frequency, d128!(1000), "kilohertz", "kilohertz"),
-	Megahertz:                    (Frequency, d128!(1000000), "megahertz", "megahertz"),
-	Gigahertz:                    (Frequency, d128!(1000000000), "gigahertz", "gigahertz"),
-	Terahertz:                    (Frequency, d128!(1000000000000), "terahertz", "terahertz"),
-	Petahertz:                    (Frequency, d128!(1000000000000000), "petahertz", "petahertz"),
-	RevolutionsPerMinute:         (Frequency, d128!(60), "revolution per minute", "revolutions per minute"),
+	Hertz:                        (Frequency, r("1"), "hertz", "hertz"),
+	Kilohertz:                    (Frequency, r("1000"), "kilohertz", "kilohertz"),
+	Megahertz:                    (Frequency, r("1000000"), "megahertz", "megahertz"),
+	Gigahertz:                    (Frequency, r("1000000000"), "gigahertz", "gigahertz"),
+	Terahertz:                    (Frequency, r("1000000000000"), "terahertz", "terahertz"),
+	Petahertz:                    (Frequency, r("1000000000000000"), "petahertz", "petahertz"),
+	RevolutionsPerMinute:         (Frequency, r("60"), "revolution per minute", "revolutions per minute"),
 
-	KilometersPerHour:  (Speed, d128!(1), "kilometer per hour", "kilometers per hour"),
-	MetersPerSecond:    (Speed, d128!(3.6), "meter per second", "meters per second"),
-	MilesPerHour:       (Speed, d128!(1.609344), "mile per hour", "miles per hour"),
-	FeetPerSecond:      (Speed, d128!(1.09728), "foot per second", "feet per second"),
-	Knot:               (Speed, d128!(1.852), "knot", "knots"),
+	KilometersPerHour:  (Speed, r("1"), "kilometer per hour", "kilometers per hour"),
+	MetersPerSecond:    (Speed, r("3.6"), "meter per second", "meters per second"),
+	MilesPerHour:       (Speed, r("1.609344"), "mile per hour", "miles per hour"),
+	FeetPerSecond:      (Speed, r("1.09728"), "foot per second", "feet per second"),
+	Knot:               (Speed, r("1.852"), "knot", "knots"),
 
-	Kelvin:             (Temperature, d128!(0), "kelvin", "kelvin"),
-	Celsius:            (Temperature, d128!(0), "celsius", "celsius"),
-	Fahrenheit:         (Temperature, d128!(0), "fahrenheit", "fahrenheit"),
+	Kelvin:             (Temperature, r("0"), "kelvin", "kelvin"),
+	Celsius:            (Temperature, r("0"), "celsius", "celsius"),
+	Fahrenheit:         (Temperature, r("0"), "fahrenheit", "fahrenheit"),
 );
 
 // These functions are here to avoid dividing by small numbers like 0.01,
 // because d128 gives numbers in E notation in that case.
-fn get_inverted_millijoule_weight() -> d128 {
-	d128!(1000)
+fn get_inverted_millijoule_weight() -> Rational {
+	Rational::from(1000)
 }
-fn get_inverted_milliwatt_weight() -> d128 {
-	d128!(1000)
+fn get_inverted_milliwatt_weight() -> Rational {
+	Rational::from(1000)
 }
-fn get_inverted_milliohm_weight() -> d128 {
-	d128!(1000)
+fn get_inverted_milliohm_weight() -> Rational {
+	Rational::from(1000)
 }
-fn get_inverted_milliampere_weight() -> d128 {
-	d128!(1000)
+fn get_inverted_milliampere_weight() -> Rational {
+	Rational::from(1000)
 }
-fn get_inverted_millivolt_weight() -> d128 {
-	d128!(1000)
+fn get_inverted_millivolt_weight() -> Rational {
+	Rational::from(1000)
 }
 
 /// Returns the conversion factor between two units.
@@ -343,7 +344,7 @@ fn get_inverted_millivolt_weight() -> d128 {
 /// is 60.
 /// 
 /// This is not sufficient for [`Temperature`] units.
-pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> d128 {
+pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> Rational {
 	unit.weight() / to_unit.weight()
 }
 
@@ -352,21 +353,21 @@ pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
 	if number.unit.category() != to_unit.category() {
 		return Err(format!("Cannot convert from {:?} to {:?}", number.unit, to_unit));
 	}
-	let value = number.value;
+	let value = number.value.clone();
 	let ok = |new_value| {
 		Ok(Number::new(new_value, to_unit))
 	};
 	if number.unit.category() == UnitType::Temperature {
 		match (number.unit, to_unit) {
 			(Kelvin, Kelvin)         => ok(value),
-			(Kelvin, Celsius)        => ok(value-d128!(273.15)),
-			(Kelvin, Fahrenheit)     => ok(value*d128!(1.8)-d128!(459.67)),
+			(Kelvin, Celsius)        => ok(value-r("273.15")),
+			(Kelvin, Fahrenheit)     => ok(value*r("1.8")-r("459.67")),
 			(Celsius, Celsius)       => ok(value),
-			(Celsius, Kelvin)        => ok(value+d128!(273.15)),
-			(Celsius, Fahrenheit)    => ok(value*d128!(1.8)+d128!(32)),
+			(Celsius, Kelvin)        => ok(value+r("273.15")),
+			(Celsius, Fahrenheit)    => ok(value*r("1.8")+r("32")),
 			(Fahrenheit, Fahrenheit) => ok(value),
-			(Fahrenheit, Kelvin)     => ok((value+d128!(459.67))*d128!(5)/d128!(9)),
-			(Fahrenheit, Celsius)    => ok((value-d128!(32))/d128!(1.8)),
+			(Fahrenheit, Kelvin)     => ok((value+r("459.67"))*r("5")/r("9")),
+			(Fahrenheit, Celsius)    => ok((value-r("32"))/r("1.8")),
 			_ => Err(format!("Error converting temperature {:?} to {:?}", number.unit, to_unit)),
 		}
 	} else {
@@ -421,115 +422,115 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 /// `Energy`, `Power`, `ElectricCurrent`, `Resistance`, and `Voltage`.
 /// Other units are passed through.
 pub fn to_ideal_unit(number: Number) -> Number {
-	let value = number.value * number.unit.weight();
+	let value = &number.value * number.unit.weight();
 	if number.unit.category() == Length {
-		if value >= d128!(1000000000000000000) { // ≈ 0.1 light years
+		if value >= 1000000000000000000 { // ≈ 0.1 light years
 			return Number::new(value/LightYear.weight(), LightYear)
-		} else if value >= d128!(1000000) { // 1 km
+		} else if value >= 1000000 { // 1 km
 			return Number::new(value/Kilometer.weight(), Kilometer)
-		} else if value >= d128!(1000) { // 1 m
+		} else if value >= 1000 { // 1 m
 			return Number::new(value/Meter.weight(), Meter)
-		} else if value >= d128!(10) { // 1 cm
+		} else if value >= 10 { // 1 cm
 			return Number::new(value/Centimeter.weight(), Centimeter)
 		} else {
 			return Number::new(value, Millimeter)
 		}
 	} else if number.unit.category() == Time {
-		if value >= d128!(31556952000000000) {
+		if value >= 31556952000000000 {
 			return Number::new(value/Year.weight(), Year);
-		} else if value >= d128!(86400000000000) {
+		} else if value >= 86400000000000 {
 			return Number::new(value/Day.weight(), Day);
-		} else if value >= d128!(3600000000000) {
+		} else if value >= 3600000000000 {
 			return Number::new(value/Hour.weight(), Hour);
-		} else if value >= d128!(60000000000) {
+		} else if value >= 60000000000 {
 			return Number::new(value/Minute.weight(), Minute);
-		} else if value >= d128!(1000000000) {
+		} else if value >= 1000000000 {
 			return Number::new(value/Second.weight(), Second);
-		} else if value >= d128!(1000000) {
+		} else if value >= 1000000 {
 			return Number::new(value/Millisecond.weight(), Millisecond);
-		} else if value >= d128!(1000) {
+		} else if value >= 1000 {
 			return Number::new(value/Microsecond.weight(), Microsecond);
 		} else {
 			return Number::new(value, Nanosecond);
 		}
 	} else if number.unit.category() == Area {
-		if value >= d128!(1000000000000) { // 1 km2
+		if value >= 1000000000000 { // 1 km2
 			return Number::new(value/SquareKilometer.weight(), SquareKilometer)
-		} else if value >= d128!(10000000000) { // 1 hectare
+		} else if value >= 10000000000 { // 1 hectare
 			return Number::new(value/Hectare.weight(), Hectare)
-		} else if value >= d128!(1000000) { // 1 m2
+		} else if value >= 1000000 { // 1 m2
 			return Number::new(value/SquareMeter.weight(), SquareMeter)
-		} else if value >= d128!(100) { // 1 cm2
+		} else if value >= 100 { // 1 cm2
 			return Number::new(value/SquareCentimeter.weight(), SquareCentimeter)
 		} else {
 			return Number::new(value, SquareMillimeter)
 		}
 	} else if number.unit.category() == Volume {
-		if value >= d128!(1000000000000000000) { // 1 km3
+		if value >= 1000000000000000000 { // 1 km3
 			return Number::new(value/CubicKilometer.weight(), CubicKilometer)
-		} else if value >= d128!(1000000000) { // 1 m3
+		} else if value >= 1000000000 { // 1 m3
 			return Number::new(value/CubicMeter.weight(), CubicMeter)
-		} else if value >= d128!(1000000) { // 1 l
+		} else if value >= 1000000 { // 1 l
 			return Number::new(value/Liter.weight(), Liter)
-		} else if value >= d128!(1000) { // 1 ml
+		} else if value >= 1000 { // 1 ml
 			return Number::new(value/Milliliter.weight(), Milliliter)
 		} else {
 			return Number::new(value, CubicMillimeter)
 		}
 	} else if number.unit.category() == Energy {
-		if value >= d128!(3600000000000000000) { // 1 petawatthour
+		if value >= 3600000000000000000 { // 1 petawatthour
 			return Number::new(value/PetawattHour.weight(), PetawattHour)
-		} else if value >= d128!(3600000000000000) { // 1 terawatthour
+		} else if value >= 3600000000000000 { // 1 terawatthour
 			return Number::new(value/TerawattHour.weight(), TerawattHour)
-		} else if value >= d128!(3600000000000) { // 1 gigawatthour
+		} else if value >= 3600000000000 { // 1 gigawatthour
 			return Number::new(value/GigawattHour.weight(), GigawattHour)
-		} else if value >= d128!(3600000000) { // 1 megawatthour
+		} else if value >= 3600000000 { // 1 megawatthour
 			return Number::new(value/MegawattHour.weight(), MegawattHour)
-		} else if value >= d128!(3600000) { // 1 kilowatthour
+		} else if value >= 3600000 { // 1 kilowatthour
 			return Number::new(value/KilowattHour.weight(), KilowattHour)
-		} else if value >= d128!(3600) { // 1 watthour
+		} else if value >= 3600 { // 1 watthour
 			return Number::new(value/WattHour.weight(), WattHour)
-		} else if value >= d128!(1) { // 1 joule
+		} else if value >= 1 { // 1 joule
 			return Number::new(value, Joule)
 		} else {
 			return Number::new(value * get_inverted_millijoule_weight(), Millijoule)
 		}
 	} else if number.unit.category() == Power {
-		if value >= d128!(1000000000000000) { // 1 petawatt
+		if value >= 1000000000000000 { // 1 petawatt
 			return Number::new(value/Petawatt.weight(), Petawatt)
-		} else if value >= d128!(1000000000000) { // 1 terawatt
+		} else if value >= 1000000000000 { // 1 terawatt
 			return Number::new(value/Terawatt.weight(), Terawatt)
-		} else if value >= d128!(1000000000) { // 1 gigawatt
+		} else if value >= 1000000000 { // 1 gigawatt
 			return Number::new(value/Gigawatt.weight(), Gigawatt)
-		} else if value >= d128!(1000000) { // megawatt
+		} else if value >= 1000000 { // megawatt
 			return Number::new(value/Megawatt.weight(), Megawatt)
-		} else if value >= d128!(1000) { // 1 kilowatt
+		} else if value >= 1000 { // 1 kilowatt
 			return Number::new(value/Kilowatt.weight(), Kilowatt)
-		} else if value >= d128!(1) { // 1 watt
+		} else if value >= 1 { // 1 watt
 			return Number::new(value, Watt)
 		} else {
 			return Number::new(value * get_inverted_milliwatt_weight(), Milliwatt)
 		}
 	} else if number.unit.category() == ElectricCurrent {
-		if value >= d128!(1000) { // 1 kiloampere
+		if value >= 1000 { // 1 kiloampere
 			return Number::new(value/Kiloampere.weight(), Kiloampere)
-		} else if value >= d128!(1) { // 1 ampere
+		} else if value >= 1 { // 1 ampere
 			return Number::new(value, Ampere)
 		} else {
 			return Number::new(value * get_inverted_milliampere_weight(), Milliampere)
 		}
 	} else if number.unit.category() == Resistance {
-		if value >= d128!(1000) { // 1 kiloohm
+		if value >= 1000 { // 1 kiloohm
 			return Number::new(value/Kiloohm.weight(), Kiloohm)
-		} else if value >= d128!(1) { // 1 ohm
+		} else if value >= 1 { // 1 ohm
 			return Number::new(value, Ohm)
 		} else {
 			return Number::new(value * get_inverted_milliohm_weight(), Milliohm)
 		}
 	} else if number.unit.category() == Voltage {
-		if value >= d128!(1000) { // 1 kilovolt
+		if value >= 1000 { // 1 kilovolt
 			return Number::new(value/Kilovolt.weight(), Kilovolt)
-		} else if value >= d128!(1) { // 1 volt
+		} else if value >= 1 { // 1 volt
 			return Number::new(value, Volt)
 		} else {
 			return Number::new(value * get_inverted_millivolt_weight(), Millivolt)
@@ -540,17 +541,17 @@ pub fn to_ideal_unit(number: Number) -> Number {
 
 /// Convert a [`Number`] to an ideal [`Joule`] unit, if the number is a unit of [`Energy`].
 pub fn to_ideal_joule_unit(number: Number) -> Number {
-	let value = number.value * number.unit.weight();
+	let value = &number.value * number.unit.weight();
 	if number.unit.category() == Energy {
-		if value >= d128!(1000000000000) { // 1 terajoule
+		if value >= 1000000000000 { // 1 terajoule
 			return Number::new(value/Terajoule.weight(), Terajoule)
-		} else if value >= d128!(1000000000) { // 1 gigajoule
+		} else if value >= 1000000000 { // 1 gigajoule
 			return Number::new(value/Gigajoule.weight(), Gigajoule)
-		} else if value >= d128!(1000000) { // 1 megajoule
+		} else if value >= 1000000 { // 1 megajoule
 			return Number::new(value/Megajoule.weight(), Megajoule)
-		} else if value >= d128!(1000) { // 1 kilojoule
+		} else if value >= 1000 { // 1 kilojoule
 			return Number::new(value/Kilojoule.weight(), Kilojoule)
-		} else if value >= d128!(1) { // 1 joule
+		} else if value >= 1 { // 1 joule
 			return Number::new(value/Joule.weight(), Joule)
 		} else {
 			return Number::new(value * get_inverted_millijoule_weight(), Millijoule)
@@ -789,27 +790,27 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 	if left.unit == NoUnit && right.unit == NoUnit {
 		// 3 ^ 2
 		Ok(Number::new(left.value.pow(right.value), left.unit))
-	} else if right.value == d128!(1) && right.unit == NoUnit {
+	} else if right.value == 1 && right.unit == NoUnit {
 		Ok(left)
-	} else if lcat == Length && right.unit == NoUnit && right.value == d128!(2) {
+	} else if lcat == Length && right.unit == NoUnit && right.value == 2 {
 		// x km ^ 2
 		let result = (left.value * left.unit.weight()).pow(right.value);
 		Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-	} else if lcat == Length && right.unit == NoUnit && right.value == d128!(3) {
+	} else if lcat == Length && right.unit == NoUnit && right.value == 3 {
 		// x km ^ 3
 		let result = (left.value * left.unit.weight()).pow(right.value);
 		Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
-	} else if lcat == Length && rcat == Length && right.value == d128!(1) {
+	} else if lcat == Length && rcat == Length && right.value == 1 {
 		// x km ^ 1 km
 		Ok(multiply(left, right)?)
-	} else if lcat == Length && rcat == Length && right.value == d128!(2) {
+	} else if lcat == Length && rcat == Length && right.value == 2 {
 		// x km ^ 2 km
-		let pow2 = multiply(left, Number::new(d128!(1), right.unit))?;
-		let pow3 = multiply(pow2, Number::new(d128!(1), right.unit))?;
+		let pow2 = multiply(left, Number::new(r("1"), right.unit))?;
+		let pow3 = multiply(pow2, Number::new(r("1"), right.unit))?;
 		Ok(pow3)
-	} else if lcat == Length && rcat == Area && right.value == d128!(1) {
+	} else if lcat == Length && rcat == Area && right.value == 1 {
 		// x km ^ km2
-		Ok(multiply(left, Number::new(d128!(1), right.unit))?)
+		Ok(multiply(left, Number::new(r("1"), right.unit))?)
 	} else {
 		Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
 	}
@@ -831,7 +832,7 @@ mod tests {
 			use std::str::FromStr;
 
 			let value_string = &value.to_string();
-			let value_d128 = d128::from_str(value_string).unwrap();
+			let value_d128 = Rational::from_str(value_string).unwrap();
 			let number = Number::new(value_d128, unit);
 
 			let result = convert(number, to_unit);

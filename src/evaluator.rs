@@ -1,13 +1,16 @@
-use crate::lookup::{lookup_factorial, lookup_named_number};
+use crate::lookup::lookup_named_number;
 use crate::parser::AstNode;
 use crate::units::{add, convert, divide, modulo, multiply, pow, subtract, Unit, UnitType};
 use crate::Constant::{Pi, E};
-use crate::FunctionIdentifier::*;
+use crate::{r, FunctionIdentifier::*};
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::TextOperator::{Of, To};
 use crate::UnaryOperator::{Factorial, Percent};
 use crate::{Number, Token};
-use decimal::d128;
+use malachite::rational::Rational;
+use malachite::Natural;
+use malachite::base::num::arithmetic::traits::Factorial as MalachiteFactorial;
+use malachite::base::num::arithmetic::traits::Pow;
 
 /// Evaluate an [`AstNode`] into a [`Number`]
 pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
@@ -20,70 +23,70 @@ pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
 /// Factorials do not work with decimal numbers.
 ///
 /// All return values of this function are hard-coded.
-pub fn factorial(input: d128) -> d128 {
-	lookup_factorial(input.into())
+pub fn factorial(input: u64) -> Natural {
+	Natural::factorial(input)
 }
 
 /// Returns the square root of a [`struct@d128`]
-pub fn sqrt(input: d128) -> d128 {
-	let mut n = d128!(1);
-	let half = d128!(0.5);
+pub fn sqrt(input: Rational) -> Rational {
+	let mut n = r("1");
+	let half = r("0.5");
 	for _ in 0..10 {
-		n = (n + input / n) * half;
+		n = (&n + &input / &n) * &half;
 	}
 	n
 }
 
 /// Returns the cube root of a [`struct@d128`]
-pub fn cbrt(input: d128) -> d128 {
-	let mut n: d128 = input;
+pub fn cbrt(input: Rational) -> Rational {
+	let mut n: Rational = input.clone();
 	// hope that 20 iterations makes it accurate enough
-	let three = d128!(3);
+	let three = r("3");
 	for _ in 0..20 {
-		let z2 = n * n;
-		n = n - ((n * z2 - input) / (three * z2));
+		let z2 = &n * &n;
+		n = &n - ((&n * &z2 - &input) / (&three * z2));
 	}
 	n
 }
 
 /// Returns the sine of a [`struct@d128`]
-pub fn sin(mut input: d128) -> d128 {
-	let pi = d128!(3.141592653589793238462643383279503);
-	let pi2 = d128!(6.283185307179586476925286766559006);
+pub fn sin(mut input: Rational) -> Rational {
+	let pi = r("3.141592653589793238462643383279503");
+	let pi2 = r("6.283185307179586476925286766559006");
 
 	input %= pi2;
 
-	let negative_correction = if input.is_negative() {
+	let negative_correction = if input < 0 {
 		input -= pi;
-		d128!(-1)
+		Rational::from(-1)
 	} else {
-		d128!(1)
+		Rational::from(1)
 	};
 
-	let one = d128!(1);
-	let two = d128!(2);
-	let neg_one = -one;
+	let one = 1u64;
+	let two = 2;
+	let neg_one = Rational::from(-1);
 
 	let precision = 37;
-	let mut result = d128!(0);
+	let mut result = Rational::from(0);
 	for i_int in 0..precision {
-		let i = d128::from(i_int);
+		let i = i_int;
 		let calc_result = two * i + one;
-		result += neg_one.pow(i) * (input.pow(calc_result) / factorial(calc_result));
+		result += neg_one.clone().pow(i) * (input.clone().pow(calc_result) / Rational::from(factorial(calc_result)));
 	}
 
 	negative_correction * result
 }
 
 /// Returns the cosine of a [`struct@d128`]
-pub fn cos(input: d128) -> d128 {
-	let half_pi = d128!(1.570796326794896619231321691639751);
+pub fn cos(input: Rational) -> Rational {
+	let half_pi = r("1.570796326794896619231321691639751");
 	sin(half_pi - input)
 }
 
 /// Returns the tangent of a [`struct@d128`]
-pub fn tan(input: d128) -> d128 {
-	sin(input) / cos(input)
+pub fn tan(input: Rational) -> Rational {
+	sin(input.clone()) / cos(input)
 }
 
 /// Evaluate an [`AstNode`] into a [`Number`]
@@ -91,14 +94,14 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 	let token = &ast_node.token;
 	let children = &ast_node.children;
 	match token {
-		Token::Number(number) => Ok(Number::new(*number, Unit::NoUnit)),
+		Token::Number(number) => Ok(Number::new(number.clone(), Unit::NoUnit)),
 		Token::Constant(constant) => match constant {
 			Pi => Ok(Number::new(
-				d128!(3.141592653589793238462643383279503),
+				r("3.141592653589793238462643383279503"),
 				Unit::NoUnit,
 			)),
 			E => Ok(Number::new(
-				d128!(2.718281828459045235360287471352662),
+				r("2.718281828459045235360287471352662"),
 				Unit::NoUnit,
 			)),
 		},
@@ -148,35 +151,35 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				}
 				Round => {
 					// .quantize() rounds .5 to nearest even integer, so we correct that
-					let mut result = child_answer.value.quantize(d128!(1));
+					let mut result = child_answer.value.quantize(1);
 					let rounding_change = result - child_answer.value;
 					// If the result was rounded down by 0.5, correct by +1
-					if rounding_change == d128!(-0.5) {
-						result += d128!(1);
+					if rounding_change == -0.5 {
+						result += 1;
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Ceil => {
-					let mut result = child_answer.value.quantize(d128!(1));
+					let mut result = child_answer.value.quantize(1);
 					let rounding_change = result - child_answer.value;
 					if rounding_change.is_negative() {
-						result += d128!(1);
+						result += 1;
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Floor => {
-					let mut result = child_answer.value.quantize(d128!(1));
+					let mut result = child_answer.value.quantize(1);
 					let rounding_change = result - child_answer.value;
 					if !rounding_change.is_negative() {
-						result -= d128!(1);
+						result -= 1;
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Abs => {
 					let mut result = child_answer.value.abs();
 					let rounding_change = result - child_answer.value;
-					if rounding_change == d128!(-0.5) {
-						result += d128!(1);
+					if rounding_change == -0.5 {
+						result += 1;
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
@@ -215,17 +218,17 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			let child_answer = evaluate_node(child_node)?;
 			match operator {
 				Percent => Ok(Number::new(
-					child_answer.value / d128!(100),
+					child_answer.value / Rational::from(100),
 					child_answer.unit,
 				)),
 				Factorial => {
-					let result = factorial(child_answer.value);
-					if result.is_nan() {
-						return Err(
-							"Can only perform factorial on integers from 0 to 1000".to_string()
-						);
+					match u64::try_from(&child_answer.value) {
+						Ok(value) => {
+							let result = factorial(value);
+							Ok(Number::new(Rational::from(result), child_answer.unit))
+						}
+						Err(_) => Err("Can only perform factorial on integers from 0 to 1000".to_string()),
 					}
-					Ok(Number::new(result, child_answer.unit))
 				}
 			}
 		}

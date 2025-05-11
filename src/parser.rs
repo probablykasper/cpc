@@ -303,11 +303,11 @@ pub fn parse_highest(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 		.get(pos)
 		.ok_or(format!("Unexpected end of input at {}", pos))?;
 	match token {
-		&Token::Number(_number) => {
+		Token::Number(_number) => {
 			let node = AstNode::new(token.clone());
 			Ok((node, pos + 1))
 		}
-		&Token::Unit(_unit) => {
+		Token::Unit(_unit) => {
 			let node = AstNode::new(token.clone());
 			Ok((node, pos + 1))
 		}

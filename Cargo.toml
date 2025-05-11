@@ -19,10 +19,7 @@ categories = [
 ]
 
 [dependencies]
-decimal = { version = "2.1", default-features = false, features = [
-    "serde",
-    "ord_subset",
-] }
+malachite = "0.6"
 unicode-segmentation = "1.10"
 
 [dev-dependencies]
