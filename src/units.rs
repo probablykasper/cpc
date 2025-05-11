@@ -834,6 +834,7 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use malachite::base::num::conversion::traits::FromSciString;
 
 	macro_rules! assert_float_eq {
 		( $actual:expr, $expected:literal ) => {
@@ -847,7 +848,7 @@ mod tests {
 			use std::str::FromStr;
 
 			let value_string = &value.to_string();
-			let value_d128 = Rational::from_str(value_string).unwrap();
+			let value_d128 = Rational::from_sci_string(value_string).unwrap();
 			let number = Number::new(value_d128, unit);
 
 			let result = convert(number, to_unit);

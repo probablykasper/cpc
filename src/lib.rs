@@ -33,11 +33,11 @@
 use crate::units::Unit;
 use malachite::rational::Rational;
 use std::fmt::{self, Display};
-use std::str::FromStr;
+use malachite::base::num::conversion::traits::FromSciString;
 use std::time::Instant;
 
 pub fn r(input: &str) -> Rational {
-	Rational::from_str(input).unwrap()
+	Rational::from_sci_string(input).unwrap()
 }
 
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]

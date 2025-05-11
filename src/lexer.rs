@@ -1,5 +1,5 @@
 use std::iter::Peekable;
-use std::str::FromStr;
+use malachite::base::num::conversion::traits::FromSciString;
 use malachite::rational::Rational;
 use crate::Token;
 use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
@@ -98,11 +98,11 @@ fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
 					break;
 				}
 			}
-			match Rational::from_str(&number_string) {
-				Ok(number) => {
+			match Rational::from_sci_string(&number_string) {
+				Some(number) => {
 					tokens.push(Token::Number(number));
 				},
-				Err(_e) => {
+				None => {
 					return Err(format!("Error lexing d128 number: {}", number_string));
 				}
 			};
