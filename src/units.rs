@@ -833,8 +833,20 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+	use crate::eval;
+
+use super::*;
 	use malachite::base::num::conversion::traits::{FromSciString, ToSci};
+
+	
+	#[test]
+	fn test_operators() {
+		fn eval_test(input: &str) -> Number {
+			eval(input, true, false).unwrap()
+		}
+		assert_eq!(eval_test("sin(pi)"), Number::new(r("0"), Unit::NoUnit));
+		assert_eq!(eval_test("5.3 % 3"), Number::new(r("2.3"), Unit::NoUnit));
+	}
 
 	#[test]
 	fn test_convert() {
