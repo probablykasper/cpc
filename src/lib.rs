@@ -33,7 +33,7 @@
 use crate::units::Unit;
 use malachite::rational::Rational;
 use std::fmt::{self, Display};
-use malachite::base::num::conversion::traits::FromSciString;
+use malachite::base::num::conversion::traits::{FromSciString, ToSci};
 use std::time::Instant;
 
 pub fn r(input: &str) -> Rational {
@@ -81,7 +81,7 @@ impl Number {
 }
 impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let value = self.value.clone();
+		let value = self.value.to_sci();
 		let word = match self.value == 1 {
 			true => self.unit.singular(),
 			false => self.unit.plural(),
