@@ -2,7 +2,7 @@
 
 calculation + conversion
 
-cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
+cpc parses and evaluates strings of math, with support for units and conversion. Arbitrary-precision rational numbers are used for high accuracy.
 
 It also lets you mix units, so for example `1 km - 1m` results in `999 Meter`.
 
@@ -84,14 +84,6 @@ round(sqrt(2)^4)! liters
 - Speed
 - Temperature
 
-## Accuracy
-cpc uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
-
-## Performance
-It's pretty fast and scales well. In my case, it usually runs in under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.25ms.
-
-To see how fast it is, you can pass the `--verbose` flag in CLI, or the `verbose` argument to `eval()`.
-
 ## Dev Instructions
 
 ### Get started
@@ -137,8 +129,8 @@ pub enum UnitType {
 // ...
 
 create_units!(
-  Nanosecond:         (Time, d128!(1)),
-  Microsecond:        (Time, d128!(1000)),
+  Nanosecond:         (Time, r("1")),
+  Microsecond:        (Time, r("1000")),
   // etc
 )
 ```

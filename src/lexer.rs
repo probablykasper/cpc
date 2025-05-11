@@ -103,7 +103,7 @@ fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
 					tokens.push(Token::Number(number));
 				},
 				None => {
-					return Err(format!("Error lexing d128 number: {}", number_string));
+					return Err(format!("Invalid number: {}", number_string));
 				}
 			};
 		},

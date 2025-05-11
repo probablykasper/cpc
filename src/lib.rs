@@ -63,7 +63,7 @@ pub mod units;
 /// use malachite::rational::Rational;
 ///
 /// let x = Number {
-///   value: d128!(100),
+///   value: 100.into(),
 ///   unit: Unit::Meter,
 /// };
 /// ```

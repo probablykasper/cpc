@@ -18,16 +18,7 @@ pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
 	Ok(answer)
 }
 
-/// Returns the factorial of a [`struct@d128`] up to `1000!` without doing any math
-///
-/// Factorials do not work with decimal numbers.
-///
-/// All return values of this function are hard-coded.
-pub fn factorial(input: u64) -> Natural {
-	Natural::factorial(input)
-}
-
-/// Returns the square root of a [`struct@d128`]
+/// Returns the square root
 pub fn sqrt(input: Rational) -> Rational {
 	let mut n = r("1");
 	let half = r("0.5");
@@ -37,7 +28,7 @@ pub fn sqrt(input: Rational) -> Rational {
 	n
 }
 
-/// Returns the cube root of a [`struct@d128`]
+/// Returns the cube root
 pub fn cbrt(input: Rational) -> Rational {
 	let mut n: Rational = input.clone();
 	// hope that 20 iterations makes it accurate enough
@@ -49,7 +40,7 @@ pub fn cbrt(input: Rational) -> Rational {
 	n
 }
 
-/// Returns the sine of a [`struct@d128`]
+/// Returns the sine
 pub fn sin(mut input: Rational) -> Rational {
 	let pi = r("3.141592653589793238462643383279503");
 	let pi2 = r("6.283185307179586476925286766559006");
@@ -73,19 +64,19 @@ pub fn sin(mut input: Rational) -> Rational {
 	for i_int in 0..precision {
 		let i = i_int;
 		let calc_result = two * i + one;
-		result += neg_one.clone().pow(i) * (input.clone().pow(calc_result) / Rational::from(factorial(calc_result)));
+		result += neg_one.clone().pow(i) * (input.clone().pow(calc_result) / Rational::from(Natural::factorial(calc_result)));
 	}
 
 	negative_correction * result
 }
 
-/// Returns the cosine of a [`struct@d128`]
+/// Returns the cosine of a number
 pub fn cos(input: Rational) -> Rational {
 	let half_pi = r("1.570796326794896619231321691639751");
 	sin(half_pi - input)
 }
 
-/// Returns the tangent of a [`struct@d128`]
+/// Returns the tangent
 pub fn tan(input: Rational) -> Rational {
 	sin(input.clone()) / cos(input)
 }
@@ -226,10 +217,10 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				Factorial => {
 					match u64::try_from(&child_answer.value) {
 						Ok(value) => {
-							let result = factorial(value);
+							let result = Natural::factorial(value);
 							Ok(Number::new(Rational::from(result), child_answer.unit))
 						}
-						Err(_) => Err("Can only perform factorial on integers from 0 to 1000".to_string()),
+						Err(_) => Err("Can only perform factorial on integers".to_string()),
 					}
 				}
 			}

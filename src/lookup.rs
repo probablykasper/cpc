@@ -3,7 +3,7 @@ use crate::NamedNumber::*;
 use malachite::rational::Rational;
 use malachite::base::num::conversion::traits::FromSciString;
 
-/// Returns the corresponding [`d128`] of a [`NamedNumber`]
+/// Returns the value of a [`NamedNumber`]
 pub fn lookup_named_number(named_number: &NamedNumber) -> Rational {
 	match named_number {
 		Hundred           => Rational::from(100u128),
