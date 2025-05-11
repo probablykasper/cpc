@@ -778,6 +778,13 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 	}
 }
 
+pub fn inaccurate_pow(base: Rational, exponent: Rational) -> Rational {
+	let base = f64::try_from(base).unwrap();
+	let exponent = f64::try_from(exponent).unwrap();
+	let result = base.pow(exponent);
+	result.try_into().unwrap()
+}
+
 /// Returns a [`Number`] to the power of another [`Number`]
 /// 
 /// - If you take [`Length`] to the power of [`NoType`], the result has a unit of [`Area`].
@@ -789,16 +796,16 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 	let rcat = left.unit.category();
 	if left.unit == NoUnit && right.unit == NoUnit {
 		// 3 ^ 2
-		Ok(Number::new(left.value.pow(right.value), left.unit))
+		Ok(Number::new(inaccurate_pow(left.value, right.value), left.unit))
 	} else if right.value == 1 && right.unit == NoUnit {
 		Ok(left)
 	} else if lcat == Length && right.unit == NoUnit && right.value == 2 {
 		// x km ^ 2
-		let result = (left.value * left.unit.weight()).pow(right.value);
+		let result = inaccurate_pow(left.value * left.unit.weight(), right.value);
 		Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
 	} else if lcat == Length && right.unit == NoUnit && right.value == 3 {
 		// x km ^ 3
-		let result = (left.value * left.unit.weight()).pow(right.value);
+		let result = inaccurate_pow(left.value * left.unit.weight(), right.value);
 		Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
 	} else if lcat == Length && rcat == Length && right.value == 1 {
 		// x km ^ 1 km
