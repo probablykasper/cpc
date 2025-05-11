@@ -81,8 +81,7 @@ impl Number {
 }
 impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		// 0.2/0.01 results in 2E+1, but if we add zero it becomes 20
-		let value = self.value + d128!(0);
+		let value = self.value.clone();
 		let word = match self.value == 1 {
 			true => self.unit.singular(),
 			false => self.unit.plural(),
