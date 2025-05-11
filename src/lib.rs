@@ -220,13 +220,6 @@ pub enum Token {
 	Unit(units::Unit),
 }
 
-#[macro_export]
-macro_rules! numtok {
-	( $num:literal ) => {
-		Token::Number(Rational::try_from($num).unwrap())
-	};
-}
-
 /// Evaluates a string into a resulting [`Number`].
 ///
 /// Example:

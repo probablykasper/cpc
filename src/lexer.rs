@@ -926,8 +926,13 @@ pub fn lex(input: &str, remove_trailing_operator: bool) -> Result<Vec<Token>, St
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::numtok;
 	use regex::Regex;
+
+	macro_rules! numtok {
+		( $num:literal ) => {
+			Token::Number(Rational::from_sci_string(&$num.to_string()).unwrap())
+		};
+	}
 
 	#[test]
 	fn test_lex() {
