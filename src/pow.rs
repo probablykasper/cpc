@@ -20,25 +20,20 @@ pub fn powf(
 	if e.is_integer() {
 		return powi(&x, &e);
 	} else {
-		let numerator = u32::try_from(e_abs.numerator_ref()).unwrap();
-		let denominator = u32::try_from(e_abs.denominator_ref()).unwrap();
-
-		// attempt to chop down the fraction to improve performance if a greatest common denominator can be found
-		let gcd = euclid_gcd(numerator, denominator);
-		let simplified_numerator = numerator / gcd;
-		let simplified_denominator = denominator / gcd;
+		let numerator = e_abs.numerator_ref();
+		let denominator = e_abs.denominator_ref();
 
 		let whole_result = if let Some(round_to_multiple) = round_to_multiple {
 			powi(
 				&x.round_to_multiple(round_to_multiple, RoundingMode::Nearest).0,
-				&Rational::from(simplified_numerator),
+				&Rational::from(numerator),
 			)
 			.round_to_multiple(round_to_multiple, RoundingMode::Nearest).0
 		} else {
-			powi(&x, &Rational::from(simplified_numerator))
+			powi(&x, &Rational::from(numerator))
 		};
 		let result = root(
-			&Rational::from(simplified_denominator),
+			&Rational::from(denominator),
 			&whole_result,
 			prec_multiple,
 		);
@@ -49,17 +44,6 @@ pub fn powf(
 			result
 		}
 	}
-}
-
-// simple greatest common denominator finder
-// m is the numerator, n is the denominator
-fn euclid_gcd(mut m: u32, mut n: u32) -> u32 {
-	while m != 0 {
-		let old_m = m;
-		m = n % m;
-		n = old_m;
-	}
-	return n;
 }
 
 // calculates integer equivalent bigdecimal powers only
@@ -96,7 +80,7 @@ pub fn root(n: &Rational, x: &Rational, prec_multiple: Option<&Rational>) -> Rat
 			r.round_to_multiple(prec_multiple, RoundingMode::Nearest).0
 		} else {
 			r
-		}; // looping with round is too expensive, with_prec is used instead
+		};
 		d = (x / powi(&r, &(n - Rational::ONE)) - &r) / n;
 		r += &d;
 		if !(&d >= &(Rational::try_from(f64::EPSILON).unwrap() * Rational::from(10))
