@@ -7,9 +7,10 @@ use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::TextOperator::{Of, To};
 use crate::UnaryOperator::{Factorial, Percent};
 use crate::{Number, Token};
+use malachite::base::num::basic::traits::One;
 use malachite::rational::Rational;
 use malachite::Natural;
-use malachite::base::num::arithmetic::traits::{Abs, Factorial as MalachiteFactorial, Floor};
+use malachite::base::num::arithmetic::traits::{Abs, Ceiling, Factorial as MalachiteFactorial, Floor};
 use malachite::base::num::arithmetic::traits::Pow;
 
 /// Evaluate an [`AstNode`] into a [`Number`]
@@ -153,40 +154,34 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				// 		Err("exp() only accepts UnitType::NoType".to_string())
 				// 	}
 				// }
-				// Round => {
-				// 	// .quantize() rounds .5 to nearest even integer, so we correct that
-				// 	let mut result = child_answer.value.quantize(1);
-				// 	let rounding_change = result - child_answer.value;
-				// 	// If the result was rounded down by 0.5, correct by +1
-				// 	if rounding_change == -0.5 {
-				// 		result += 1;
-				// 	}
-				// 	Ok(Number::new(result, child_answer.unit))
-				// }
-				// Ceil => {
-				// 	let mut result = child_answer.value.quantize(1);
-				// 	let rounding_change = result - child_answer.value;
-				// 	if rounding_change.is_negative() {
-				// 		result += 1;
-				// 	}
-				// 	Ok(Number::new(result, child_answer.unit))
-				// }
-				// Floor => {
-				// 	let mut result = child_answer.value.quantize(1);
-				// 	let rounding_change = result - child_answer.value;
-				// 	if !rounding_change.is_negative() {
-				// 		result -= 1;
-				// 	}
-				// 	Ok(Number::new(result, child_answer.unit))
-				// }
-				// Abs => {
-				// 	let mut result = child_answer.value.abs();
-				// 	let rounding_change = result - child_answer.value;
-				// 	if rounding_change == -0.5 {
-				// 		result += 1;
-				// 	}
-				// 	Ok(Number::new(result, child_answer.unit))
-				// }
+				Round => {
+					let floor = Rational::from((&child_answer.value).floor());
+					let floor_offset = &child_answer.value - &floor;
+					let result = if floor_offset == 0.5 && child_answer.value < 0 {
+						floor
+					} else if floor_offset >= 0.5 {
+						Rational::from(child_answer.value.ceiling())
+					} else {
+						floor
+					};
+					Ok(Number::new(result, child_answer.unit))
+				}
+				Ceil => {
+					let result = Rational::from(child_answer.value.ceiling());
+					Ok(Number::new(result, child_answer.unit))
+				}
+				Floor => {
+					let result = Rational::from(child_answer.value.floor());
+					Ok(Number::new(result, child_answer.unit))
+				}
+				Abs => {
+					let mut result = (&child_answer.value).abs();
+					let rounding_change = &result - child_answer.value;
+					if rounding_change == -0.5 {
+						result += Rational::ONE;
+					}
+					Ok(Number::new(result, child_answer.unit))
+				}
 				Sin => {
 					let result = sin(child_answer.value);
 					Ok(Number::new(result, child_answer.unit))
@@ -322,5 +317,21 @@ mod tests {
 		assert_eq!(default_eval("2*-3*0.5"), Number::new(r("-3"), Unit::NoUnit));
 		assert_eq!(default_eval("-3^2"), Number::new(r("-9"), Unit::NoUnit));
 		assert_eq!(default_eval("-1+2"), Number::new(r("1"), Unit::NoUnit));
+	}
+
+	#[test]
+	fn test_functions() {
+		assert_eq!(default_eval("abs(-3)"), Number::new(r("3"), Unit::NoUnit));
+
+		assert_eq!(default_eval("round(1.4)"), Number::new(r("1"), Unit::NoUnit));
+		assert_eq!(default_eval("round(1.6)"), Number::new(r("2"), Unit::NoUnit));
+		assert_eq!(default_eval("round(1.5)"), Number::new(r("2"), Unit::NoUnit));
+		assert_eq!(default_eval("round(2.5)"), Number::new(r("3"), Unit::NoUnit));
+
+		assert_eq!(default_eval("ceil(1.5)"), Number::new(r("2"), Unit::NoUnit));
+		assert_eq!(default_eval("ceil(-1.5)"), Number::new(r("-1"), Unit::NoUnit));
+		
+		assert_eq!(default_eval("floor(1.5)"), Number::new(r("1"), Unit::NoUnit));
+		assert_eq!(default_eval("floor(-1.5)"), Number::new(r("-2"), Unit::NoUnit));
 	}
 }
