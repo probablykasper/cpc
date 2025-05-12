@@ -1,6 +1,6 @@
 use crate::lookup::lookup_named_number;
 use crate::parser::AstNode;
-use crate::units::{add, convert, divide, inaccurate_modulo, modulo, multiply, pow, subtract, Unit, UnitType};
+use crate::units::{add, convert, divide, modulo, multiply, pow, subtract, Unit, UnitType};
 use crate::Constant::{Pi, E};
 use crate::{r, FunctionIdentifier::*};
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
@@ -9,13 +9,21 @@ use crate::UnaryOperator::{Factorial, Percent};
 use crate::{Number, Token};
 use malachite::rational::Rational;
 use malachite::Natural;
-use malachite::base::num::arithmetic::traits::Factorial as MalachiteFactorial;
+use malachite::base::num::arithmetic::traits::{Abs, Factorial as MalachiteFactorial, Floor};
 use malachite::base::num::arithmetic::traits::Pow;
 
 /// Evaluate an [`AstNode`] into a [`Number`]
 pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
 	let answer = evaluate_node(ast)?;
 	Ok(answer)
+}
+
+pub fn calc_modulo(left: Rational, right: Rational) -> Rational {
+	let left_abs = left.clone().abs();
+	let right_abs = right.clone().abs();
+	let div_result = &left_abs / &right_abs;
+	let result = left_abs - Rational::from(div_result.floor()) * right_abs;
+	return result;
 }
 
 /// Returns the square root
@@ -46,7 +54,7 @@ pub fn sin(mut input: Rational) -> Rational {
 	let pi2 = r("6.283185307179586476925286766559006");
 
 	// input %= pi2;
-	input = inaccurate_modulo(input, pi2);
+	input = calc_modulo(input, pi2);
 
 	let negative_correction = if input < 0 {
 		input -= pi;

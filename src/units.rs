@@ -1,4 +1,5 @@
 use malachite::rational::Rational;
+use crate::evaluator::calc_modulo;
 use crate::{Number, r};
 use malachite::base::num::arithmetic::traits::Pow;
 
@@ -761,13 +762,6 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 	}
 }
 
-pub fn inaccurate_modulo(left: Rational, right: Rational) -> Rational {
-	let left = f64::try_from(left).unwrap();
-	let right = f64::try_from(right).unwrap();
-	let result = left % right;
-	result.try_into().unwrap()
-}
-
 /// Modulo a [`Number`] by another [`Number`].
 /// 
 /// `left` and `right` need to have the same [`UnitType`], and the result will have that same [`UnitType`].
@@ -780,7 +774,7 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 	} else if left.unit.category() == right.unit.category() {
 		// 5 km % 3 m
 		let (left, right) = convert_to_lowest(left, right)?;
-		Ok(Number::new(inaccurate_modulo(left.value,right.value), left.unit))
+		Ok(Number::new(calc_modulo(left.value,right.value), left.unit))
 	} else {
 		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
 	}
@@ -834,8 +828,7 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 #[cfg(test)]
 mod tests {
 	use crate::eval;
-
-use super::*;
+	use super::*;
 	use malachite::base::num::conversion::traits::{FromSciString, ToSci};
 
 	
@@ -844,8 +837,9 @@ use super::*;
 		fn eval_test(input: &str) -> Number {
 			eval(input, true, false).unwrap()
 		}
-		assert_eq!(eval_test("sin(pi)"), Number::new(r("0"), Unit::NoUnit));
+		assert_eq!(eval_test("5 % 2"), Number::new(r("1"), Unit::NoUnit));
 		assert_eq!(eval_test("5.3 % 3"), Number::new(r("2.3"), Unit::NoUnit));
+		assert_eq!(eval_test("sin(pi)"), Number::new(r("0"), Unit::NoUnit));
 	}
 
 	#[test]
