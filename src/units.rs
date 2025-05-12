@@ -781,6 +781,10 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 }
 
 pub fn inaccurate_pow(base: Rational, exponent: Rational) -> Rational {
+	let exponent_u64 = u64::try_from(&exponent);
+	if let Ok(exponent_u64) = exponent_u64 {
+		return base.pow(exponent_u64);
+	}
 	let base = f64::try_from(base).unwrap();
 	let exponent = f64::try_from(exponent).unwrap();
 	let result = base.pow(exponent);
