@@ -12,9 +12,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "autocfg"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
+
+[[package]]
+name = "bigdecimal"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a22f228ab7a1b23027ccc6c350b72868017af7ea8356fbdf19f8d991c690013"
+dependencies = [
+ "autocfg",
+ "libm",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "cpc"
 version = "1.9.3"
 dependencies = [
+ "bigdecimal",
+ "f256",
  "malachite",
  "regex",
  "unicode-segmentation",
@@ -25,6 +46,42 @@ name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
+
+[[package]]
+name = "f256"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "baa17c443b7b3ef45a1b2fe97d904a9ee2e7969ac8b6b36c1a3d25459c9fd1bf"
+dependencies = [
+ "f256_pow10_div_pow2_lut",
+ "f256_pow2_div_pow10_lut",
+ "f256_pow2_div_pow5_lut",
+ "f256_pow5_div_pow2_lut",
+]
+
+[[package]]
+name = "f256_pow10_div_pow2_lut"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6ca8d1ce1a433ed0939ca1e054b561002cbcb9740d1d36c18d89009eb003002"
+
+[[package]]
+name = "f256_pow2_div_pow10_lut"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6580e1604d17d3723f9ea45d9d3b230b6d716bad991ec7cceda1ad760fa202b4"
+
+[[package]]
+name = "f256_pow2_div_pow5_lut"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76b7418cb2e2a5be0dfb64027d7f009f9660ed6875ee049bc5ff30be006fcf6e"
+
+[[package]]
+name = "f256_pow5_div_pow2_lut"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "250ea0f9a0eb0e71b9040133a84777ddfd97a3c57689c249acb5917e1d869cb8"
 
 [[package]]
 name = "foldhash"
@@ -106,6 +163,34 @@ name = "memchr"
 version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
+
+[[package]]
+name = "num-bigint"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
+dependencies = [
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-integer"
+version = "0.1.46"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "num-traits"
+version = "0.2.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
+dependencies = [
+ "autocfg",
+]
 
 [[package]]
 name = "regex"

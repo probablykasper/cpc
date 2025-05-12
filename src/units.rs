@@ -1,8 +1,10 @@
+use std::str::FromStr;
+use f256::f256;
 use malachite::base::num::arithmetic::traits::Pow;
-use malachite::base::num::conversion::traits::FromSciString;
+use malachite::base::num::conversion::string::options::ToSciOptions;
+use malachite::base::num::conversion::traits::{FromSciString, ToSci};
 use malachite::rational::Rational;
 use crate::evaluator::calc_modulo;
-use crate::pow::powf;
 use crate::{Number, r};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -787,8 +789,22 @@ pub fn inaccurate_pow(base: Rational, exponent: Rational) -> Rational {
 	if let Ok(exponent_u64) = exponent_u64 {
 		return base.pow(exponent_u64);
 	}
-	let precision_base = Rational::from_sci_string("1e-64").unwrap();
-	powf(&base, &exponent, Some(&precision_base), Some(&precision_base))
+
+	// Fallback to f256 for non-uint exponents. I tried working
+	// with Rationals directly but the result was super slow.
+
+	let mut sci_options = ToSciOptions::default();
+	sci_options.set_precision(64);
+	let base_str = base.to_sci_with_options(sci_options).to_string();
+	let exponent_str = exponent.to_sci_with_options(sci_options).to_string();
+
+	let base_f256 = f256::from_str(&base_str).unwrap();
+	let exponent_f256 = f256::from_str(&exponent_str).unwrap();
+
+	let result = base_f256.powf(&exponent_f256);
+	let result_str = result.to_string();
+
+	Rational::from_sci_string(&result_str).unwrap()
 }
 
 /// Returns a [`Number`] to the power of another [`Number`]

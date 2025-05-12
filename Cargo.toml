@@ -19,6 +19,8 @@ categories = [
 ]
 
 [dependencies]
+bigdecimal = "0.4.8"
+f256 = "0.7.0"
 malachite = "0.6"
 unicode-segmentation = "1.10"
 
