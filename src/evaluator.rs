@@ -303,3 +303,24 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 		_ => Err(format!("Unexpected token {:?}", token)),
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use crate::eval;
+	use super::*;
+
+	fn default_eval(input: &str) -> Number {
+		eval(input, true, false).unwrap()
+	}
+
+	#[test]
+	fn test_evaluations() {
+		assert_eq!(default_eval("-2(-3)"), Number::new(r("6"), Unit::NoUnit));
+		assert_eq!(default_eval("-2(3)"), Number::new(r("-6"), Unit::NoUnit));
+		assert_eq!(default_eval("(3)-2"), Number::new(r("1"), Unit::NoUnit));
+		assert_eq!(default_eval("-1km to m"), Number::new(r("-1000"), Unit::Meter));
+		assert_eq!(default_eval("2*-3*0.5"), Number::new(r("-3"), Unit::NoUnit));
+		assert_eq!(default_eval("-3^2"), Number::new(r("-9"), Unit::NoUnit));
+		assert_eq!(default_eval("-1+2"), Number::new(r("1"), Unit::NoUnit));
+	}
+}
