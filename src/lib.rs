@@ -1,11 +1,3 @@
-#![cfg_attr(
-	feature = "cargo-clippy",
-	allow(
-		clippy::comparison_chain,
-		clippy::if_same_then_else,
-		clippy::match_like_matches_macro,
-	)
-)]
 //! calculation + conversion
 //!
 //! cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
