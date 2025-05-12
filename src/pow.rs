@@ -1,7 +1,7 @@
 // This code is translated from https://github.com/Kuuuube/bigdecimal-rs-pow/blob/main/src/main.rs
 
-use malachite::base::num::arithmetic::traits::RoundToMultiple;
-use malachite::base::num::basic::traits::Zero;
+use malachite::base::num::arithmetic::traits::{Abs, RoundToMultiple};
+use malachite::base::num::basic::traits::{One, Zero};
 use malachite::base::num::conversion::traits::IsInteger;
 use malachite::base::rounding_modes::RoundingMode;
 use malachite::rational::Rational;
@@ -15,11 +15,13 @@ pub fn powf(
 	prec_multiple: Option<&Rational>,
 	round_to_multiple: Option<&Rational>,
 ) -> Rational {
+	let is_negative = *e < Rational::ZERO;
+	let e_abs = e.abs();
 	if e.is_integer() {
 		return powi(&x, &e);
 	} else {
-		let numerator = u32::try_from(e.numerator_ref()).unwrap();
-		let denominator = u32::try_from(e.denominator_ref()).unwrap();
+		let numerator = u32::try_from(e_abs.numerator_ref()).unwrap();
+		let denominator = u32::try_from(e_abs.denominator_ref()).unwrap();
 
 		// attempt to chop down the fraction to improve performance if a greatest common denominator can be found
 		let gcd = euclid_gcd(numerator, denominator);
@@ -35,11 +37,17 @@ pub fn powf(
 		} else {
 			powi(&x, &Rational::from(simplified_numerator))
 		};
-		return root(
+		let result = root(
 			&Rational::from(simplified_denominator),
 			&whole_result,
 			prec_multiple,
 		);
+
+		if is_negative {
+			Rational::ONE / result
+		} else {
+			result
+		}
 	}
 }
 
@@ -57,11 +65,15 @@ fn euclid_gcd(mut m: u32, mut n: u32) -> u32 {
 // calculates integer equivalent bigdecimal powers only
 // x is the base, e is the exponent
 pub fn powi(x: &Rational, e: &Rational) -> Rational {
-	let mut r = Rational::from(1);
+	if *e < Rational::ZERO {
+		return Rational::ONE / powi(x, &(-e));
+	}
+
+	let mut r = Rational::ONE;
 	let mut i = Rational::ZERO;
 	while i < *e {
 		r *= x;
-		i += Rational::from(1);
+		i += Rational::ONE;
 	}
 	return r;
 }
@@ -85,7 +97,7 @@ pub fn root(n: &Rational, x: &Rational, prec_multiple: Option<&Rational>) -> Rat
 		} else {
 			r
 		}; // looping with round is too expensive, with_prec is used instead
-		d = (x / powi(&r, &(n - Rational::from(1))) - &r) / n;
+		d = (x / powi(&r, &(n - Rational::ONE)) - &r) / n;
 		r += &d;
 		if !(&d >= &(Rational::try_from(f64::EPSILON).unwrap() * Rational::from(10))
 			|| &d <= &(Rational::try_from(-f64::EPSILON).unwrap() * Rational::from(10)))
