@@ -829,17 +829,26 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 mod tests {
 	use crate::eval;
 	use super::*;
+	use malachite::base::num::conversion::string::options::ToSciOptions;
 	use malachite::base::num::conversion::traits::{FromSciString, ToSci};
 
 	
 	#[test]
 	fn test_operators() {
 		fn eval_test(input: &str) -> Number {
-			eval(input, true, false).unwrap()
+			let result = eval(input, true, false).unwrap();
+
+			let mut sci_options = ToSciOptions::default();
+			sci_options.set_precision(32);
+			let value_str = result.value.to_sci_with_options(sci_options).to_string();
+			let value = Rational::from_sci_string(&value_str).unwrap();
+
+			Number::new(value, NoUnit)
 		}
-		assert_eq!(eval_test("5 % 2"), Number::new(r("1"), Unit::NoUnit));
-		assert_eq!(eval_test("5.3 % 3"), Number::new(r("2.3"), Unit::NoUnit));
-		assert_eq!(eval_test("sin(pi)"), Number::new(r("0"), Unit::NoUnit));
+		assert_eq!(eval_test("5 % 2"), Number::new(r("1"), NoUnit));
+		assert_eq!(eval_test("5.3 % 3"), Number::new(r("2.3"), NoUnit));
+		assert_eq!(eval_test("sin(2)"), Number::new(r("0.90929742682568169539601986591174"), NoUnit));
+		assert_eq!(eval_test("sin(-2)"), Number::new(r("-0.90929742682568169539601986591174"), NoUnit));
 	}
 
 	#[test]

@@ -23,7 +23,11 @@ pub fn calc_modulo(left: Rational, right: Rational) -> Rational {
 	let right_abs = right.clone().abs();
 	let div_result = &left_abs / &right_abs;
 	let result = left_abs - Rational::from(div_result.floor()) * right_abs;
-	return result;
+	if right < 0 {
+		return -result;
+	} else {
+		return result;
+	}
 }
 
 /// Returns the square root
@@ -50,32 +54,32 @@ pub fn cbrt(input: Rational) -> Rational {
 
 /// Returns the sine
 pub fn sin(mut input: Rational) -> Rational {
-	let pi = r("3.141592653589793238462643383279503");
 	let pi2 = r("6.283185307179586476925286766559006");
+	let negative = input < 0;
 
 	// input %= pi2;
 	input = calc_modulo(input, pi2);
 
-	let negative_correction = if input < 0 {
-		input -= pi;
-		Rational::from(-1)
-	} else {
-		Rational::from(1)
-	};
 
+	let mut result = Rational::from(0);
+	let neg_one = Rational::from(-1);
 	let one = 1u64;
 	let two = 2;
-	let neg_one = Rational::from(-1);
 
 	let precision = 37;
-	let mut result = Rational::from(0);
-	for i_int in 0..precision {
-		let i = i_int;
-		let calc_result = two * i + one;
-		result += neg_one.clone().pow(i) * (input.clone().pow(calc_result) / Rational::from(Natural::factorial(calc_result)));
+	for i in 0..precision {
+		let exponent = two * i + one;
+		let term = (&neg_one).pow(i) *
+			((&input).pow(exponent) /
+			Rational::from(Natural::factorial(exponent)));
+		result += term;
 	}
 
-	negative_correction * result
+	if negative {
+		-result
+	} else {
+		result
+	}
 }
 
 /// Returns the cosine of a number
