@@ -23,6 +23,7 @@
 //! ```
 
 use crate::units::Unit;
+use malachite::base::num::conversion::string::options::ToSciOptions;
 use malachite::rational::Rational;
 use std::fmt::{self, Display};
 use malachite::base::num::conversion::traits::{FromSciString, ToSci};
@@ -73,7 +74,9 @@ impl Number {
 }
 impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let value = self.value.to_sci();
+		let mut sci_options = ToSciOptions::default();
+		sci_options.set_precision(32);
+		let value = self.value.to_sci_with_options(sci_options);
 		let word = match self.value == 1 {
 			true => self.unit.singular(),
 			false => self.unit.plural(),
