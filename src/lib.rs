@@ -46,6 +46,8 @@ pub mod parser;
 #[rustfmt::skip]
 pub mod units;
 
+mod pow;
+
 #[derive(Clone, Debug, PartialEq)]
 /// A number with a `Unit`.
 ///

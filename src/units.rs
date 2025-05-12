@@ -1,7 +1,9 @@
+use malachite::base::num::arithmetic::traits::Pow;
+use malachite::base::num::conversion::traits::FromSciString;
 use malachite::rational::Rational;
 use crate::evaluator::calc_modulo;
+use crate::pow::powf;
 use crate::{Number, r};
-use malachite::base::num::arithmetic::traits::Pow;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// An enum of all possible unit types, like [`Length`], [`DigitalStorage`] etc.
@@ -785,10 +787,8 @@ pub fn inaccurate_pow(base: Rational, exponent: Rational) -> Rational {
 	if let Ok(exponent_u64) = exponent_u64 {
 		return base.pow(exponent_u64);
 	}
-	let base = f64::try_from(base).unwrap();
-	let exponent = f64::try_from(exponent).unwrap();
-	let result = base.pow(exponent);
-	result.try_into().unwrap()
+	let precision_base = Rational::from_sci_string("1e-64").unwrap();
+	powf(&base, &exponent, Some(&precision_base), Some(&precision_base))
 }
 
 /// Returns a [`Number`] to the power of another [`Number`]
@@ -831,33 +831,38 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
+	use malachite::base::num::conversion::string::options::ToSciOptions;
+	use malachite::base::num::conversion::traits::{ToSci, FromSciString};
 	use crate::eval;
 	use super::*;
-	use malachite::base::num::conversion::string::options::ToSciOptions;
-	use malachite::base::num::conversion::traits::{FromSciString, ToSci};
 
-	
 	#[test]
 	fn test_operators() {
-		fn eval_test(input: &str) -> Number {
+		fn eval_test(input: &str) -> String {
 			let result = eval(input, true, false).unwrap();
 
 			let mut sci_options = ToSciOptions::default();
 			sci_options.set_precision(32);
 			let value_str = result.value.to_sci_with_options(sci_options).to_string();
-			let value = Rational::from_sci_string(&value_str).unwrap();
 
-			Number::new(value, NoUnit)
+			value_str
 		}
-		assert_eq!(eval_test("5 % 2"), Number::new(r("1"), NoUnit));
-		assert_eq!(eval_test("5.3 % 3"), Number::new(r("2.3"), NoUnit));
-		assert_eq!(eval_test("sin(2)"), Number::new(r("0.90929742682568169539601986591174"), NoUnit));
-		assert_eq!(eval_test("sin(-2)"), Number::new(r("-0.90929742682568169539601986591174"), NoUnit));
+		assert_eq!(eval_test("5 % 2"), "1");
+		assert_eq!(eval_test("5.3 % 3"), "2.3");
+
+		assert_eq!(eval_test("sin(2)"), "0.90929742682568169539601986591174");
+		assert_eq!(eval_test("sin(-2)"), "-0.90929742682568169539601986591174");
+
+		assert_eq!(eval_test("2^6"), "64");
+		assert_eq!(eval_test("(-2)^6"), "64");
+		assert_eq!(eval_test("(-2)^7"), "-128");
+		assert_eq!(eval_test("2^-6"), "0.015625");
+		assert_eq!(eval_test("2^0.5"), "1.4142135623730950488016887242097");
 	}
 
 	#[test]
 	fn test_convert() {
-		pub fn convert_test(value: &str, unit: Unit, to_unit: Unit) -> f64 {
+		fn convert_test(value: &str, unit: Unit, to_unit: Unit) -> f64 {
 			use std::str::FromStr;
 
 			let value_num = Rational::from_sci_string(value).unwrap();
