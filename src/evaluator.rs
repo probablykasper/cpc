@@ -2,7 +2,7 @@ use crate::lookup::lookup_named_number;
 use crate::parser::AstNode;
 use crate::units::{add, convert, divide, modulo, multiply, pow, subtract, Unit, UnitType};
 use crate::Constant::{Pi, E};
-use crate::{r, FunctionIdentifier::*};
+use crate::{f256_to_rational, r, rational_to_f256, FunctionIdentifier::*};
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::TextOperator::{Of, To};
 use crate::UnaryOperator::{Factorial, Percent};
@@ -130,30 +130,36 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						Err("log() only accepts UnitType::NoType".to_string())
 					}
 				}
-				// Log => {
-				// 	if child_answer.unit.category() == UnitType::NoType {
-				// 		let result = child_answer.value.log10();
-				// 		Ok(Number::new(result, child_answer.unit))
-				// 	} else {
-				// 		Err("log() only accepts UnitType::NoType".to_string())
-				// 	}
-				// }
-				// Ln => {
-				// 	if child_answer.unit.category() == UnitType::NoType {
-				// 		let result = child_answer.value.ln();
-				// 		Ok(Number::new(result, child_answer.unit))
-				// 	} else {
-				// 		Err("ln() only accepts UnitType::NoType".to_string())
-				// 	}
-				// }
-				// Exp => {
-				// 	if child_answer.unit.category() == UnitType::NoType {
-				// 		let result = child_answer.value.exp(child_answer.value);
-				// 		Ok(Number::new(result, child_answer.unit))
-				// 	} else {
-				// 		Err("exp() only accepts UnitType::NoType".to_string())
-				// 	}
-				// }
+				Log => {
+					if child_answer.unit.category() == UnitType::NoType {
+						let value_f256 = rational_to_f256(child_answer.value, 64);
+						let result_f256 = value_f256.log10();
+						let result = f256_to_rational(result_f256);
+						Ok(Number::new(result, child_answer.unit))
+					} else {
+						Err("log() only accepts UnitType::NoType".to_string())
+					}
+				}
+				Ln => {
+					if child_answer.unit.category() == UnitType::NoType {
+						let value_f256 = rational_to_f256(child_answer.value, 64);
+						let result_f256 = value_f256.ln();
+						let result = f256_to_rational(result_f256);
+						Ok(Number::new(result, child_answer.unit))
+					} else {
+						Err("ln() only accepts UnitType::NoType".to_string())
+					}
+				}
+				Exp => {
+					if child_answer.unit.category() == UnitType::NoType {
+						let value_f256 = rational_to_f256(child_answer.value, 64);
+						let result_f256 = value_f256.exp();
+						let result = f256_to_rational(result_f256);
+						Ok(Number::new(result, child_answer.unit))
+					} else {
+						Err("exp() only accepts UnitType::NoType".to_string())
+					}
+				}
 				Round => {
 					let floor = Rational::from((&child_answer.value).floor());
 					let floor_offset = &child_answer.value - &floor;
@@ -194,7 +200,6 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 					let result = tan(child_answer.value);
 					Ok(Number::new(result, child_answer.unit))
 				}
-				_ => todo!(),
 			}
 		}
 		Token::Unit(unit) => {
@@ -301,37 +306,59 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
+	use malachite::base::num::conversion::string::options::ToSciOptions;
+	use malachite::base::num::conversion::traits::ToSci;
 	use crate::eval;
 	use super::*;
 
-	fn default_eval(input: &str) -> Number {
-		eval(input, true, false).unwrap()
+	fn eval_default<'a>(input: &'a str) -> Number {
+		let result = eval(input, true, false).unwrap();
+		result
+	}
+	fn eval_num<'a>(input: &'a str) -> String {
+		let result = eval(input, true, false).unwrap();
+		assert_eq!(result.unit, Unit::NoUnit);
+
+		let mut sci_options = ToSciOptions::default();
+		sci_options.set_precision(32);
+		let value_str = result.value.to_sci_with_options(sci_options).to_string();
+		value_str
 	}
 
 	#[test]
 	fn test_evaluations() {
-		assert_eq!(default_eval("-2(-3)"), Number::new(r("6"), Unit::NoUnit));
-		assert_eq!(default_eval("-2(3)"), Number::new(r("-6"), Unit::NoUnit));
-		assert_eq!(default_eval("(3)-2"), Number::new(r("1"), Unit::NoUnit));
-		assert_eq!(default_eval("-1km to m"), Number::new(r("-1000"), Unit::Meter));
-		assert_eq!(default_eval("2*-3*0.5"), Number::new(r("-3"), Unit::NoUnit));
-		assert_eq!(default_eval("-3^2"), Number::new(r("-9"), Unit::NoUnit));
-		assert_eq!(default_eval("-1+2"), Number::new(r("1"), Unit::NoUnit));
+		assert_eq!(eval_num("-2(-3)"), "6");
+		assert_eq!(eval_num("-2(3)"), "-6");
+		assert_eq!(eval_num("(3)-2"), "1");
+		assert_eq!(eval_default("-1km to m"), Number::new(r("-1000"), Unit::Meter));
+		assert_eq!(eval_num("2*-3*0.5"), "-3");
+		assert_eq!(eval_num("-3^2"), "-9");
+		assert_eq!(eval_num("-1+2"), "1");
 	}
 
 	#[test]
 	fn test_functions() {
-		assert_eq!(default_eval("abs(-3)"), Number::new(r("3"), Unit::NoUnit));
+		assert_eq!(eval_num("abs(-3)"), "3");
 
-		assert_eq!(default_eval("round(1.4)"), Number::new(r("1"), Unit::NoUnit));
-		assert_eq!(default_eval("round(1.6)"), Number::new(r("2"), Unit::NoUnit));
-		assert_eq!(default_eval("round(1.5)"), Number::new(r("2"), Unit::NoUnit));
-		assert_eq!(default_eval("round(2.5)"), Number::new(r("3"), Unit::NoUnit));
+		assert_eq!(eval_num("round(1.4)"), "1");
+		assert_eq!(eval_num("round(1.6)"), "2");
+		assert_eq!(eval_num("round(1.5)"), "2");
+		assert_eq!(eval_num("round(2.5)"), "3");
 
-		assert_eq!(default_eval("ceil(1.5)"), Number::new(r("2"), Unit::NoUnit));
-		assert_eq!(default_eval("ceil(-1.5)"), Number::new(r("-1"), Unit::NoUnit));
-		
-		assert_eq!(default_eval("floor(1.5)"), Number::new(r("1"), Unit::NoUnit));
-		assert_eq!(default_eval("floor(-1.5)"), Number::new(r("-2"), Unit::NoUnit));
+		assert_eq!(eval_num("ceil(1.5)"), "2");
+		assert_eq!(eval_num("ceil(-1.5)"), "-1");
+
+		assert_eq!(eval_num("floor(1.5)"), "1");
+		assert_eq!(eval_num("floor(-1.5)"), "-2");
+
+		assert_eq!(eval_num("log(100)"), "2");
+		assert_eq!(eval_num("log(2)"), "0.30102999566398119521373889472449");
+
+		assert_eq!(eval_num("ln(1)"), "0");
+		assert_eq!(eval_num("ln(2)"), "0.69314718055994530941723212145818");
+		assert_eq!(eval_num("ln(e)"), "1");
+		assert_eq!(eval_num("ln(e^2)"), "2");
+
+		assert_eq!(eval_num("exp(2)"), "7.389056098930650227230427460575");
 	}
 }

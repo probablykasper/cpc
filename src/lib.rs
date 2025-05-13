@@ -23,9 +23,11 @@
 //! ```
 
 use crate::units::Unit;
+use f256::f256;
 use malachite::base::num::conversion::string::options::ToSciOptions;
 use malachite::rational::Rational;
 use std::fmt::{self, Display};
+use std::str::FromStr;
 use malachite::base::num::conversion::traits::{FromSciString, ToSci};
 use std::time::Instant;
 
@@ -87,6 +89,17 @@ impl Display for Number {
 		};
 		write!(f, "{output}")
 	}
+}
+
+pub(crate) fn rational_to_f256(input: Rational, precision: u64) -> f256 {
+	let mut sci_options = ToSciOptions::default();
+	sci_options.set_precision(precision);
+	let value_str = input.to_sci_with_options(sci_options).to_string();
+	let value_f256 = f256::from_str(&value_str).unwrap();
+	value_f256
+}
+pub(crate) fn f256_to_rational(input: f256) -> Rational {
+	Rational::from_sci_string(&input.to_string()).unwrap()
 }
 
 #[derive(Clone, Debug, PartialEq)]
