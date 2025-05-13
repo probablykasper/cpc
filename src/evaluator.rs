@@ -7,7 +7,7 @@ use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::TextOperator::{Of, To};
 use crate::UnaryOperator::{Factorial, Percent};
 use crate::{Number, Token};
-use malachite::base::num::basic::traits::One;
+use malachite::base::num::basic::traits::{One, Zero};
 use malachite::rational::Rational;
 use malachite::Natural;
 use malachite::base::num::arithmetic::traits::{Abs, Ceiling, Factorial as MalachiteFactorial, Floor};
@@ -119,18 +119,24 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						let result = cbrt(child_answer.value);
 						Ok(Number::new(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("cbrt() only accepts UnitType::NoType".to_string())
 					}
 				}
 				Sqrt => {
+					if child_answer.value < Rational::ZERO {
+						return Err("Not a number".to_string())
+					}
 					if child_answer.unit.category() == UnitType::NoType {
 						let result = sqrt(child_answer.value);
 						Ok(Number::new(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("sqrt() only accepts UnitType::NoType".to_string())
 					}
 				}
 				Log => {
+					if child_answer.value < Rational::ZERO {
+						return Err("Not a number".to_string())
+					}
 					if child_answer.unit.category() == UnitType::NoType {
 						let value_f256 = rational_to_f256(child_answer.value, 64);
 						let result_f256 = value_f256.log10();
@@ -141,6 +147,9 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 					}
 				}
 				Ln => {
+					if child_answer.value < Rational::ZERO {
+						return Err("Not a number".to_string())
+					}
 					if child_answer.unit.category() == UnitType::NoType {
 						let value_f256 = rational_to_f256(child_answer.value, 64);
 						let result_f256 = value_f256.ln();

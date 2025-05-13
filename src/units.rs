@@ -1,4 +1,5 @@
 use malachite::base::num::arithmetic::traits::Pow;
+use malachite::base::num::basic::traits::Zero;
 use malachite::rational::Rational;
 use crate::evaluator::calc_modulo;
 use crate::{f256_to_rational, r, rational_to_f256, Number};
@@ -665,6 +666,9 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 /// - If you divide [`Power`] by [`Voltage`], the result has a unit of [`Ampere`]
 /// - If you divide [`Energy`] by [`Time`], the result has a unit of [`Power`]
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
+	if right.value == Rational::ZERO {
+		return Err(format!("Divide by zero"));
+	}
 	let lcat = left.unit.category();
 	let rcat = right.unit.category();
 	if left.unit == NoUnit && right.unit == NoUnit {
@@ -745,7 +749,9 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 ///
 /// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
-	if left.unit.category() == Temperature || right.unit.category() == Temperature {
+	if right.value == Rational::ZERO {
+		return Err(format!("Infinity"));
+	} else if left.unit.category() == Temperature || right.unit.category() == Temperature {
 		// if temperature
 		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
 	} else if left.unit.category() == right.unit.category() {
