@@ -78,6 +78,8 @@ impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut sci_options = ToSciOptions::default();
 		sci_options.set_precision(32);
+		sci_options.set_e_uppercase();
+		sci_options.set_neg_exp_threshold(-7);
 		let value = self.value.to_sci_with_options(sci_options);
 		let word = match self.value == 1 {
 			true => self.unit.singular(),
