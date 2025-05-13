@@ -838,9 +838,6 @@ mod tests {
 		assert_eq!(eval_test("5 % 2"), "1");
 		assert_eq!(eval_test("5.3 % 3"), "2.3");
 
-		assert_eq!(eval_test("sin(2)"), "0.90929742682568169539601986591174");
-		assert_eq!(eval_test("sin(-2)"), "-0.90929742682568169539601986591174");
-
 		assert_eq!(eval_test("2^6"), "64");
 		assert_eq!(eval_test("(-2)^6"), "64");
 		assert_eq!(eval_test("(-2)^7"), "-128");

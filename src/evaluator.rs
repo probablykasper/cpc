@@ -347,18 +347,9 @@ mod tests {
 
 	#[test]
 	fn test_functions() {
-		assert_eq!(eval_num("abs(-3)"), "3");
+		assert_eq!(eval_num("cbrt(125)"), "5");
 
-		assert_eq!(eval_num("round(1.4)"), "1");
-		assert_eq!(eval_num("round(1.6)"), "2");
-		assert_eq!(eval_num("round(1.5)"), "2");
-		assert_eq!(eval_num("round(2.5)"), "3");
-
-		assert_eq!(eval_num("ceil(1.5)"), "2");
-		assert_eq!(eval_num("ceil(-1.5)"), "-1");
-
-		assert_eq!(eval_num("floor(1.5)"), "1");
-		assert_eq!(eval_num("floor(-1.5)"), "-2");
+		assert_eq!(eval_num("sqrt(25)"), "5");
 
 		assert_eq!(eval_num("log(100)"), "2");
 		assert_eq!(eval_num("log(2)"), "0.30102999566398119521373889472449");
@@ -369,5 +360,21 @@ mod tests {
 		assert_eq!(eval_num("ln(e^2)"), "2");
 
 		assert_eq!(eval_num("exp(2)"), "7.389056098930650227230427460575");
+		
+		assert_eq!(eval_num("round(1.4)"), "1");
+		assert_eq!(eval_num("round(1.6)"), "2");
+		assert_eq!(eval_num("round(1.5)"), "2");
+		assert_eq!(eval_num("round(2.5)"), "3");
+		
+		assert_eq!(eval_num("ceil(1.5)"), "2");
+		assert_eq!(eval_num("ceil(-1.5)"), "-1");
+		
+		assert_eq!(eval_num("floor(1.5)"), "1");
+		assert_eq!(eval_num("floor(-1.5)"), "-2");
+
+		assert_eq!(eval_num("abs(-3)"), "3");
+
+		assert_eq!(eval_num("sin(2)"), "0.90929742682568169539601986591174");
+		assert_eq!(eval_num("sin(-2)"), "-0.90929742682568169539601986591174");
 	}
 }
