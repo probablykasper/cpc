@@ -65,11 +65,18 @@ impl Number {
 	pub const fn new(value: d128, unit: Unit) -> Number {
 		Number { value, unit }
 	}
+	pub fn get_simplified_value(&self) -> d128 {
+		// The order here matters, reduce must be first
+		// sin(pi) results in 0E-32, but .reduce() changes is to 0
+		let mut value = self.value.reduce();
+		// 0.2/0.01 results in 2E+1, but adding 0 changes it to 20
+		value = value + d128!(0);
+		value
+	}
 }
 impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		// 0.2/0.01 results in 2E+1, but if we add zero it becomes 20
-		let value = self.value + d128!(0);
+		let value = self.get_simplified_value();
 		let word = match self.value == d128!(1) {
 			true => self.unit.singular(),
 			false => self.unit.plural(),
@@ -288,6 +295,12 @@ mod tests {
 
 	fn default_eval(input: &str) -> Number {
 		eval(input, true, false).unwrap()
+	}
+
+	#[test]
+	fn test_simplify() {
+		assert_eq!(&default_eval("sin(pi)").to_string(), "0");
+		assert_eq!(&default_eval("0.2/0.01").to_string(), "20");
 	}
 
 	#[test]
