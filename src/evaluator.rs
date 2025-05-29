@@ -46,15 +46,29 @@ pub fn cbrt(input: d128) -> d128 {
 	n
 }
 
+fn pi() -> d128 {
+	d128!(3.141592653589793238462643383279503)
+}
+fn pi2() -> d128 {
+	d128!(6.283185307179586476925286766559006)
+}
+fn pi_half() -> d128 {
+	d128!(1.570796326794896619231321691639751)
+}
+fn eulers_number() -> d128 {
+	d128!(2.718281828459045235360287471352662)
+}
+fn rounding_base() -> d128 {
+	// DO NOT add a trailing zero here, it must be one less than the others
+	d128!(0.00000000000000000000000000000001)
+}
+
 /// Returns the sine of a [`struct@d128`]
 pub fn sin(mut input: d128) -> d128 {
-	let pi = d128!(3.141592653589793238462643383279503);
-	let pi2 = d128!(6.283185307179586476925286766559006);
-
-	input %= pi2;
+	input %= pi2();
 
 	let negative_correction = if input.is_negative() {
-		input -= pi;
+		input -= pi();
 		d128!(-1)
 	} else {
 		d128!(1)
@@ -72,13 +86,16 @@ pub fn sin(mut input: d128) -> d128 {
 		result += neg_one.pow(i) * (input.pow(calc_result) / factorial(calc_result));
 	}
 
-	negative_correction * result
+	let unrounded_result = negative_correction * result;
+
+	// This uses bankers rounding, but I *think* it's fine
+	let result = unrounded_result.quantize(rounding_base());
+	result
 }
 
 /// Returns the cosine of a [`struct@d128`]
 pub fn cos(input: d128) -> d128 {
-	let half_pi = d128!(1.570796326794896619231321691639751);
-	sin(half_pi - input)
+	sin(pi_half() - input)
 }
 
 /// Returns the tangent of a [`struct@d128`]
@@ -94,11 +111,11 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 		Token::Number(number) => Ok(Number::new(*number, Unit::NoUnit)),
 		Token::Constant(constant) => match constant {
 			Pi => Ok(Number::new(
-				d128!(3.141592653589793238462643383279503),
+				pi(),
 				Unit::NoUnit,
 			)),
 			E => Ok(Number::new(
-				d128!(2.718281828459045235360287471352662),
+				eulers_number(),
 				Unit::NoUnit,
 			)),
 		},
