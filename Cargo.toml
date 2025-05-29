@@ -26,7 +26,7 @@ decimal = { version = "2.1", default-features = false, features = [
 unicode-segmentation = "1.10"
 
 [dev-dependencies]
-regex = "1.7"
+regex = "1.11"
 
 [lints.clippy]
 comparison_chain = "allow"
