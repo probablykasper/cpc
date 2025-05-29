@@ -1,6 +1,6 @@
 [package]
 name = "cpc"
-version = "1.9.3"
+version = "2.0.0"
 description = "evaluates math expressions, with support for units and conversion between units"
 authors = ["Kasper Henningsen"]
 edition = "2024"

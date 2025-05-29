@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 2.0.0 - 2025 May 30
 - Remove the `degrees` keyword which referred to `celcius` by default
 - Remove the `default_degrees` argument from `eval()` and `lex()`. Not necessary now that the `degrees` keyword is removed
 - Fix trigonometry imprecision
