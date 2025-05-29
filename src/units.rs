@@ -239,7 +239,6 @@ create_units!(
 	ZebibytesPerSecond:   (DataTransferRate, d128!(9444732965739290427392), "zebibyte per second", "zebibytes per second"),
 	YobibytesPerSecond:   (DataTransferRate, d128!(9671406556917033397649408), "yobibyte per second", "yobibytes per second"),
 
-	// ! If updating Millijoule, also update get_inverted_millijoule_weight()
 	Millijoule:         (Energy, d128!(0.001), "millijoule", "millijoules"),
 	Joule:              (Energy, d128!(1), "joule", "joules"),
 	NewtonMeter:        (Energy, d128!(1), "newton meter", "newton meters"),
@@ -257,7 +256,6 @@ create_units!(
 	TerawattHour:       (Energy, d128!(3600000000000000), "terawatt-hour", "terawatt-hours"),
 	PetawattHour:       (Energy, d128!(3600000000000000000), "petawatt-hour", "petawatt-hours"),
 
-	// ! If updating Milliwatt, also update get_inverted_milliwatt_weight()
 	Milliwatt:                    (Power, d128!(0.001), "milliwatt", "milliwatts"),
 	Watt:                         (Power, d128!(1), "watt", "watts"),
 	Kilowatt:                     (Power, d128!(1000), "kilowatt", "kilowatts"),
@@ -273,18 +271,15 @@ create_units!(
 	Horsepower:                   (Power, d128!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d128!(735.49875), "metric horsepower", "metric horsepower"),
 
-	// ! If updating Milliampere, also update get_inverted_milliampere_weight()
 	Milliampere:                  (ElectricCurrent, d128!(0.001), "milliampere", "milliamperes"),
 	Ampere:                       (ElectricCurrent, d128!(1), "ampere", "amperes"),
 	Kiloampere:                   (ElectricCurrent, d128!(1000), "kiloampere", "kiloamperes"),
 	Abampere:                     (ElectricCurrent, d128!(10), "abampere", "abamperes"),
 
-	// ! If updating Milliohm, also update get_inverted_milliohm_weight()
 	Milliohm:                     (Resistance, d128!(0.001), "milliohm", "milliohms"),
 	Ohm:                          (Resistance, d128!(1), "ohm", "ohms"),
 	Kiloohm:                      (Resistance, d128!(1000), "kiloohm", "kiloohms"),
 
-	// ! If updating Millivolt, also update get_inverted_millivolt_weight()
 	Millivolt:                    (Voltage, d128!(0.001), "millivolt", "millivolts"),
 	Volt:                         (Voltage, d128!(1), "volt", "volts"),
 	Kilovolt:                     (Voltage, d128!(1000), "kilovolt", "kilovolts"),
@@ -317,24 +312,6 @@ create_units!(
 	Celsius:            (Temperature, d128!(0), "celsius", "celsius"),
 	Fahrenheit:         (Temperature, d128!(0), "fahrenheit", "fahrenheit"),
 );
-
-// These functions are here to avoid dividing by small numbers like 0.01,
-// because d128 gives numbers in E notation in that case.
-fn get_inverted_millijoule_weight() -> d128 {
-	d128!(1000)
-}
-fn get_inverted_milliwatt_weight() -> d128 {
-	d128!(1000)
-}
-fn get_inverted_milliohm_weight() -> d128 {
-	d128!(1000)
-}
-fn get_inverted_milliampere_weight() -> d128 {
-	d128!(1000)
-}
-fn get_inverted_millivolt_weight() -> d128 {
-	d128!(1000)
-}
 
 /// Returns the conversion factor between two units.
 /// 
@@ -492,7 +469,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 		} else if value >= d128!(1) { // 1 joule
 			return Number::new(value, Joule)
 		} else {
-			return Number::new(value * get_inverted_millijoule_weight(), Millijoule)
+			return Number::new(value/Millijoule.weight(), Millijoule)
 		}
 	} else if number.unit.category() == Power {
 		if value >= d128!(1000000000000000) { // 1 petawatt
@@ -508,7 +485,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 		} else if value >= d128!(1) { // 1 watt
 			return Number::new(value, Watt)
 		} else {
-			return Number::new(value * get_inverted_milliwatt_weight(), Milliwatt)
+			return Number::new(value/Milliwatt.weight(), Milliwatt)
 		}
 	} else if number.unit.category() == ElectricCurrent {
 		if value >= d128!(1000) { // 1 kiloampere
@@ -516,7 +493,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 		} else if value >= d128!(1) { // 1 ampere
 			return Number::new(value, Ampere)
 		} else {
-			return Number::new(value * get_inverted_milliampere_weight(), Milliampere)
+			return Number::new(value/Milliampere.weight(), Milliampere)
 		}
 	} else if number.unit.category() == Resistance {
 		if value >= d128!(1000) { // 1 kiloohm
@@ -524,7 +501,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 		} else if value >= d128!(1) { // 1 ohm
 			return Number::new(value, Ohm)
 		} else {
-			return Number::new(value * get_inverted_milliohm_weight(), Milliohm)
+			return Number::new(value/Milliohm.weight(), Milliohm)
 		}
 	} else if number.unit.category() == Voltage {
 		if value >= d128!(1000) { // 1 kilovolt
@@ -532,7 +509,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 		} else if value >= d128!(1) { // 1 volt
 			return Number::new(value, Volt)
 		} else {
-			return Number::new(value * get_inverted_millivolt_weight(), Millivolt)
+			return Number::new(value/Millivolt.weight(), Millivolt)
 		}
 	}
 	number
@@ -553,7 +530,7 @@ pub fn to_ideal_joule_unit(number: Number) -> Number {
 		} else if value >= d128!(1) { // 1 joule
 			return Number::new(value/Joule.weight(), Joule)
 		} else {
-			return Number::new(value * get_inverted_millijoule_weight(), Millijoule)
+			return Number::new(value/Millijoule.weight(), Millijoule)
 		}
 	}
 	number
