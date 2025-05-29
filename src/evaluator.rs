@@ -47,10 +47,10 @@ pub fn cbrt(input: d128) -> d128 {
 }
 
 fn pi() -> d128 {
-	d128!(3.141592653589793238462643383279503)
+	d128!(3.14159265358979323846264338327950288)
 }
 fn pi2() -> d128 {
-	d128!(6.283185307179586476925286766559006)
+	d128!(6.283185307179586476925286766559005768)
 }
 fn pi_half() -> d128 {
 	d128!(1.570796326794896619231321691639751)
@@ -59,8 +59,8 @@ fn eulers_number() -> d128 {
 	d128!(2.718281828459045235360287471352662)
 }
 fn rounding_base() -> d128 {
-	// DO NOT add a trailing zero here, it must be one less than the others
-	d128!(0.00000000000000000000000000000001)
+	// DO NOT add trailing zeroes
+	d128!(0.0000000000000000000000000000001)
 }
 
 /// Returns the sine of a [`struct@d128`]
@@ -88,7 +88,7 @@ pub fn sin(mut input: d128) -> d128 {
 
 	let unrounded_result = negative_correction * result;
 
-	// This uses bankers rounding, but I *think* it's fine
+	// This uses bankers rounding
 	unrounded_result.quantize(rounding_base())
 }
 
@@ -148,7 +148,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				}
 				Ln => {
 					if child_answer.unit.category() == UnitType::NoType {
-						let result = child_answer.value.ln();
+						let unrounded_result = child_answer.value.ln();
+						let result = unrounded_result.quantize(unrounded_result * d128!(10));
 						Ok(Number::new(result, child_answer.unit))
 					} else {
 						Err("ln() only accepts UnitType::NoType".to_string())
@@ -309,5 +310,64 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			}
 		}
 		_ => Err(format!("Unexpected token {:?}", token)),
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::eval;
+	use super::*;
+
+	fn eval_default<'a>(input: &'a str) -> Number {
+		let result = eval(input, true, false).unwrap();
+		result
+	}
+	fn eval_num<'a>(input: &'a str) -> String {
+		let result = eval(input, true, false).unwrap();
+		assert_eq!(result.unit, Unit::NoUnit);
+
+		result.get_simplified_value().to_string()
+	}
+
+	#[test]
+	fn test_evaluations() {
+		assert_eq!(eval_num("-2(-3)"), "6");
+		assert_eq!(eval_num("-2(3)"), "-6");
+		assert_eq!(eval_num("(3)-2"), "1");
+		assert_eq!(eval_default("-1km to m"), Number::new(d128!(-1000), Unit::Meter));
+		assert_eq!(eval_num("2*-3*0.5"), "-3");
+		assert_eq!(eval_num("-3^2"), "-9");
+		assert_eq!(eval_num("-1+2"), "1");
+	}
+
+	#[test]
+	fn test_functions() {
+		assert_eq!(eval_num("cbrt(125)"), "5");
+
+		assert_eq!(eval_num("sqrt(25)"), "5");
+
+		assert_eq!(eval_num("log(100)"), "2");
+		assert_eq!(eval_num("log(2)"), "0.301029995663981195213738894724493");
+
+		assert_eq!(eval_num("ln(1)"), "0");
+		assert_eq!(eval_num("ln(2)"), "0.693147180559945309417232121458177");
+		assert_eq!(eval_num("ln(e)"), "1");
+		assert_eq!(eval_num("ln(e^2)"), "2");
+
+		assert_eq!(eval_num("round(1.4)"), "1");
+		assert_eq!(eval_num("round(1.6)"), "2");
+		assert_eq!(eval_num("round(1.5)"), "2");
+		assert_eq!(eval_num("round(2.5)"), "3");
+
+		assert_eq!(eval_num("ceil(1.5)"), "2");
+		assert_eq!(eval_num("ceil(-1.5)"), "-1");
+
+		assert_eq!(eval_num("floor(1.5)"), "1");
+		assert_eq!(eval_num("floor(-1.5)"), "-2");
+
+		assert_eq!(eval_num("abs(-3)"), "3");
+
+		assert_eq!(eval_num("sin(2)"), "0.9092974268256816953960198659117");
+		assert_eq!(eval_num("sin(-2)"), "-0.9092974268256816953960198659117");
 	}
 }
