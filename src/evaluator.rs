@@ -89,8 +89,7 @@ pub fn sin(mut input: d128) -> d128 {
 	let unrounded_result = negative_correction * result;
 
 	// This uses bankers rounding, but I *think* it's fine
-	let result = unrounded_result.quantize(rounding_base());
-	result
+	unrounded_result.quantize(rounding_base())
 }
 
 /// Returns the cosine of a [`struct@d128`]
