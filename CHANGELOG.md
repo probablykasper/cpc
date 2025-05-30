@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 3.0.0 - 2025 May 30
 - Create a [website interface](https://cpc.kasper.space)
 - Add wasm version
 - Switch to the `fastnum` crate's d128
