@@ -120,7 +120,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				}
 				Exp => {
 					if child_answer.unit.category() == UnitType::NoType {
-						let result = child_answer.value.exp(child_answer.value);
+						let result = child_answer.value.exp();
 						Ok(Number::new(result, child_answer.unit))
 					} else {
 						Err("exp() only accepts UnitType::NoType".to_string())
@@ -316,6 +316,8 @@ mod tests {
 		assert_eq!(eval_num("ln(2)"), "0.6931471805599453094172321214581765681");
 		assert_eq!(eval_num("ln(e)"), "1");
 		assert_eq!(eval_num("ln(e^2)"), "2");
+
+		assert_eq!(eval_num("exp(1)"), "2.71828182845904523536028747135266249776");
 
 		assert_eq!(eval_num("round(1.4)"), "1");
 		assert_eq!(eval_num("round(1.6)"), "2");
