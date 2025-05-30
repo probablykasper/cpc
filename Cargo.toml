@@ -19,11 +19,8 @@ categories = [
 ]
 
 [dependencies]
-decimal = { version = "2.1", default-features = false, features = [
-    "serde",
-    "ord_subset",
-] }
-unicode-segmentation = "1.10"
+fastnum = "0.2"
+unicode-segmentation = "1.12"
 
 [dev-dependencies]
 regex = "1.11"
