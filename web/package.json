@@ -1,7 +1,5 @@
 {
-	"name": "web",
 	"private": true,
-	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
 		"build-wasm": "npx wasm-pack build --target bundler",
@@ -14,16 +12,16 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "^5.7.2",
-		"@sveltejs/kit": "^2.16.0",
-		"@sveltejs/vite-plugin-svelte": "^5.0.0",
-		"@tailwindcss/vite": "^4.0.0",
+		"@sveltejs/kit": "^2.21.1",
+		"@sveltejs/vite-plugin-svelte": "^5.0.3",
+		"@tailwindcss/vite": "^4.1.8",
 		"cpc": "file:../pkg",
-		"svelte": "^5.0.0",
-		"svelte-check": "^4.0.0",
+		"svelte": "^5.33.10",
+		"svelte-check": "^4.2.1",
 		"tailwindcss": "^4.0.0",
-		"typescript": "^5.0.0",
+		"typescript": "^5.8.3",
 		"vercel": "^42.2.0",
-		"vite": "^6.2.6",
+		"vite": "^6.3.5",
 		"vite-plugin-top-level-await": "^1.5.0",
 		"vite-plugin-wasm": "^3.4.1",
 		"wasm-pack": "^0.13.1"
