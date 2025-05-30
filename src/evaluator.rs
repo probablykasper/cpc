@@ -7,7 +7,7 @@ use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::TextOperator::{Of, To};
 use crate::UnaryOperator::{Factorial, Percent};
 use crate::{Number, Token};
-use decimal::d128;
+use fastnum::{dec128 as d, D128};
 
 /// Evaluate an [`AstNode`] into a [`Number`]
 pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
@@ -20,14 +20,14 @@ pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
 /// Factorials do not work with decimal numbers.
 ///
 /// All return values of this function are hard-coded.
-pub fn factorial(input: d128) -> d128 {
-	lookup_factorial(input.into())
+pub fn factorial(input: D128) -> D128 {
+	lookup_factorial(input.try_into().unwrap())
 }
 
 /// Returns the square root of a [`struct@d128`]
-pub fn sqrt(input: d128) -> d128 {
-	let mut n = d128!(1);
-	let half = d128!(0.5);
+pub fn sqrt(input: D128) -> D128 {
+	let mut n = d!(1);
+	let half = d!(0.5);
 	for _ in 0..10 {
 		n = (n + input / n) * half;
 	}
@@ -35,10 +35,10 @@ pub fn sqrt(input: d128) -> d128 {
 }
 
 /// Returns the cube root of a [`struct@d128`]
-pub fn cbrt(input: d128) -> d128 {
-	let mut n: d128 = input;
+pub fn cbrt(input: D128) -> D128 {
+	let mut n: D128 = input;
 	// hope that 20 iterations makes it accurate enough
-	let three = d128!(3);
+	let three = d!(3);
 	for _ in 0..20 {
 		let z2 = n * n;
 		n = n - ((n * z2 - input) / (three * z2));
@@ -46,60 +46,23 @@ pub fn cbrt(input: d128) -> d128 {
 	n
 }
 
-fn pi() -> d128 {
-	d128!(3.14159265358979323846264338327950288)
-}
-fn pi2() -> d128 {
-	d128!(6.283185307179586476925286766559005768)
-}
-fn pi_half() -> d128 {
-	d128!(1.570796326794896619231321691639751)
-}
-fn eulers_number() -> d128 {
-	d128!(2.718281828459045235360287471352662)
-}
-fn rounding_base() -> d128 {
-	// DO NOT add trailing zeroes
-	d128!(0.0000000000000000000000000000001)
-}
-
 /// Returns the sine of a [`struct@d128`]
-pub fn sin(mut input: d128) -> d128 {
-	input %= pi2();
-
-	let negative_correction = if input.is_negative() {
-		input -= pi();
-		d128!(-1)
-	} else {
-		d128!(1)
-	};
-
-	let one = d128!(1);
-	let two = d128!(2);
-	let neg_one = -one;
-
-	let precision = 37;
-	let mut result = d128!(0);
-	for i_int in 0..precision {
-		let i = d128::from(i_int);
-		let calc_result = two * i + one;
-		result += neg_one.pow(i) * (input.pow(calc_result) / factorial(calc_result));
+pub fn sin(input: D128) -> D128 {
+	let result =input.sin();
+	match result.is_zero() {
+		true => D128::ZERO,
+		false => result,
 	}
-
-	let unrounded_result = negative_correction * result;
-
-	// This uses bankers rounding
-	unrounded_result.quantize(rounding_base())
 }
 
 /// Returns the cosine of a [`struct@d128`]
-pub fn cos(input: d128) -> d128 {
-	sin(pi_half() - input)
+pub fn cos(input: D128) -> D128 {
+	input.cos()
 }
 
 /// Returns the tangent of a [`struct@d128`]
-pub fn tan(input: d128) -> d128 {
-	sin(input) / cos(input)
+pub fn tan(input: D128) -> D128 {
+	input.tan()
 }
 
 /// Evaluate an [`AstNode`] into a [`Number`]
@@ -110,11 +73,11 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 		Token::Number(number) => Ok(Number::new(*number, Unit::NoUnit)),
 		Token::Constant(constant) => match constant {
 			Pi => Ok(Number::new(
-				pi(),
+				D128::PI,
 				Unit::NoUnit,
 			)),
 			E => Ok(Number::new(
-				eulers_number(),
+				D128::E,
 				Unit::NoUnit,
 			)),
 		},
@@ -148,8 +111,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				}
 				Ln => {
 					if child_answer.unit.category() == UnitType::NoType {
-						let unrounded_result = child_answer.value.ln();
-						let result = unrounded_result.quantize(unrounded_result * d128!(10));
+						let result = child_answer.value.ln();
 						Ok(Number::new(result, child_answer.unit))
 					} else {
 						Err("ln() only accepts UnitType::NoType".to_string())
@@ -157,7 +119,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				}
 				Exp => {
 					if child_answer.unit.category() == UnitType::NoType {
-						let result = child_answer.value.exp(child_answer.value);
+						let result = child_answer.value.exp();
 						Ok(Number::new(result, child_answer.unit))
 					} else {
 						Err("exp() only accepts UnitType::NoType".to_string())
@@ -165,35 +127,35 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				}
 				Round => {
 					// .quantize() rounds .5 to nearest even integer, so we correct that
-					let mut result = child_answer.value.quantize(d128!(1));
+					let mut result = child_answer.value.quantize(d!(1));
 					let rounding_change = result - child_answer.value;
 					// If the result was rounded down by 0.5, correct by +1
-					if rounding_change == d128!(-0.5) {
-						result += d128!(1);
+					if rounding_change == d!(-0.5) {
+						result += d!(1);
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Ceil => {
-					let mut result = child_answer.value.quantize(d128!(1));
+					let mut result = child_answer.value.quantize(d!(1));
 					let rounding_change = result - child_answer.value;
 					if rounding_change.is_negative() {
-						result += d128!(1);
+						result += d!(1);
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Floor => {
-					let mut result = child_answer.value.quantize(d128!(1));
+					let mut result = child_answer.value.quantize(d!(1));
 					let rounding_change = result - child_answer.value;
 					if !rounding_change.is_negative() {
-						result -= d128!(1);
+						result -= d!(1);
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Abs => {
 					let mut result = child_answer.value.abs();
 					let rounding_change = result - child_answer.value;
-					if rounding_change == d128!(-0.5) {
-						result += d128!(1);
+					if rounding_change == d!(-0.5) {
+						result += d!(1);
 					}
 					Ok(Number::new(result, child_answer.unit))
 				}
@@ -232,7 +194,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			let child_answer = evaluate_node(child_node)?;
 			match operator {
 				Percent => Ok(Number::new(
-					child_answer.value / d128!(100),
+					child_answer.value / d!(100),
 					child_answer.unit,
 				)),
 				Factorial => {
@@ -326,7 +288,7 @@ mod tests {
 		let result = eval(input, true, false).unwrap();
 		assert_eq!(result.unit, Unit::NoUnit);
 
-		result.get_simplified_value().to_string()
+		result.to_string()
 	}
 
 	#[test]
@@ -334,7 +296,7 @@ mod tests {
 		assert_eq!(eval_num("-2(-3)"), "6");
 		assert_eq!(eval_num("-2(3)"), "-6");
 		assert_eq!(eval_num("(3)-2"), "1");
-		assert_eq!(eval_default("-1km to m"), Number::new(d128!(-1000), Unit::Meter));
+		assert_eq!(eval_default("-1km to m"), Number::new(d!(-1000), Unit::Meter));
 		assert_eq!(eval_num("2*-3*0.5"), "-3");
 		assert_eq!(eval_num("-3^2"), "-9");
 		assert_eq!(eval_num("-1+2"), "1");
@@ -347,12 +309,14 @@ mod tests {
 		assert_eq!(eval_num("sqrt(25)"), "5");
 
 		assert_eq!(eval_num("log(100)"), "2");
-		assert_eq!(eval_num("log(2)"), "0.301029995663981195213738894724493");
+		assert_eq!(eval_num("log(2)"), "0.301029995663981195213738894724493026768");
 
 		assert_eq!(eval_num("ln(1)"), "0");
-		assert_eq!(eval_num("ln(2)"), "0.693147180559945309417232121458177");
+		assert_eq!(eval_num("ln(2)"), "0.69314718055994530941723212145817656808");
 		assert_eq!(eval_num("ln(e)"), "1");
 		assert_eq!(eval_num("ln(e^2)"), "2");
+
+		assert_eq!(eval_num("exp(1)"), "2.71828182845904523536028747135266249776");
 
 		assert_eq!(eval_num("round(1.4)"), "1");
 		assert_eq!(eval_num("round(1.6)"), "2");
@@ -367,7 +331,7 @@ mod tests {
 
 		assert_eq!(eval_num("abs(-3)"), "3");
 
-		assert_eq!(eval_num("sin(2)"), "0.9092974268256816953960198659117");
-		assert_eq!(eval_num("sin(-2)"), "-0.9092974268256816953960198659117");
+		assert_eq!(eval_num("sin(2)"), "0.9092974268256816953960198659117448427");
+		assert_eq!(eval_num("sin(-2)"), "-0.9092974268256816953960198659117448427");
 	}
 }

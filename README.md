@@ -11,9 +11,6 @@ It also lets you mix units, so for example `1 km - 1m` results in `999 Meter`.
 
 [List of all supported units](https://docs.rs/cpc/latest/cpc/units/enum.Unit.html)
 
-> [!TIP]
-> [fend](https://github.com/printfn/fend) is a great alternative to cpc
-
 ## CLI Installation
 Install using `cargo`:
 ```
@@ -25,26 +22,6 @@ To install it manually, grab the appropriate binary from the [GitHub Releases pa
 ## CLI Usage
 ```
 cpc '2h/3 to min'
-```
-
-## API Installation
-Add `cpc` as a dependency in `Cargo.toml`.
-
-## API Usage
-
-```rust
-use cpc::eval;
-use cpc::units::Unit;
-
-match eval("3m + 1cm", true, Unit::Celsius, false) {
-    Ok(answer) => {
-        // answer: Number { value: 301, unit: Unit::Centimeter }
-        println!("Evaluated value: {} {:?}", answer.value, answer.unit)
-    },
-    Err(e) => {
-        println!("{e}")
-    }
-}
 ```
 
 ## Examples
@@ -84,13 +61,28 @@ round(sqrt(2)^4)! liters
 - Speed
 - Temperature
 
+## API Installation
+Add `cpc` as a dependency in `Cargo.toml`.
+
+## API Usage
+
+```rust
+use cpc::eval;
+use cpc::units::Unit;
+
+match eval("3m + 1cm", true, Unit::Celsius, false) {
+    Ok(answer) => {
+        // answer: Number { value: 301, unit: Unit::Centimeter }
+        println!("Evaluated value: {} {:?}", answer.value, answer.unit)
+    },
+    Err(e) => {
+        println!("{e}")
+    }
+}
+```
+
 ## Accuracy
 cpc uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
-
-## Performance
-It's pretty fast and scales well. In my case, it usually runs in under 0.1ms. The biggest performance hit is functions like `log()`. `log(12345)` evaluates in 0.12ms, and `log(e)` in 0.25ms.
-
-To see how fast it is, you can pass the `--verbose` flag in CLI, or the `verbose` argument to `eval()`.
 
 ## Dev Instructions
 
@@ -165,9 +157,6 @@ match string {
 
 ### Potential Improvements
 - Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
-- Move to pure-rust decimal implementation
-  - `rust_decimal`: Only supports numbers up to ~1E+29
-  - `bigdecimal`: Lacking math functions
 - E notation, like 2E+10
 - Unit types
   - Currency: How to go about dynamically updating the weights?

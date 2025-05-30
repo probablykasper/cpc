@@ -1,6 +1,6 @@
 use std::iter::Peekable;
-use std::str::FromStr;
-use decimal::d128;
+use fastnum::decimal::Context;
+use fastnum::D128;
 use crate::Token;
 use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
 use crate::UnaryOperator::{Percent, Factorial};
@@ -98,14 +98,9 @@ fn parse_token(c: &str, lexer: &mut Lexer) -> Result<(), String> {
 					break;
 				}
 			}
-			d128::set_status(decimal::Status::empty());
-			match d128::from_str(&number_string) {
+			match D128::from_str(&number_string, Context::default()) {
 				Ok(number) => {
-					if d128::get_status().is_empty() {
-						tokens.push(Token::Number(number));
-					} else {
-						return Err(format!("Error lexing d128 number: {}", number_string));
-					}
+					tokens.push(Token::Number(number));
 				},
 				Err(_e) => {
 					return Err(format!("Error lexing d128 number: {}", number_string));
