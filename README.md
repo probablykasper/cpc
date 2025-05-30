@@ -11,7 +11,7 @@ It also lets you mix units, so for example `1 km - 1m` results in `999 Meter`.
 
 [List of all supported units](https://docs.rs/cpc/latest/cpc/units/enum.Unit.html)
 
-## ## [Web Interface](https://cpc.kasper.space)
+## [Web Interface](https://cpc.kasper.space)
 
 Try it out at [cpc.kasper.space](https://cpc.kasper.space)
 
