@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "wasm-pack": "^0.13.1"
+  }
+}
