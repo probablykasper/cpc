@@ -25,7 +25,7 @@
 use crate::units::Unit;
 use fastnum::{dec128 as d, D128};
 use std::fmt::{self, Display};
-use std::time::Instant;
+use web_time::Instant;
 
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
@@ -281,6 +281,21 @@ pub fn eval(
 			}
 		}
 		Err(e) => Err(format!("Lexing error: {}", e)),
+	}
+}
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn wasm_eval(expression: &str) -> String {
+	console_error_panic_hook::set_once();
+
+	let result = eval(expression, true, false);
+	match result {
+		Ok(result) => result.to_string(),
+		Err(e) => format!("Error: {e}"),
 	}
 }
 
