@@ -1,8 +1,10 @@
 # Changelog
 
 ## Next
-- Switch to the fastnum crate's d128
-- Fix exp function
+- Create a [website interface](https://cpc.kasper.space)
+- Add wasm version
+- Switch to the `fastnum` crate's d128
+- Fix `exp` function
 
 ## 2.0.0 - 2025 May 30
 - Remove the `degrees` keyword which referred to `celcius` by default
