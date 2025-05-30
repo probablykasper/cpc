@@ -111,8 +111,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				}
 				Ln => {
 					if child_answer.unit.category() == UnitType::NoType {
-						let unrounded_result = child_answer.value.ln();
-						let result = unrounded_result.quantize(unrounded_result * d!(10));
+						let result = child_answer.value.ln();
 						Ok(Number::new(result, child_answer.unit))
 					} else {
 						Err("ln() only accepts UnitType::NoType".to_string())
@@ -313,7 +312,7 @@ mod tests {
 		assert_eq!(eval_num("log(2)"), "0.301029995663981195213738894724493026768");
 
 		assert_eq!(eval_num("ln(1)"), "0");
-		assert_eq!(eval_num("ln(2)"), "0.6931471805599453094172321214581765681");
+		assert_eq!(eval_num("ln(2)"), "0.69314718055994530941723212145817656808");
 		assert_eq!(eval_num("ln(e)"), "1");
 		assert_eq!(eval_num("ln(e^2)"), "2");
 
