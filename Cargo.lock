@@ -51,9 +51,11 @@ version = "2.0.0"
 dependencies = [
  "console_error_panic_hook",
  "fastnum",
+ "js-sys",
  "regex",
  "unicode-segmentation",
  "wasm-bindgen",
+ "web-time",
 ]
 
 [[package]]
@@ -64,6 +66,16 @@ checksum = "86cde0c9334bfed5ced962bd7acc266e02e254d71494787e4255d8ec4f7296d4"
 dependencies = [
  "autocfg",
  "bnum",
+]
+
+[[package]]
+name = "js-sys"
+version = "0.3.77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1cfaf33c695fc6e08064efbc1f72ec937429614f25eef83af942d0e227c3a28f"
+dependencies = [
+ "once_cell",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -216,4 +228,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a05d73b933a847d6cccdda8f838a22ff101ad9bf93e33684f39c1f5f0eece3d"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "web-time"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
+dependencies = [
+ "js-sys",
+ "wasm-bindgen",
 ]
