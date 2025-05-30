@@ -18,9 +18,16 @@ categories = [
     "value-formatting",
 ]
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 fastnum = "0.2"
 unicode-segmentation = "1.12"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook = "0.1.7"
+wasm-bindgen = "0.2"
 
 [dev-dependencies]
 regex = "1.11"

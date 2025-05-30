@@ -284,6 +284,19 @@ pub fn eval(
 	}
 }
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn wasm_eval(expression: &str) -> String {
+	console_error_panic_hook::set_once();
+	
+	eval("1+1", true, true).unwrap().to_string();
+	// eval(expression, true, true).unwrap().to_string()
+	format!("TEST {expression}").to_string()
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
