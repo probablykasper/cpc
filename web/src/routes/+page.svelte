@@ -18,6 +18,11 @@
   let saved_queries: { id: number; in: string; out: string }[] = $state([]);
 </script>
 
+<svelte:head>
+  <title>cpc</title>
+  <meta name="description" content="Text calculator with support for units and conversion" />
+</svelte:head>
+
 <main class="w-full px-4 lg:px-8 text-base lg:text-lg">
   <nav class="flex items-center justify-between py-4 lg:py-6">
     <h1 class="text-3xl font-bold text-amber-600 dark:text-amber-400">
