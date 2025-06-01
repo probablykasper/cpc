@@ -1,16 +1,22 @@
 <script lang="ts">
   import { check_shortcut } from "$lib/helpers";
-  import { wasm_eval } from "cpc";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
+  // Has to be dynamically imported for prerendering to work
+  // https://github.com/sveltejs/svelte/issues/13155
+  const cpc_promise = import("cpc");
+  let cpc: typeof import("cpc") | undefined;
+  cpc_promise.then((mod) => {
+    cpc = mod;
+  });
 
   let input = $state("");
   let output = $derived.by(() => {
     try {
-      if (input.trim().length === 0) {
+      if (!cpc || input.trim().length === 0) {
         return "";
       }
-      return wasm_eval(input);
+      return cpc.wasm_eval(input);
     } catch (e) {
       return "";
     }
@@ -20,14 +26,15 @@
 
 <svelte:head>
   <title>cpc</title>
-  <meta name="description" content="Text calculator with support for units and conversion" />
+  <meta
+    name="description"
+    content="Text calculator with support for units and conversion"
+  />
 </svelte:head>
 
 <main class="w-full px-4 lg:px-8 text-base lg:text-lg">
   <nav class="flex items-center justify-between py-4 lg:py-6">
-    <h1 class="text-3xl font-bold text-amber-600 dark:text-amber-400">
-      cpc
-    </h1>
+    <h1 class="text-3xl font-bold text-amber-600 dark:text-amber-400">cpc</h1>
     <a
       href="https://github.com/probablykasper/cpc"
       aria-label="GitHub repository"
