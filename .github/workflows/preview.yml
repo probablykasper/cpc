@@ -1,4 +1,4 @@
-name: Deploy
+name: Preview
 on:
   push:
     branches-ignore:
