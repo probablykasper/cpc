@@ -1,4 +1,4 @@
-use fastnum::{dec128 as d, D128, D256};
+use fastnum::{dec128 as d, D128};
 use crate::Number;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -754,15 +754,6 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 	}
 }
 
-fn do_pow(left: D128, right: D128) -> D128 {
-	// Do pow with d256 for higher accuracy
-	let left = D256::try_from(left.transmute()).unwrap();
-	let right = D256::try_from(right.transmute()).unwrap();
-	let result = left.pow(right);
-	let result_d128: D128 = result.transmute();
-	result_d128
-}
-
 /// Returns a [`Number`] to the power of another [`Number`]
 /// 
 /// - If you take [`Length`] to the power of [`NoType`], the result has a unit of [`Area`].
@@ -770,20 +761,21 @@ fn do_pow(left: D128, right: D128) -> D128 {
 /// - If you take [`Length`] to the power of [`Area`], the result has a unit of [`Volume`]
 /// - etc.
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
+	// I tried converting `right` to use powi, but somehow that was slower
 	let lcat = left.unit.category();
 	let rcat = left.unit.category();
 	if left.unit == NoUnit && right.unit == NoUnit {
 		// 3 ^ 2
-		Ok(Number::new(do_pow(left.value, right.value), left.unit))
+		Ok(Number::new(left.value.pow(right.value), left.unit))
 	} else if right.value == d!(1) && right.unit == NoUnit {
 		Ok(left)
 	} else if lcat == Length && right.unit == NoUnit && right.value == d!(2) {
 		// x km ^ 2
-		let result = do_pow(left.value * left.unit.weight(), right.value);
+		let result = (left.value * left.unit.weight()).pow(right.value);
 		Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
 	} else if lcat == Length && right.unit == NoUnit && right.value == d!(3) {
 		// x km ^ 3
-		let result = do_pow(left.value * left.unit.weight(), right.value);
+		let result = (left.value * left.unit.weight()).pow(right.value);
 		Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
 	} else if lcat == Length && rcat == Length && right.value == d!(1) {
 		// x km ^ 1 km

@@ -299,6 +299,8 @@ mod tests {
 		assert_eq!(eval_default("-1km to m"), Number::new(d!(-1000), Unit::Meter));
 		assert_eq!(eval_num("2*-3*0.5"), "-3");
 		assert_eq!(eval_num("-3^2"), "-9");
+		assert_eq!(eval_num("e^2"), "7.3890560989306502272304274605750078132");
+		assert_eq!(eval_num("e^2.5"), "12.1824939607034734380701759511679661832");
 		assert_eq!(eval_num("-1+2"), "1");
 	}
 
