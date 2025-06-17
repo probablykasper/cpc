@@ -10,17 +10,19 @@
     cpc = mod;
   });
 
-  let input = $state("");
-  let output = $derived.by(() => {
+  function wasm_eval(input: string) {
+    if (!cpc || input.trim().length === 0) {
+      return "";
+    }
     try {
-      if (!cpc || input.trim().length === 0) {
-        return "";
-      }
       return cpc.wasm_eval(input);
     } catch (e) {
       return "";
     }
-  });
+  }
+
+  let input = $state("");
+  let output = $derived(wasm_eval(input));
   let saved_queries: { id: number; in: string; out: string }[] = $state([]);
 </script>
 
@@ -62,22 +64,18 @@
     type="text"
     class="border border-gray-500/50 w-full rounded-lg px-3 py-2 outline-none"
     bind:value={input}
-    onkeydown={(e) => {
+    onkeydown={async (e) => {
+      const input_el = e.currentTarget;
+      const input = e.currentTarget.value;
       if (check_shortcut(e, "Enter")) {
-        const input = e.currentTarget.value;
-        let out;
-        try {
-          out = wasm_eval(e.currentTarget.value);
-        } catch (e) {
-          out = "";
-        }
+        const out = wasm_eval(input)
         console.log(out);
         saved_queries.unshift({
           id: saved_queries.length,
           in: input,
           out,
         });
-        e.currentTarget.value = "";
+        input_el.value = "";
         output = "";
       }
     }}
