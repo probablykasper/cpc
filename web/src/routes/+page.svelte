@@ -60,6 +60,7 @@
       >
     </a>
   </nav>
+  <!-- svelte-ignore a11y_autofocus -->
   <input
     type="text"
     class="border border-gray-500/50 w-full rounded-lg px-3 py-2 outline-none"
@@ -80,6 +81,7 @@
       }
     }}
     placeholder="10km/h * 1 decade in light seconds"
+    autofocus
   />
   <div class="pt-1 leading-tight">
     <div class="px-3 py-2">
