@@ -21,6 +21,10 @@ pub enum UnitType {
 	DigitalStorage,
 	/// A unit of data rate transfer, for example [`KilobytesPerSecond`]
 	DataTransferRate,
+	/// A unit of computational work, for example [`KiloFLOP`]
+	ComputationalWork,
+	/// A unit of computational performance, for example [`KiloFLOPPerSecond`]
+	ComputationalPerformance,
 	/// A unit of energy, for example [`Joule`] or [`KilowattHour`]
 	Energy,
 	/// A unit of power, for example [`Watt`]
@@ -238,6 +242,30 @@ create_units!(
 	ExbibytesPerSecond:   (DataTransferRate, d!(9223372036854775808), "exbibyte per second", "exbibytes per second"),
 	ZebibytesPerSecond:   (DataTransferRate, d!(9444732965739290427392), "zebibyte per second", "zebibytes per second"),
 	YobibytesPerSecond:   (DataTransferRate, d!(9671406556917033397649408), "yobibyte per second", "yobibytes per second"),
+
+	FLOP:                 (ComputationalWork, d!(1), "FLOP", "FLOP"),
+	KiloFLOP:             (ComputationalWork, d!(1000), "kiloFLOP", "kiloFLOP"),
+	MegaFLOP:             (ComputationalWork, d!(1000000), "megaFLOP", "megaFLOP"),
+	GigaFLOP:             (ComputationalWork, d!(1000000000), "gigaFLOP", "gigaFLOP"),
+	TeraFLOP:             (ComputationalWork, d!(1000000000000), "teraFLOP", "teraFLOP"),
+	PetaFLOP:             (ComputationalWork, d!(1000000000000000), "petaFLOP", "petaFLOP"),
+	ExaFLOP:              (ComputationalWork, d!(1000000000000000000), "exaFLOP", "exaFLOP"),
+	ZettaFLOP:            (ComputationalWork, d!(1000000000000000000000), "zettaFLOP", "zettaFLOP"),
+	YottaFLOP:            (ComputationalWork, d!(1000000000000000000000000), "yottaFLOP", "yottaFLOP"),
+	RonnaFLOP:            (ComputationalWork, d!(1000000000000000000000000000), "ronnaFLOP", "ronnaFLOP"),
+	QuettaFLOP:           (ComputationalWork, d!(1000000000000000000000000000000), "quettaFLOP", "quettaFLOP"),
+
+	FLOPPerSecond:        (ComputationalPerformance, d!(1), "FLOP per second", "FLOP per second"),
+	KiloFLOPPerSecond:    (ComputationalPerformance, d!(1000), "kiloFLOP per second", "kiloFLOP per second"),
+	MegaFLOPPerSecond:    (ComputationalPerformance, d!(1000000), "megaFLOP per second", "megaFLOP per second"),
+	GigaFLOPPerSecond:    (ComputationalPerformance, d!(1000000000), "gigaFLOP per second", "gigaFLOP per second"),
+	TeraFLOPPerSecond:    (ComputationalPerformance, d!(1000000000000), "teraFLOP per second", "teraFLOP per second"),
+	PetaFLOPPerSecond:    (ComputationalPerformance, d!(1000000000000000), "petaFLOP per second", "petaFLOP per second"),
+	ExaFLOPPerSecond:     (ComputationalPerformance, d!(1000000000000000000), "exaFLOP per second", "exaFLOP per second"),
+	ZettaFLOPPerSecond:   (ComputationalPerformance, d!(1000000000000000000000), "zettaFLOP per second", "zettaFLOP per second"),
+	YottaFLOPPerSecond:   (ComputationalPerformance, d!(1000000000000000000000000), "yottaFLOP per second", "yottaFLOP per second"),
+	RonnaFLOPPerSecond:   (ComputationalPerformance, d!(1000000000000000000000000000), "ronnaFLOP per second", "ronnaFLOP per second"),
+	QuettaFLOPPerSecond:  (ComputationalPerformance, d!(1000000000000000000000000000000), "quettaFLOP per second", "quettaFLOP per second"),
 
 	Millijoule:         (Energy, d!(0.001), "millijoule", "millijoules"),
 	Joule:              (Energy, d!(1), "joule", "joules"),
@@ -628,6 +656,27 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 		};
 		let data_storage = Number::new(result, Bit);
 		Ok(convert(data_storage, final_unit)?)
+	} else if lcat == ComputationalPerformance && rcat == Time {
+		// 8 megaFLOP per second * 1 minute
+		let compute_perf_value = left.value * left.unit.weight();
+		let seconds = convert(right, Second)?;
+		let result = compute_perf_value * seconds.value;
+		let final_unit = match left.unit {
+			FLOPPerSecond => FLOP,
+			KiloFLOPPerSecond => KiloFLOP,
+			MegaFLOPPerSecond => MegaFLOP,
+			GigaFLOPPerSecond => GigaFLOP,
+			TeraFLOPPerSecond => TeraFLOP,
+			PetaFLOPPerSecond => PetaFLOP,
+			ExaFLOPPerSecond => ExaFLOP,
+			ZettaFLOPPerSecond => ZettaFLOP,
+			YottaFLOPPerSecond => YottaFLOP,
+			RonnaFLOPPerSecond => RonnaFLOP,
+			QuettaFLOPPerSecond => QuettaFLOP,
+			_ => FLOP,
+		};
+		let compute_work = Number::new(result, FLOP);
+		Ok(convert(compute_work, final_unit)?)
 	} else if lcat == Voltage && rcat == ElectricCurrent {
 		// 1 volt * 1 ampere = 1 watt
 		let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
@@ -711,6 +760,12 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 		let bits = convert(left, Bit)?;
 		let bits_per_second = convert(right, BitsPerSecond)?;
 		let seconds = Number::new(bits.value / bits_per_second.value, Second);
+		Ok(to_ideal_unit(seconds))
+	} else if lcat == ComputationalWork && rcat == ComputationalPerformance {
+		// 1 kiloFLOP / 1 FLOP per second
+		let flop = convert(left, FLOP)?;
+		let flop_per_second = convert(right, FLOPPerSecond)?;
+		let seconds = Number::new(flop.value / flop_per_second.value, Second);
 		Ok(to_ideal_unit(seconds))
 	} else if lcat == Power && rcat == ElectricCurrent {
 		// 1 watt / 1 ampere = 1 volt
@@ -957,6 +1012,28 @@ use super::*;
 		assert_float_eq!(convert_test(1024.0, PebibytesPerSecond, ExbibytesPerSecond), 1.0);
 		assert_float_eq!(convert_test(1024.0, ExbibytesPerSecond, ZebibytesPerSecond), 1.0);
 		assert_float_eq!(convert_test(1024.0, ZebibytesPerSecond, YobibytesPerSecond), 1.0);
+
+		assert_float_eq!(convert_test(1000.0, FLOP, KiloFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, KiloFLOP, MegaFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, MegaFLOP, GigaFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, GigaFLOP, TeraFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, TeraFLOP, PetaFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, PetaFLOP, ExaFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, ExaFLOP, ZettaFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, ZettaFLOP, YottaFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, YottaFLOP, RonnaFLOP), 1.0);
+		assert_float_eq!(convert_test(1000.0, RonnaFLOP, QuettaFLOP), 1.0);
+
+		assert_float_eq!(convert_test(1000.0, FLOPPerSecond, KiloFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, KiloFLOPPerSecond, MegaFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, MegaFLOPPerSecond, GigaFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, GigaFLOPPerSecond, TeraFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, TeraFLOPPerSecond, PetaFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, PetaFLOPPerSecond, ExaFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, ExaFLOPPerSecond, ZettaFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, ZettaFLOPPerSecond, YottaFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, YottaFLOPPerSecond, RonnaFLOPPerSecond), 1.0);
+		assert_float_eq!(convert_test(1000.0, RonnaFLOPPerSecond, QuettaFLOPPerSecond), 1.0);
 
 		assert_float_eq!(convert_test(1000.0, Millijoule, Joule), 1.0);
 		assert_float_eq!(convert_test(1000.0, Joule, Kilojoule), 1.0);
