@@ -7,7 +7,7 @@ use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::TextOperator::{Of, To};
 use crate::UnaryOperator::{Factorial, Percent};
 use crate::{Number, Token};
-use fastnum::{dec128 as d, D128};
+use fastnum::{dec128 as d, decimal::RoundingMode, D128};
 
 /// Evaluate an [`AstNode`] into a [`Number`]
 pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
@@ -26,32 +26,23 @@ pub fn factorial(input: D128) -> D128 {
 
 /// Returns the square root of a [`struct@d128`]
 pub fn sqrt(input: D128) -> D128 {
-	let mut n = d!(1);
-	let half = d!(0.5);
-	for _ in 0..10 {
-		n = (n + input / n) * half;
-	}
-	n
+	input.sqrt()
 }
 
 /// Returns the cube root of a [`struct@d128`]
 pub fn cbrt(input: D128) -> D128 {
-	let mut n: D128 = input;
-	// hope that 20 iterations makes it accurate enough
-	let three = d!(3);
-	for _ in 0..20 {
-		let z2 = n * n;
-		n = n - ((n * z2 - input) / (three * z2));
-	}
-	n
+	input.cbrt()
 }
 
 /// Returns the sine of a [`struct@d128`]
 pub fn sin(input: D128) -> D128 {
-	let result =input.sin();
-	match result.is_zero() {
-		true => D128::ZERO,
-		false => result,
+	let result = input.sin();
+	// D128::PI is a finite-precision approximation of pi, so sin(pi) lands a few
+	// ulp away from zero rather than exactly zero. Snap sub-precision residue to 0.
+	if result.abs() < d!(1E-30) {
+		D128::ZERO
+	} else {
+		result
 	}
 }
 
@@ -126,37 +117,23 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 					}
 				}
 				Round => {
-					// .quantize() rounds .5 to nearest even integer, so we correct that
-					let mut result = child_answer.value.quantize(d!(1));
-					let rounding_change = result - child_answer.value;
-					// If the result was rounded down by 0.5, correct by +1
-					if rounding_change == d!(-0.5) {
-						result += d!(1);
-					}
+					// Round half away from zero (HalfUp) so round(2.5) == 3, not 2.
+					let result = child_answer
+						.value
+						.with_rounding_mode(RoundingMode::HalfUp)
+						.round(0);
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Ceil => {
-					let mut result = child_answer.value.quantize(d!(1));
-					let rounding_change = result - child_answer.value;
-					if rounding_change.is_negative() {
-						result += d!(1);
-					}
+					let result = child_answer.value.ceil();
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Floor => {
-					let mut result = child_answer.value.quantize(d!(1));
-					let rounding_change = result - child_answer.value;
-					if !rounding_change.is_negative() {
-						result -= d!(1);
-					}
+					let result = child_answer.value.floor();
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Abs => {
-					let mut result = child_answer.value.abs();
-					let rounding_change = result - child_answer.value;
-					if rounding_change == d!(-0.5) {
-						result += d!(1);
-					}
+					let result = child_answer.value.abs();
 					Ok(Number::new(result, child_answer.unit))
 				}
 				Sin => {

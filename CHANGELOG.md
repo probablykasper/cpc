@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+- Upgrade the `fastnum` dependency from `0.2` to `0.7.5`
+- Use fastnum's native `sqrt()` and `cbrt()` instead of hand-rolled Newton/Heron iterations, giving fully-precise roots (e.g. `sqrt(2)` now returns all 38 significant digits)
+- Use fastnum's native `floor()`/`ceil()` and explicit `HalfUp` rounding for `round()`, replacing the manual `quantize()` correction logic
+- Set the minimum supported Rust version to 1.94 (required by fastnum 0.7.5)
+
 ## 3.0.0 - 2025 May 30
 - Create a [website interface](https://cpc.kasper.space)
 - Add wasm version

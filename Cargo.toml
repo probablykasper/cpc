@@ -6,6 +6,7 @@ authors = ["Kasper Henningsen"]
 edition = "2024"
 readme = "README.md"
 license = "MIT"
+rust-version = "1.94"
 homepage = "https://github.com/probablykasper/cpc#readme"
 repository = "https://github.com/probablykasper/cpc"
 documentation = "https://docs.rs/cpc"
@@ -22,8 +23,8 @@ categories = [
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-fastnum = "0.2"
-unicode-segmentation = "1.12"
+fastnum = "0.7"
+unicode-segmentation = "1.13"
 web-time = "1.1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

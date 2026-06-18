@@ -74,7 +74,7 @@ Add `cpc` as a dependency in `Cargo.toml`.
 use cpc::eval;
 use cpc::units::Unit;
 
-match eval("3m + 1cm", true, Unit::Celsius, false) {
+match eval("3m + 1cm", true, false) {
     Ok(answer) => {
         // answer: Number { value: 301, unit: Unit::Centimeter }
         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
@@ -133,13 +133,13 @@ pub enum UnitType {
 // ...
 
 create_units!(
-  Nanosecond:         (Time, d128!(1)),
-  Microsecond:        (Time, d128!(1000)),
+  Nanosecond:         (Time, d!(1), "nanosecond", "nanoseconds"),
+  Microsecond:        (Time, d!(1000), "microsecond", "microseconds"),
   // etc
 )
 ```
 
-The number associated with a unit is it's "weight". For example, if a second's weight is `1`, then a minute's weight is `60`.
+Each unit is declared as `Variant: (UnitType, weight, "singular", "plural")`. `d!` is the `fastnum` `dec128!` macro (imported as `d`). The weight is the conversion factor within a `UnitType`. For example, if a second's weight is `1`, then a minute's weight is `60`.
 
 #### 2. Add a test for the unit
 Make sure to also add a test for each unit. The tests look like this:
