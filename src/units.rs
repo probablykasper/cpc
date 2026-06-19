@@ -22,9 +22,9 @@ pub enum UnitType {
 	/// A unit of data rate transfer, for example [`KilobytesPerSecond`]
 	DataTransferRate,
 	/// A unit of computational work, for example [`KiloFLOP`]
-	ComputationalWork,
+	FlopWork,
 	/// A unit of computational performance, for example [`KiloFLOPPerSecond`]
-	ComputationalPerformance,
+	FlopRate,
 	/// A unit of energy, for example [`Joule`] or [`KilowattHour`]
 	Energy,
 	/// A unit of power, for example [`Watt`]
@@ -243,29 +243,29 @@ create_units!(
 	ZebibytesPerSecond:   (DataTransferRate, d!(9444732965739290427392), "zebibyte per second", "zebibytes per second"),
 	YobibytesPerSecond:   (DataTransferRate, d!(9671406556917033397649408), "yobibyte per second", "yobibytes per second"),
 
-	FLOP:                 (ComputationalWork, d!(1), "FLOP", "FLOP"),
-	KiloFLOP:             (ComputationalWork, d!(1000), "kiloFLOP", "kiloFLOP"),
-	MegaFLOP:             (ComputationalWork, d!(1000000), "megaFLOP", "megaFLOP"),
-	GigaFLOP:             (ComputationalWork, d!(1000000000), "gigaFLOP", "gigaFLOP"),
-	TeraFLOP:             (ComputationalWork, d!(1000000000000), "teraFLOP", "teraFLOP"),
-	PetaFLOP:             (ComputationalWork, d!(1000000000000000), "petaFLOP", "petaFLOP"),
-	ExaFLOP:              (ComputationalWork, d!(1000000000000000000), "exaFLOP", "exaFLOP"),
-	ZettaFLOP:            (ComputationalWork, d!(1000000000000000000000), "zettaFLOP", "zettaFLOP"),
-	YottaFLOP:            (ComputationalWork, d!(1000000000000000000000000), "yottaFLOP", "yottaFLOP"),
-	RonnaFLOP:            (ComputationalWork, d!(1000000000000000000000000000), "ronnaFLOP", "ronnaFLOP"),
-	QuettaFLOP:           (ComputationalWork, d!(1000000000000000000000000000000), "quettaFLOP", "quettaFLOP"),
+	FLOP:                 (FlopWork, d!(1), "FLOP", "FLOP"),
+	KiloFLOP:             (FlopWork, d!(1000), "kiloFLOP", "kiloFLOP"),
+	MegaFLOP:             (FlopWork, d!(1000000), "megaFLOP", "megaFLOP"),
+	GigaFLOP:             (FlopWork, d!(1000000000), "gigaFLOP", "gigaFLOP"),
+	TeraFLOP:             (FlopWork, d!(1000000000000), "teraFLOP", "teraFLOP"),
+	PetaFLOP:             (FlopWork, d!(1000000000000000), "petaFLOP", "petaFLOP"),
+	ExaFLOP:              (FlopWork, d!(1000000000000000000), "exaFLOP", "exaFLOP"),
+	ZettaFLOP:            (FlopWork, d!(1000000000000000000000), "zettaFLOP", "zettaFLOP"),
+	YottaFLOP:            (FlopWork, d!(1000000000000000000000000), "yottaFLOP", "yottaFLOP"),
+	RonnaFLOP:            (FlopWork, d!(1000000000000000000000000000), "ronnaFLOP", "ronnaFLOP"),
+	QuettaFLOP:           (FlopWork, d!(1000000000000000000000000000000), "quettaFLOP", "quettaFLOP"),
 
-	FLOPPerSecond:        (ComputationalPerformance, d!(1), "FLOP per second", "FLOP per second"),
-	KiloFLOPPerSecond:    (ComputationalPerformance, d!(1000), "kiloFLOP per second", "kiloFLOP per second"),
-	MegaFLOPPerSecond:    (ComputationalPerformance, d!(1000000), "megaFLOP per second", "megaFLOP per second"),
-	GigaFLOPPerSecond:    (ComputationalPerformance, d!(1000000000), "gigaFLOP per second", "gigaFLOP per second"),
-	TeraFLOPPerSecond:    (ComputationalPerformance, d!(1000000000000), "teraFLOP per second", "teraFLOP per second"),
-	PetaFLOPPerSecond:    (ComputationalPerformance, d!(1000000000000000), "petaFLOP per second", "petaFLOP per second"),
-	ExaFLOPPerSecond:     (ComputationalPerformance, d!(1000000000000000000), "exaFLOP per second", "exaFLOP per second"),
-	ZettaFLOPPerSecond:   (ComputationalPerformance, d!(1000000000000000000000), "zettaFLOP per second", "zettaFLOP per second"),
-	YottaFLOPPerSecond:   (ComputationalPerformance, d!(1000000000000000000000000), "yottaFLOP per second", "yottaFLOP per second"),
-	RonnaFLOPPerSecond:   (ComputationalPerformance, d!(1000000000000000000000000000), "ronnaFLOP per second", "ronnaFLOP per second"),
-	QuettaFLOPPerSecond:  (ComputationalPerformance, d!(1000000000000000000000000000000), "quettaFLOP per second", "quettaFLOP per second"),
+	FLOPPerSecond:        (FlopRate, d!(1), "FLOP per second", "FLOP per second"),
+	KiloFLOPPerSecond:    (FlopRate, d!(1000), "kiloFLOP per second", "kiloFLOP per second"),
+	MegaFLOPPerSecond:    (FlopRate, d!(1000000), "megaFLOP per second", "megaFLOP per second"),
+	GigaFLOPPerSecond:    (FlopRate, d!(1000000000), "gigaFLOP per second", "gigaFLOP per second"),
+	TeraFLOPPerSecond:    (FlopRate, d!(1000000000000), "teraFLOP per second", "teraFLOP per second"),
+	PetaFLOPPerSecond:    (FlopRate, d!(1000000000000000), "petaFLOP per second", "petaFLOP per second"),
+	ExaFLOPPerSecond:     (FlopRate, d!(1000000000000000000), "exaFLOP per second", "exaFLOP per second"),
+	ZettaFLOPPerSecond:   (FlopRate, d!(1000000000000000000000), "zettaFLOP per second", "zettaFLOP per second"),
+	YottaFLOPPerSecond:   (FlopRate, d!(1000000000000000000000000), "yottaFLOP per second", "yottaFLOP per second"),
+	RonnaFLOPPerSecond:   (FlopRate, d!(1000000000000000000000000000), "ronnaFLOP per second", "ronnaFLOP per second"),
+	QuettaFLOPPerSecond:  (FlopRate, d!(1000000000000000000000000000000), "quettaFLOP per second", "quettaFLOP per second"),
 
 	Millijoule:         (Energy, d!(0.001), "millijoule", "millijoules"),
 	Joule:              (Energy, d!(1), "joule", "joules"),
@@ -656,7 +656,7 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 		};
 		let data_storage = Number::new(result, Bit);
 		Ok(convert(data_storage, final_unit)?)
-	} else if lcat == ComputationalPerformance && rcat == Time {
+	} else if lcat == FlopRate && rcat == Time {
 		// 8 megaFLOP per second * 1 minute
 		let compute_perf_value = left.value * left.unit.weight();
 		let seconds = convert(right, Second)?;
@@ -761,7 +761,7 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 		let bits_per_second = convert(right, BitsPerSecond)?;
 		let seconds = Number::new(bits.value / bits_per_second.value, Second);
 		Ok(to_ideal_unit(seconds))
-	} else if lcat == ComputationalWork && rcat == ComputationalPerformance {
+	} else if lcat == FlopWork && rcat == FlopRate {
 		// 1 kiloFLOP / 1 FLOP per second
 		let flop = convert(left, FLOP)?;
 		let flop_per_second = convert(right, FLOPPerSecond)?;
