@@ -22,7 +22,7 @@ pub enum UnitType {
 	/// A unit of data rate transfer, for example [`KilobytesPerSecond`]
 	DataTransferRate,
 	/// A unit of computational work, for example [`KiloFLOP`]
-	FlopWork,
+	FlopCount,
 	/// A unit of computational performance, for example [`KiloFLOPPerSecond`]
 	FlopRate,
 	/// A unit of energy, for example [`Joule`] or [`KilowattHour`]
@@ -243,17 +243,17 @@ create_units!(
 	ZebibytesPerSecond:   (DataTransferRate, d!(9444732965739290427392), "zebibyte per second", "zebibytes per second"),
 	YobibytesPerSecond:   (DataTransferRate, d!(9671406556917033397649408), "yobibyte per second", "yobibytes per second"),
 
-	Flop:                 (FlopWork, d!(1), "FLOP", "FLOP"),
-	KiloFlop:             (FlopWork, d!(1000), "kiloFLOP", "kiloFLOP"),
-	MegaFlop:             (FlopWork, d!(1000000), "megaFLOP", "megaFLOP"),
-	GigaFlop:             (FlopWork, d!(1000000000), "gigaFLOP", "gigaFLOP"),
-	TeraFlop:             (FlopWork, d!(1000000000000), "teraFLOP", "teraFLOP"),
-	PetaFlop:             (FlopWork, d!(1000000000000000), "petaFLOP", "petaFLOP"),
-	ExaFlop:              (FlopWork, d!(1000000000000000000), "exaFLOP", "exaFLOP"),
-	ZettaFlop:            (FlopWork, d!(1000000000000000000000), "zettaFLOP", "zettaFLOP"),
-	YottaFlop:            (FlopWork, d!(1000000000000000000000000), "yottaFLOP", "yottaFLOP"),
-	RonnaFlop:            (FlopWork, d!(1000000000000000000000000000), "ronnaFLOP", "ronnaFLOP"),
-	QuettaFlop:           (FlopWork, d!(1000000000000000000000000000000), "quettaFLOP", "quettaFLOP"),
+	Flop:                 (FlopCount, d!(1), "FLOP", "FLOP"),
+	KiloFlop:             (FlopCount, d!(1000), "kiloFLOP", "kiloFLOP"),
+	MegaFlop:             (FlopCount, d!(1000000), "megaFLOP", "megaFLOP"),
+	GigaFlop:             (FlopCount, d!(1000000000), "gigaFLOP", "gigaFLOP"),
+	TeraFlop:             (FlopCount, d!(1000000000000), "teraFLOP", "teraFLOP"),
+	PetaFlop:             (FlopCount, d!(1000000000000000), "petaFLOP", "petaFLOP"),
+	ExaFlop:              (FlopCount, d!(1000000000000000000), "exaFLOP", "exaFLOP"),
+	ZettaFlop:            (FlopCount, d!(1000000000000000000000), "zettaFLOP", "zettaFLOP"),
+	YottaFlop:            (FlopCount, d!(1000000000000000000000000), "yottaFLOP", "yottaFLOP"),
+	RonnaFlop:            (FlopCount, d!(1000000000000000000000000000), "ronnaFLOP", "ronnaFLOP"),
+	QuettaFlop:           (FlopCount, d!(1000000000000000000000000000000), "quettaFLOP", "quettaFLOP"),
 
 	FlopPerSecond:        (FlopRate, d!(1), "FLOP per second", "FLOP per second"),
 	KiloFlopPerSecond:    (FlopRate, d!(1000), "kiloFLOP per second", "kiloFLOP per second"),
@@ -762,7 +762,7 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 		let bits_per_second = convert(right, BitsPerSecond)?;
 		let seconds = Number::new(bits.value / bits_per_second.value, Second);
 		Ok(to_ideal_unit(seconds))
-	} else if lcat == FlopWork && rcat == FlopRate {
+	} else if lcat == FlopCount && rcat == FlopRate {
 		// 1 kiloFLOP / 1 FLOP per second
 		let flop = convert(left, FLOP)?;
 		let flop_per_second = convert(right, FLOPPerSecond)?;
