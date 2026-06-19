@@ -22,8 +22,8 @@ categories = [
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-fastnum = "0.2"
-unicode-segmentation = "1.12"
+fastnum = "0.7"
+unicode-segmentation = "1.13"
 web-time = "1.1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

@@ -74,7 +74,7 @@ Add `cpc` as a dependency in `Cargo.toml`.
 use cpc::eval;
 use cpc::units::Unit;
 
-match eval("3m + 1cm", true, Unit::Celsius, false) {
+match eval("3m + 1cm", true, false) {
     Ok(answer) => {
         // answer: Number { value: 301, unit: Unit::Centimeter }
         println!("Evaluated value: {} {:?}", answer.value, answer.unit)
@@ -133,8 +133,8 @@ pub enum UnitType {
 // ...
 
 create_units!(
-  Nanosecond:         (Time, d128!(1)),
-  Microsecond:        (Time, d128!(1000)),
+  Nanosecond:         (Time, d!(1), "nanosecond", "nanoseconds"),
+  Microsecond:        (Time, d!(1000), "microsecond", "microseconds"),
   // etc
 )
 ```
