@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Update `fastnum` dependency
+
 ## 3.0.0 - 2025 May 30
 - Create a [website interface](https://cpc.kasper.space)
 - Add wasm version
