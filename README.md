@@ -49,21 +49,22 @@ round(sqrt(2)^4)! liters
 
 ## Supported unit types
 - Normal numbers
-- Time
-- Length
 - Area
-- Volume
-- Mass
 - Digital storage (bytes etc)
-- Energy
-- Power
 - Electric current
-- Resistance
-- Voltage
-- Pressure
+- Energy
+- FLOPS
 - Frequency
+- Length
+- Mass
+- Power
+- Pressure
+- Resistance
 - Speed
 - Temperature
+- Time
+- Voltage
+- Volume
 
 ## API Installation
 Add `cpc` as a dependency in `Cargo.toml`.
