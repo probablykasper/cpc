@@ -103,7 +103,7 @@ create_units!(
 	Year:               (Time, d!(31556952000000000), "year", "years"),
 	Decade:             (Time, d!(315569520000000000), "decade", "decades"),
 	Century:            (Time, d!(3155695200000000000), "century", "centuries"),
-	Millenium:          (Time, d!(31556952000000000000), "millenium", "millenia"),
+	Millennium:          (Time, d!(31556952000000000000), "millennium", "millennia"),
 
 	Millimeter:         (Length, d!(1), "millimeter", "millimeters"),
 	Centimeter:         (Length, d!(10), "centimeter", "centimeters"),
@@ -131,7 +131,7 @@ create_units!(
 	SquareMile:         (Area, d!(2589988110336.00), "square mile", "square miles"),
 	// 2-dimensional only
 	Are:                (Area, d!(100000000), "are", "ares"),
-	Decare:             (Area, d!(1000000000), "decare", "decare"),
+	Decare:             (Area, d!(1000000000), "decare", "decares"),
 	Hectare:            (Area, d!(10000000000), "hectare", "hectares"),
 	Acre:               (Area, d!(4046856422.40), "acre", "acres"),
 
@@ -834,7 +834,7 @@ use super::*;
 		assert_float_eq!(convert_test(4.0, Quarter, Year), 1.0);
 		assert_float_eq!(convert_test(10.0, Year, Decade), 1.0);
 		assert_float_eq!(convert_test(10.0, Decade, Century), 1.0);
-		assert_float_eq!(convert_test(10.0, Century, Millenium), 1.0);
+		assert_float_eq!(convert_test(10.0, Century, Millennium), 1.0);
 
 		assert_float_eq!(convert_test(10.0, Millimeter, Centimeter), 1.0);
 		assert_float_eq!(convert_test(10.0, Centimeter, Decimeter), 1.0);

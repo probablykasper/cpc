@@ -2,6 +2,8 @@
 
 ## Next
 - Update `fastnum` dependency
+- Fix unit spellings
+- Fix spelling of `decares`
 
 ## 3.0.0 - 2025 May 30
 - Create a [website interface](https://cpc.kasper.space)

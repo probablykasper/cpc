@@ -222,7 +222,7 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"yr" | "yrs" | "year" | "years" => Token::Unit(Year),
 		"decade" | "decades" => Token::Unit(Decade),
 		"century" | "centuries" => Token::Unit(Century),
-		"millenium" | "millenia" | "milleniums" => Token::Unit(Millenium),
+		"millenium" | "millenia" | "milleniums" => Token::Unit(Millennium),
 
 		"mm" | "millimeter" | "millimeters" | "millimetre" | "millimetres" => Token::Unit(Millimeter),
 		"cm" | "centimeter" | "centimeters" | "centimetre" | "centimetres" => Token::Unit(Centimeter),
