@@ -107,7 +107,7 @@ create_units!(
 	Year:               (Time, d!(31556952000000000), "year", "years"),
 	Decade:             (Time, d!(315569520000000000), "decade", "decades"),
 	Century:            (Time, d!(3155695200000000000), "century", "centuries"),
-	Millenium:          (Time, d!(31556952000000000000), "millenium", "millenia"),
+	Millennium:          (Time, d!(31556952000000000000), "millennium", "millennia"),
 
 	Millimeter:         (Length, d!(1), "millimeter", "millimeters"),
 	Centimeter:         (Length, d!(10), "centimeter", "centimeters"),
@@ -135,7 +135,7 @@ create_units!(
 	SquareMile:         (Area, d!(2589988110336.00), "square mile", "square miles"),
 	// 2-dimensional only
 	Are:                (Area, d!(100000000), "are", "ares"),
-	Decare:             (Area, d!(1000000000), "decare", "decare"),
+	Decare:             (Area, d!(1000000000), "decare", "decares"),
 	Hectare:            (Area, d!(10000000000), "hectare", "hectares"),
 	Acre:               (Area, d!(4046856422.40), "acre", "acres"),
 
@@ -292,9 +292,9 @@ create_units!(
 	Terawatt:                     (Power, d!(1000000000000), "terawatt", "terawatts"),
 	Petawatt:                     (Power, d!(1000000000000000), "petawatt", "petawatts"),
 	// probably inexact:
-	BritishThermalUnitsPerMinute: (Power, d!(0.0568690272188), "british thermal unit per minute", "british thermal units per minute"),
+	BritishThermalUnitsPerMinute: (Power, d!(3.412141633128), "british thermal unit per minute", "british thermal units per minute"),
 	// probably inexact:
-	BritishThermalUnitsPerHour:   (Power, d!(3.412141633128), "british thermal unit per hour", "british thermal units per hour"),
+	BritishThermalUnitsPerHour:   (Power, d!(0.0568690272188), "british thermal unit per hour", "british thermal units per hour"),
 	// exact according to wikipedia:
 	Horsepower:                   (Power, d!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d!(735.49875), "metric horsepower", "metric horsepower"),
@@ -320,7 +320,8 @@ create_units!(
 	InchOfMercury:                (Pressure, d!(3386.389), "inch of mercury", "inches of mercury"),
 	// inexact:
 	PoundsPerSquareInch:          (Pressure, d!(6894.757293168361), "pound per square inch", "pounds per square inch"),
-	Torr:                         (Pressure, d!(162.12), "torr", "torr"),
+	// inexact:
+	Torr:                         (Pressure, d!(133.3223684210526), "torr", "torr"),
 
 	Hertz:                        (Frequency, d!(1), "hertz", "hertz"),
 	Kilohertz:                    (Frequency, d!(1000), "kilohertz", "kilohertz"),
@@ -889,7 +890,7 @@ use super::*;
 		assert_float_eq!(convert_test(4.0, Quarter, Year), 1.0);
 		assert_float_eq!(convert_test(10.0, Year, Decade), 1.0);
 		assert_float_eq!(convert_test(10.0, Decade, Century), 1.0);
-		assert_float_eq!(convert_test(10.0, Century, Millenium), 1.0);
+		assert_float_eq!(convert_test(10.0, Century, Millennium), 1.0);
 
 		assert_float_eq!(convert_test(10.0, Millimeter, Centimeter), 1.0);
 		assert_float_eq!(convert_test(10.0, Centimeter, Decimeter), 1.0);
