@@ -139,7 +139,7 @@ create_units!(
 )
 ```
 
-Each unit is declared as `Variant: (UnitType, weight, "singular", "plural")`. `d!` is the `fastnum` `dec128!` macro (imported as `d`). The weight is the conversion factor within a `UnitType`. For example, if a second's weight is `1`, then a minute's weight is `60`.
+The number associated with a unit is it's "weight". For example, if a second's weight is `1`, then a minute's weight is `60`.
 
 #### 2. Add a test for the unit
 Make sure to also add a test for each unit. The tests look like this:

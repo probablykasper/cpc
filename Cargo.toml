@@ -6,7 +6,6 @@ authors = ["Kasper Henningsen"]
 edition = "2024"
 readme = "README.md"
 license = "MIT"
-rust-version = "1.94"
 homepage = "https://github.com/probablykasper/cpc#readme"
 repository = "https://github.com/probablykasper/cpc"
 documentation = "https://docs.rs/cpc"
