@@ -428,29 +428,29 @@ fn parse_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"zbps" => Token::Unit(ZettabitsPerSecond),
 		"ybps" => Token::Unit(YottabitsPerSecond),
 
-		"flop" => Token::Unit(FLOP),
-		"kflop" | "kiloflop" => Token::Unit(KiloFLOP),
-		"mflop" | "megaflop" => Token::Unit(MegaFLOP),
-		"gflop" | "gigaflop" => Token::Unit(GigaFLOP),
-		"tflop" | "teraflop" => Token::Unit(TeraFLOP),
-		"pflop" | "petaflop" => Token::Unit(PetaFLOP),
-		"eflop" | "exaflop" => Token::Unit(ExaFLOP),
-		"zflop" | "zettaflop" => Token::Unit(ZettaFLOP),
-		"yflop" | "yottaflop" => Token::Unit(YottaFLOP),
-		"rflop" | "ronnaflop" => Token::Unit(RonnaFLOP),
-		"qflop" | "quettaflop" => Token::Unit(QuettaFLOP),
+		"flop" => Token::Unit(Flop),
+		"kflop" | "kiloflop" => Token::Unit(KiloFlop),
+		"mflop" | "megaflop" => Token::Unit(MegaFlop),
+		"gflop" | "gigaflop" => Token::Unit(GigaFlop),
+		"tflop" | "teraflop" => Token::Unit(TeraFlop),
+		"pflop" | "petaflop" => Token::Unit(PetaFlop),
+		"eflop" | "exaflop" => Token::Unit(ExaFlop),
+		"zflop" | "zettaflop" => Token::Unit(ZettaFlop),
+		"yflop" | "yottaflop" => Token::Unit(YottaFlop),
+		"rflop" | "ronnaflop" => Token::Unit(RonnaFlop),
+		"qflop" | "quettaflop" => Token::Unit(QuettaFlop),
 
-		"flops" => Token::Unit(FLOPPerSecond),
-		"kflops" | "kiloflops" => Token::Unit(KiloFLOPPerSecond),
-		"mflops" | "megaflops" => Token::Unit(MegaFLOPPerSecond),
-		"gflops" | "gigaflops" => Token::Unit(GigaFLOPPerSecond),
-		"tflops" | "teraflops" => Token::Unit(TeraFLOPPerSecond),
-		"pflops" | "petaflops" => Token::Unit(PetaFLOPPerSecond),
-		"eflops" | "exaflops" => Token::Unit(ExaFLOPPerSecond),
-		"zflops" | "zettaflops" => Token::Unit(ZettaFLOPPerSecond),
-		"yflops" | "yottaflops" => Token::Unit(YottaFLOPPerSecond),
-		"rflops" | "ronnaflops" => Token::Unit(RonnaFLOPPerSecond),
-		"qflops" | "quettaflops" => Token::Unit(QuettaFLOPPerSecond),
+		"flops" => Token::Unit(FlopPerSecond),
+		"kflops" | "kiloflops" => Token::Unit(KiloFlopPerSecond),
+		"mflops" | "megaflops" => Token::Unit(MegaFlopPerSecond),
+		"gflops" | "gigaflops" => Token::Unit(GigaFlopPerSecond),
+		"tflops" | "teraflops" => Token::Unit(TeraFlopPerSecond),
+		"pflops" | "petaflops" => Token::Unit(PetaFlopPerSecond),
+		"eflops" | "exaflops" => Token::Unit(ExaFlopPerSecond),
+		"zflops" | "zettaflops" => Token::Unit(ZettaFlopPerSecond),
+		"yflops" | "yottaflops" => Token::Unit(YottaFlopPerSecond),
+		"rflops" | "ronnaflops" => Token::Unit(RonnaFlopPerSecond),
+		"qflops" | "quettaflops" => Token::Unit(QuettaFlopPerSecond),
 
 		"millijoule" | "millijoules" => Token::Unit(Millijoule),
 		"j"| "joule" | "joules" => Token::Unit(Joule),
@@ -908,48 +908,48 @@ pub fn lex(input: &str, remove_trailing_operator: bool) -> Result<Vec<Token>, St
 					tokens[token_index-2] = Token::Unit(YobibytesPerSecond);
 				},
 				// FLOP per second
-				(Token::Unit(FLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(FLOPPerSecond);
+				(Token::Unit(Flop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(FlopPerSecond);
 				},
 				// kiloFLOP per second
-				(Token::Unit(KiloFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(KiloFLOPPerSecond);
+				(Token::Unit(KiloFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(KiloFlopPerSecond);
 				},
 				// megaFLOP per second
-				(Token::Unit(MegaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(MegaFLOPPerSecond);
+				(Token::Unit(MegaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(MegaFlopPerSecond);
 				},
 				// gigaFLOP per second
-				(Token::Unit(GigaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(GigaFLOPPerSecond);
+				(Token::Unit(GigaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(GigaFlopPerSecond);
 				},
 				// teraFLOP per second
-				(Token::Unit(TeraFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(TeraFLOPPerSecond);
+				(Token::Unit(TeraFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(TeraFlopPerSecond);
 				},
 				// petaFLOP per second
-				(Token::Unit(PetaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(PetaFLOPPerSecond);
+				(Token::Unit(PetaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(PetaFlopPerSecond);
 				},
 				// exaFLOP per second
-				(Token::Unit(ExaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(ExaFLOPPerSecond);
+				(Token::Unit(ExaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(ExaFlopPerSecond);
 				},
 				// zettaFLOP per second
-				(Token::Unit(ZettaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(ZettaFLOPPerSecond);
+				(Token::Unit(ZettaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(ZettaFlopPerSecond);
 				},
 				// yottaFLOP per second
-				(Token::Unit(YottaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(YottaFLOPPerSecond);
+				(Token::Unit(YottaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(YottaFlopPerSecond);
 				},
 				// ronnaFLOP per second
-				(Token::Unit(RonnaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(RonnaFLOPPerSecond);
+				(Token::Unit(RonnaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(RonnaFlopPerSecond);
 				},
 				// quettaFLOP per second
-				(Token::Unit(QuettaFLOP), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index-2] = Token::Unit(QuettaFLOPPerSecond);
+				(Token::Unit(QuettaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
+					tokens[token_index-2] = Token::Unit(QuettaFlopPerSecond);
 				},
 				// btu/min
 				(Token::Unit(BritishThermalUnit), Token::LexerKeyword(Per), Token::Unit(Minute)) => {
@@ -1153,50 +1153,50 @@ mod tests {
 		run_datarate_lex("18 exbibytes per second", vec![numtok!(18), Token::Unit(ExbibytesPerSecond)]);
 		run_datarate_lex("19 zebibytes per second", vec![numtok!(19), Token::Unit(ZebibytesPerSecond)]);
 		run_datarate_lex("20 yobibytes per second", vec![numtok!(20), Token::Unit(YobibytesPerSecond)]);
-		run_lex("1 flop", vec![numtok!(1), Token::Unit(FLOP)]);
-		run_lex("2 kflop", vec![numtok!(2), Token::Unit(KiloFLOP)]);
-		run_lex("3 mflop", vec![numtok!(3), Token::Unit(MegaFLOP)]);
-		run_lex("4 gflop", vec![numtok!(4), Token::Unit(GigaFLOP)]);
-		run_lex("5 tflop", vec![numtok!(5), Token::Unit(TeraFLOP)]);
-		run_lex("6 pflop", vec![numtok!(6), Token::Unit(PetaFLOP)]);
-		run_lex("7 eflop", vec![numtok!(7), Token::Unit(ExaFLOP)]);
-		run_lex("8 zflop", vec![numtok!(8), Token::Unit(ZettaFLOP)]);
-		run_lex("9 yflop", vec![numtok!(9), Token::Unit(YottaFLOP)]);
-		run_lex("10 rflop", vec![numtok!(10), Token::Unit(RonnaFLOP)]);
-		run_lex("11 qflop", vec![numtok!(11), Token::Unit(QuettaFLOP)]);
-		run_lex("1 flop/s", vec![numtok!(1), Token::Unit(FLOPPerSecond)]);
-		run_lex("2 kflop/s", vec![numtok!(2), Token::Unit(KiloFLOPPerSecond)]);
-		run_lex("3 mflop/s", vec![numtok!(3), Token::Unit(MegaFLOPPerSecond)]);
-		run_lex("4 gflop/s", vec![numtok!(4), Token::Unit(GigaFLOPPerSecond)]);
-		run_lex("5 tflop/s", vec![numtok!(5), Token::Unit(TeraFLOPPerSecond)]);
-		run_lex("6 pflop/s", vec![numtok!(6), Token::Unit(PetaFLOPPerSecond)]);
-		run_lex("7 eflop/s", vec![numtok!(7), Token::Unit(ExaFLOPPerSecond)]);
-		run_lex("8 zflop/s", vec![numtok!(8), Token::Unit(ZettaFLOPPerSecond)]);
-		run_lex("9 yflop/s", vec![numtok!(9), Token::Unit(YottaFLOPPerSecond)]);
-		run_lex("10 rflop/s", vec![numtok!(10), Token::Unit(RonnaFLOPPerSecond)]);
-		run_lex("11 qflop/s", vec![numtok!(11), Token::Unit(QuettaFLOPPerSecond)]);
-		run_lex("1 flop per second", vec![numtok!(1), Token::Unit(FLOPPerSecond)]);
-		run_lex("2 kflop per second", vec![numtok!(2), Token::Unit(KiloFLOPPerSecond)]);
-		run_lex("3 mflop per second", vec![numtok!(3), Token::Unit(MegaFLOPPerSecond)]);
-		run_lex("4 gflop per second", vec![numtok!(4), Token::Unit(GigaFLOPPerSecond)]);
-		run_lex("5 tflop per second", vec![numtok!(5), Token::Unit(TeraFLOPPerSecond)]);
-		run_lex("6 pflop per second", vec![numtok!(6), Token::Unit(PetaFLOPPerSecond)]);
-		run_lex("7 eflop per second", vec![numtok!(7), Token::Unit(ExaFLOPPerSecond)]);
-		run_lex("8 zflop per second", vec![numtok!(8), Token::Unit(ZettaFLOPPerSecond)]);
-		run_lex("9 yflop per second", vec![numtok!(9), Token::Unit(YottaFLOPPerSecond)]);
-		run_lex("10 rflop per second", vec![numtok!(10), Token::Unit(RonnaFLOPPerSecond)]);
-		run_lex("11 qflop per second", vec![numtok!(11), Token::Unit(QuettaFLOPPerSecond)]);
-		run_lex("1 flops", vec![numtok!(1), Token::Unit(FLOPPerSecond)]);
-		run_lex("2 kflops", vec![numtok!(2), Token::Unit(KiloFLOPPerSecond)]);
-		run_lex("3 mflops", vec![numtok!(3), Token::Unit(MegaFLOPPerSecond)]);
-		run_lex("4 gflops", vec![numtok!(4), Token::Unit(GigaFLOPPerSecond)]);
-		run_lex("5 tflops", vec![numtok!(5), Token::Unit(TeraFLOPPerSecond)]);
-		run_lex("6 pflops", vec![numtok!(6), Token::Unit(PetaFLOPPerSecond)]);
-		run_lex("7 eflops", vec![numtok!(7), Token::Unit(ExaFLOPPerSecond)]);
-		run_lex("8 zflops", vec![numtok!(8), Token::Unit(ZettaFLOPPerSecond)]);
-		run_lex("9 yflops", vec![numtok!(9), Token::Unit(YottaFLOPPerSecond)]);
-		run_lex("10 rflops", vec![numtok!(10), Token::Unit(RonnaFLOPPerSecond)]);
-		run_lex("11 qflops", vec![numtok!(11), Token::Unit(QuettaFLOPPerSecond)]);
+		run_lex("1 flop", vec![numtok!(1), Token::Unit(Flop)]);
+		run_lex("2 kflop", vec![numtok!(2), Token::Unit(KiloFlop)]);
+		run_lex("3 mflop", vec![numtok!(3), Token::Unit(MegaFlop)]);
+		run_lex("4 gflop", vec![numtok!(4), Token::Unit(GigaFlop)]);
+		run_lex("5 tflop", vec![numtok!(5), Token::Unit(TeraFlop)]);
+		run_lex("6 pflop", vec![numtok!(6), Token::Unit(PetaFlop)]);
+		run_lex("7 eflop", vec![numtok!(7), Token::Unit(ExaFlop)]);
+		run_lex("8 zflop", vec![numtok!(8), Token::Unit(ZettaFlop)]);
+		run_lex("9 yflop", vec![numtok!(9), Token::Unit(YottaFlop)]);
+		run_lex("10 rflop", vec![numtok!(10), Token::Unit(RonnaFlop)]);
+		run_lex("11 qflop", vec![numtok!(11), Token::Unit(QuettaFlop)]);
+		run_lex("1 flop/s", vec![numtok!(1), Token::Unit(FlopPerSecond)]);
+		run_lex("2 kflop/s", vec![numtok!(2), Token::Unit(KiloFlopPerSecond)]);
+		run_lex("3 mflop/s", vec![numtok!(3), Token::Unit(MegaFlopPerSecond)]);
+		run_lex("4 gflop/s", vec![numtok!(4), Token::Unit(GigaFlopPerSecond)]);
+		run_lex("5 tflop/s", vec![numtok!(5), Token::Unit(TeraFlopPerSecond)]);
+		run_lex("6 pflop/s", vec![numtok!(6), Token::Unit(PetaFlopPerSecond)]);
+		run_lex("7 eflop/s", vec![numtok!(7), Token::Unit(ExaFlopPerSecond)]);
+		run_lex("8 zflop/s", vec![numtok!(8), Token::Unit(ZettaFlopPerSecond)]);
+		run_lex("9 yflop/s", vec![numtok!(9), Token::Unit(YottaFlopPerSecond)]);
+		run_lex("10 rflop/s", vec![numtok!(10), Token::Unit(RonnaFlopPerSecond)]);
+		run_lex("11 qflop/s", vec![numtok!(11), Token::Unit(QuettaFlopPerSecond)]);
+		run_lex("1 flop per second", vec![numtok!(1), Token::Unit(FlopPerSecond)]);
+		run_lex("2 kflop per second", vec![numtok!(2), Token::Unit(KiloFlopPerSecond)]);
+		run_lex("3 mflop per second", vec![numtok!(3), Token::Unit(MegaFlopPerSecond)]);
+		run_lex("4 gflop per second", vec![numtok!(4), Token::Unit(GigaFlopPerSecond)]);
+		run_lex("5 tflop per second", vec![numtok!(5), Token::Unit(TeraFlopPerSecond)]);
+		run_lex("6 pflop per second", vec![numtok!(6), Token::Unit(PetaFlopPerSecond)]);
+		run_lex("7 eflop per second", vec![numtok!(7), Token::Unit(ExaFlopPerSecond)]);
+		run_lex("8 zflop per second", vec![numtok!(8), Token::Unit(ZettaFlopPerSecond)]);
+		run_lex("9 yflop per second", vec![numtok!(9), Token::Unit(YottaFlopPerSecond)]);
+		run_lex("10 rflop per second", vec![numtok!(10), Token::Unit(RonnaFlopPerSecond)]);
+		run_lex("11 qflop per second", vec![numtok!(11), Token::Unit(QuettaFlopPerSecond)]);
+		run_lex("1 flops", vec![numtok!(1), Token::Unit(FlopPerSecond)]);
+		run_lex("2 kflops", vec![numtok!(2), Token::Unit(KiloFlopPerSecond)]);
+		run_lex("3 mflops", vec![numtok!(3), Token::Unit(MegaFlopPerSecond)]);
+		run_lex("4 gflops", vec![numtok!(4), Token::Unit(GigaFlopPerSecond)]);
+		run_lex("5 tflops", vec![numtok!(5), Token::Unit(TeraFlopPerSecond)]);
+		run_lex("6 pflops", vec![numtok!(6), Token::Unit(PetaFlopPerSecond)]);
+		run_lex("7 eflops", vec![numtok!(7), Token::Unit(ExaFlopPerSecond)]);
+		run_lex("8 zflops", vec![numtok!(8), Token::Unit(ZettaFlopPerSecond)]);
+		run_lex("9 yflops", vec![numtok!(9), Token::Unit(YottaFlopPerSecond)]);
+		run_lex("10 rflops", vec![numtok!(10), Token::Unit(RonnaFlopPerSecond)]);
+		run_lex("11 qflops", vec![numtok!(11), Token::Unit(QuettaFlopPerSecond)]);
 		run_lex("234 wh", vec![numtok!(234), Token::Unit(WattHour)]);
 		run_lex("1 w", vec![numtok!(1), Token::Unit(Watt)]);
 		run_lex("1 watt", vec![numtok!(1), Token::Unit(Watt)]);
