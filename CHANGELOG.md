@@ -1,6 +1,7 @@
 # Changelog
 
 ## Next
+- Add FLOP and FLOPS units
 - Update `fastnum` dependency
 - Fix conversion of `torr`, `btu/s` and `btu/h`
 - Fix unit spellings
