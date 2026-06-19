@@ -2,6 +2,7 @@
 
 ## Next
 - Update `fastnum` dependency
+- Fix conversion of `torr`, `btu/s` and `btu/h`
 - Fix unit spellings
 - Fix spelling of `decares`
 

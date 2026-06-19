@@ -264,9 +264,9 @@ create_units!(
 	Terawatt:                     (Power, d!(1000000000000), "terawatt", "terawatts"),
 	Petawatt:                     (Power, d!(1000000000000000), "petawatt", "petawatts"),
 	// probably inexact:
-	BritishThermalUnitsPerMinute: (Power, d!(0.0568690272188), "british thermal unit per minute", "british thermal units per minute"),
+	BritishThermalUnitsPerMinute: (Power, d!(3.412141633128), "british thermal unit per minute", "british thermal units per minute"),
 	// probably inexact:
-	BritishThermalUnitsPerHour:   (Power, d!(3.412141633128), "british thermal unit per hour", "british thermal units per hour"),
+	BritishThermalUnitsPerHour:   (Power, d!(0.0568690272188), "british thermal unit per hour", "british thermal units per hour"),
 	// exact according to wikipedia:
 	Horsepower:                   (Power, d!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d!(735.49875), "metric horsepower", "metric horsepower"),
@@ -292,7 +292,8 @@ create_units!(
 	InchOfMercury:                (Pressure, d!(3386.389), "inch of mercury", "inches of mercury"),
 	// inexact:
 	PoundsPerSquareInch:          (Pressure, d!(6894.757293168361), "pound per square inch", "pounds per square inch"),
-	Torr:                         (Pressure, d!(162.12), "torr", "torr"),
+	// inexact:
+	Torr:                         (Pressure, d!(133.3223684210526), "torr", "torr"),
 
 	Hertz:                        (Frequency, d!(1), "hertz", "hertz"),
 	Kilohertz:                    (Frequency, d!(1000), "kilohertz", "kilohertz"),
