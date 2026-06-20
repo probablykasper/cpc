@@ -2,6 +2,8 @@
 	import { check_shortcut } from "$lib/helpers";
 	import { flip } from "svelte/animate";
 	import { fly } from "svelte/transition";
+	import { PersistedState } from "runed";
+
 	// Has to be dynamically imported for prerendering to work
 	// https://github.com/sveltejs/svelte/issues/13155
 	const cpc_promise = import("cpc");
@@ -23,7 +25,9 @@
 
 	let input = $state("");
 	let output = $derived(wasm_eval(input));
-	let saved_queries: { id: number; in: string; out: string }[] = $state([]);
+	let calc_history = new PersistedState<
+		{ id: number; in: string; out: string }[]
+	>("calc_history", []);
 </script>
 
 <svelte:head>
@@ -71,8 +75,8 @@
 			if (check_shortcut(e, "Enter")) {
 				const out = wasm_eval(input);
 				console.log(out);
-				saved_queries.unshift({
-					id: saved_queries.length,
+				calc_history.current.push({
+					id: Date.now(),
 					in: input,
 					out,
 				});
@@ -87,7 +91,8 @@
 		<div class="px-3 py-2">
 			{output}<span class="invisible select-none">x</span>
 		</div>
-		{#each saved_queries as query (query.id)}
+		{#each calc_history.current as _, i (calc_history.current.length - 1 - i)}
+			{let query = calc_history.current[calc_history.current.length - 1 - i]}
 			<div
 				class="px-3 py-2"
 				in:fly={{ y: -10, duration: 150 }}
