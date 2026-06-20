@@ -41,28 +41,41 @@
 <main class="w-full px-4 lg:px-8 text-base lg:text-lg">
 	<nav class="flex items-center justify-between py-4 lg:py-6">
 		<h1 class="text-3xl font-bold text-amber-600 dark:text-amber-400">cpc</h1>
-		<a
-			href="https://github.com/probablykasper/cpc"
-			aria-label="GitHub repository"
-			class="svelte-1ugh5mt"
-		>
-			<svg
-				height="24"
-				viewBox="-2 -2 28 28"
-				width="24"
-				xmlns="http://www.w3.org/2000/svg"
-				class="svelte-8lfi33 svelte-1ugh5mt"
-				><path
-					d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
-					fill="none"
-					stroke="currentColor"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					class="svelte-8lfi33"
-				></path></svg
+		<div class="flex items-center gap-4">
+			{#if calc_history.current.length > 0}
+				<button
+					type="button"
+					class="text-sm p-2 opacity-65 hover:opacity-100 transition-opacity ease-out duration-150 cursor-pointer"
+					onclick={() => {
+						calc_history.current = [];
+					}}
+				>
+					Clear history
+				</button>
+			{/if}
+			<a
+				href="https://github.com/probablykasper/cpc"
+				aria-label="GitHub repository"
+				class="svelte-1ugh5mt"
 			>
-		</a>
+				<svg
+					height="24"
+					viewBox="-2 -2 28 28"
+					width="24"
+					xmlns="http://www.w3.org/2000/svg"
+					class="svelte-8lfi33 svelte-1ugh5mt"
+					><path
+						d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
+						fill="none"
+						stroke="currentColor"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						class="svelte-8lfi33"
+					></path></svg
+				>
+			</a>
+		</div>
 	</nav>
 	<!-- svelte-ignore a11y_autofocus -->
 	<input
