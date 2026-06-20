@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 3.1.0 - 2025 Jun 20
 - Add FLOP and FLOPS units
 - Update `fastnum` dependency
 - Fix conversion of `torr`, `btu/s` and `btu/h`
