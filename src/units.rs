@@ -291,11 +291,10 @@ create_units!(
 	Gigawatt:                     (Power, d!(1000000000), "gigawatt", "gigawatts"),
 	Terawatt:                     (Power, d!(1000000000000), "terawatt", "terawatts"),
 	Petawatt:                     (Power, d!(1000000000000000), "petawatt", "petawatts"),
-	// probably inexact:
-	BritishThermalUnitsPerMinute: (Power, d!(3.412141633128), "british thermal unit per minute", "british thermal units per minute"),
-	// probably inexact:
-	BritishThermalUnitsPerHour:   (Power, d!(0.0568690272188), "british thermal unit per hour", "british thermal units per hour"),
-	// exact according to wikipedia:
+	// inexact:
+	BritishThermalUnitsPerMinute: (Power, d!(17.584264210333), "british thermal unit per minute", "british thermal units per minute"),
+	// inexact:
+	BritishThermalUnitsPerHour:   (Power, d!(0.29307107017222), "british thermal unit per hour", "british thermal units per hour"),	// exact according to wikipedia:
 	Horsepower:                   (Power, d!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d!(735.49875), "metric horsepower", "metric horsepower"),
 
@@ -1058,8 +1057,8 @@ use super::*;
 		assert_float_eq!(convert_test(1000.0, Megawatt, Gigawatt), 1.0);
 		assert_float_eq!(convert_test(1000.0, Gigawatt, Terawatt), 1.0);
 		assert_float_eq!(convert_test(1000.0, Terawatt, Petawatt), 1.0);
-		// assert_float_eq!(convert_test(0.0568690272188, Watt, BritishThermalUnitsPerMinute), 1.0);
-		// assert_float_eq!(convert_test(60.0, BritishThermalUnitsPerMinute, BritishThermalUnitsPerHour), 1.0);
+		assert_float_eq!(convert_test(17.584264210333, Watt, BritishThermalUnitsPerMinute), 1.0);
+		assert_float_eq!(convert_test(59.999999999999317571673374406441452784, BritishThermalUnitsPerHour, BritishThermalUnitsPerMinute), 1.0);
 		assert_float_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
 		assert_float_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
 
@@ -1079,7 +1078,7 @@ use super::*;
 		assert_float_eq!(convert_test(1000.0, Millibar, Bar), 1.0);
 		assert_float_eq!(convert_test(3386.389, Pascal, InchOfMercury), 1.0);
 		assert_float_eq!(convert_test(6894.757293168361, Pascal, PoundsPerSquareInch), 1.0);
-		// assert_float_eq!(convert_test(162.12, Pascal, Torr), 1.0);
+		assert_float_eq!(convert_test(133.3223684210526, Pascal, Torr), 1.0);
 
 		assert_float_eq!(convert_test(1000.0, Hertz, Kilohertz), 1.0);
 		assert_float_eq!(convert_test(1000.0, Kilohertz, Megahertz), 1.0);
