@@ -92,31 +92,30 @@ impl Number {
 	pub fn contains_primitive(&self, unit: UnitType) -> bool {
 		self.unit.iter().any(|(u, _)| u.category() == unit)
 	}
-	pub fn singular(&self) -> String {
+	fn get_unit_string(&self, plural: bool) -> String {
 		let mut s = String::new();
-		for (i, unit) in self.unit.iter().enumerate() {
-			if i != 0 {
-				match unit.1.is_positive() {
-					true => s.push_str(" * "),
-					false => s.push_str(" / "),
-				}
+		for unit in &self.unit {
+			match unit.1.is_positive() {
+				true if s.len() == 0 => (),
+				true => s.push_str(" * "),
+				false => s.push_str(" / "),
 			}
-			s.push_str(unit.0.plural());
+			match plural {
+				false => s.push_str(unit.0.singular()),
+				true => s.push_str(unit.0.plural()),
+			};
+			if unit.1.abs() >= 2 {
+				s.push_str("^");
+				s.push_str(&unit.1.to_string());
+			}
 		}
 		s
 	}
+	pub fn singular(&self) -> String {
+		self.get_unit_string(false)
+	}
 	pub fn plural(&self) -> String {
-		let mut s = String::new();
-		for (i, unit) in self.unit.iter().enumerate() {
-			if i != 0 {
-				match unit.1.is_positive() {
-					true => s.push_str(" * "),
-					false => s.push_str(" / "),
-				}
-			}
-			s.push_str(unit.0.plural());
-		}
-		s
+		self.get_unit_string(true)
 	}
 }
 impl Display for Number {
