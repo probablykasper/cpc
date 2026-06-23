@@ -64,8 +64,8 @@ impl UnitType {
 			// Temperature => vec![(Temperature, 1)],
 			Time => vec![(Nanosecond, 1)],
 			Length => vec![(Millimeter, 1)],
-			Area => vec![(SquareMillimeter, 2)],
-			Volume => vec![(CubicMillimeter, 3)],
+			Area => vec![(Millimeter, 2)],
+			Volume => vec![(Millimeter, 3)],
 			Mass => vec![(Gram, 1)],
 			DigitalStorage => vec![(Bit, 1)],
 			DataTransferRate => vec![(Bit, 1), (Nanosecond, -1)],
@@ -519,153 +519,153 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 /// `Energy`, `Power`, `ElectricCurrent`, `Resistance`, and `Voltage`.
 /// Other units are passed through.
 pub fn to_ideal_unit(number: Number) -> Number {
-	todo!();
-	// let value = number.value * number.unit.weight();
-	// if number.unit.category() == Length {
-	// 	if value >= d!(1000000000000000000) {
-	// 		// ≈ 0.1 light years
-	// 		return Number::new(value / LightYear.weight(), LightYear);
-	// 	} else if value >= d!(1000000) {
-	// 		// 1 km
-	// 		return Number::new(value / Kilometer.weight(), Kilometer);
-	// 	} else if value >= d!(1000) {
-	// 		// 1 m
-	// 		return Number::new(value / Meter.weight(), Meter);
-	// 	} else if value >= d!(10) {
-	// 		// 1 cm
-	// 		return Number::new(value / Centimeter.weight(), Centimeter);
-	// 	} else {
-	// 		return Number::new(value, Millimeter);
-	// 	}
-	// } else if number.unit.category() == Time {
-	// 	if value >= d!(31556952000000000) {
-	// 		return Number::new(value / Year.weight(), Year);
-	// 	} else if value >= d!(86400000000000) {
-	// 		return Number::new(value / Day.weight(), Day);
-	// 	} else if value >= d!(3600000000000) {
-	// 		return Number::new(value / Hour.weight(), Hour);
-	// 	} else if value >= d!(60000000000) {
-	// 		return Number::new(value / Minute.weight(), Minute);
-	// 	} else if value >= d!(1000000000) {
-	// 		return Number::new(value / Second.weight(), Second);
-	// 	} else if value >= d!(1000000) {
-	// 		return Number::new(value / Millisecond.weight(), Millisecond);
-	// 	} else if value >= d!(1000) {
-	// 		return Number::new(value / Microsecond.weight(), Microsecond);
-	// 	} else {
-	// 		return Number::new(value, Nanosecond);
-	// 	}
-	// } else if number.unit.category() == Area {
-	// 	if value >= d!(1000000000000) {
-	// 		// 1 km2
-	// 		return Number::new(value / SquareKilometer.weight(), SquareKilometer);
-	// 	} else if value >= d!(10000000000) {
-	// 		// 1 hectare
-	// 		return Number::new(value / Hectare.weight(), Hectare);
-	// 	} else if value >= d!(1000000) {
-	// 		// 1 m2
-	// 		return Number::new(value / SquareMeter.weight(), SquareMeter);
-	// 	} else if value >= d!(100) {
-	// 		// 1 cm2
-	// 		return Number::new(value / SquareCentimeter.weight(), SquareCentimeter);
-	// 	} else {
-	// 		return Number::new(value, SquareMillimeter);
-	// 	}
-	// } else if number.unit.category() == Volume {
-	// 	if value >= d!(1000000000000000000) {
-	// 		// 1 km3
-	// 		return Number::new(value / CubicKilometer.weight(), CubicKilometer);
-	// 	} else if value >= d!(1000000000) {
-	// 		// 1 m3
-	// 		return Number::new(value / CubicMeter.weight(), CubicMeter);
-	// 	} else if value >= d!(1000000) {
-	// 		// 1 l
-	// 		return Number::new(value / Liter.weight(), Liter);
-	// 	} else if value >= d!(1000) {
-	// 		// 1 ml
-	// 		return Number::new(value / Milliliter.weight(), Milliliter);
-	// 	} else {
-	// 		return Number::new(value, CubicMillimeter);
-	// 	}
-	// } else if number.unit.category() == Energy {
-	// 	if value >= d!(3600000000000000000) {
-	// 		// 1 petawatthour
-	// 		return Number::new(value / PetawattHour.weight(), PetawattHour);
-	// 	} else if value >= d!(3600000000000000) {
-	// 		// 1 terawatthour
-	// 		return Number::new(value / TerawattHour.weight(), TerawattHour);
-	// 	} else if value >= d!(3600000000000) {
-	// 		// 1 gigawatthour
-	// 		return Number::new(value / GigawattHour.weight(), GigawattHour);
-	// 	} else if value >= d!(3600000000) {
-	// 		// 1 megawatthour
-	// 		return Number::new(value / MegawattHour.weight(), MegawattHour);
-	// 	} else if value >= d!(3600000) {
-	// 		// 1 kilowatthour
-	// 		return Number::new(value / KilowattHour.weight(), KilowattHour);
-	// 	} else if value >= d!(3600) {
-	// 		// 1 watthour
-	// 		return Number::new(value / WattHour.weight(), WattHour);
-	// 	} else if value >= d!(1) {
-	// 		// 1 joule
-	// 		return Number::new(value, Joule);
-	// 	} else {
-	// 		return Number::new(value / Millijoule.weight(), Millijoule);
-	// 	}
-	// } else if number.unit.category() == Power {
-	// 	if value >= d!(1000000000000000) {
-	// 		// 1 petawatt
-	// 		return Number::new(value / Petawatt.weight(), Petawatt);
-	// 	} else if value >= d!(1000000000000) {
-	// 		// 1 terawatt
-	// 		return Number::new(value / Terawatt.weight(), Terawatt);
-	// 	} else if value >= d!(1000000000) {
-	// 		// 1 gigawatt
-	// 		return Number::new(value / Gigawatt.weight(), Gigawatt);
-	// 	} else if value >= d!(1000000) {
-	// 		// megawatt
-	// 		return Number::new(value / Megawatt.weight(), Megawatt);
-	// 	} else if value >= d!(1000) {
-	// 		// 1 kilowatt
-	// 		return Number::new(value / Kilowatt.weight(), Kilowatt);
-	// 	} else if value >= d!(1) {
-	// 		// 1 watt
-	// 		return Number::new(value, Watt);
-	// 	} else {
-	// 		return Number::new(value / Milliwatt.weight(), Milliwatt);
-	// 	}
-	// } else if number.unit.category() == ElectricCurrent {
-	// 	if value >= d!(1000) {
-	// 		// 1 kiloampere
-	// 		return Number::new(value / Kiloampere.weight(), Kiloampere);
-	// 	} else if value >= d!(1) {
-	// 		// 1 ampere
-	// 		return Number::new(value, Ampere);
-	// 	} else {
-	// 		return Number::new(value / Milliampere.weight(), Milliampere);
-	// 	}
-	// } else if number.unit.category() == Resistance {
-	// 	if value >= d!(1000) {
-	// 		// 1 kiloohm
-	// 		return Number::new(value / Kiloohm.weight(), Kiloohm);
-	// 	} else if value >= d!(1) {
-	// 		// 1 ohm
-	// 		return Number::new(value, Ohm);
-	// 	} else {
-	// 		return Number::new(value / Milliohm.weight(), Milliohm);
-	// 	}
-	// } else if number.unit.category() == Voltage {
-	// 	if value >= d!(1000) {
-	// 		// 1 kilovolt
-	// 		return Number::new(value / Kilovolt.weight(), Kilovolt);
-	// 	} else if value >= d!(1) {
-	// 		// 1 volt
-	// 		return Number::new(value, Volt);
-	// 	} else {
-	// 		return Number::new(value / Millivolt.weight(), Millivolt);
-	// 	}
-	// }
-	// number
+	let value = number.value * combined_weight(&number.unit);
+	let primitive = number.primitive_unit();
+	if primitive == Length.primitive() {
+		if value >= d!(1000000000000000000) {
+			// ≈ 0.1 light years
+			return Number::with_basic_unit(value / LightYear.weight(), LightYear);
+		} else if value >= d!(1000000) {
+			// 1 km
+			return Number::with_basic_unit(value / Kilometer.weight(), Kilometer);
+		} else if value >= d!(1000) {
+			// 1 m
+			return Number::with_basic_unit(value / Meter.weight(), Meter);
+		} else if value >= d!(10) {
+			// 1 cm
+			return Number::with_basic_unit(value / Centimeter.weight(), Centimeter);
+		} else {
+			return Number::with_basic_unit(value, Millimeter);
+		}
+	} else if primitive == Time.primitive() {
+		if value >= d!(31556952000000000) {
+			return Number::with_basic_unit(value / Year.weight(), Year);
+		} else if value >= d!(86400000000000) {
+			return Number::with_basic_unit(value / Day.weight(), Day);
+		} else if value >= d!(3600000000000) {
+			return Number::with_basic_unit(value / Hour.weight(), Hour);
+		} else if value >= d!(60000000000) {
+			return Number::with_basic_unit(value / Minute.weight(), Minute);
+		} else if value >= d!(1000000000) {
+			return Number::with_basic_unit(value / Second.weight(), Second);
+		} else if value >= d!(1000000) {
+			return Number::with_basic_unit(value / Millisecond.weight(), Millisecond);
+		} else if value >= d!(1000) {
+			return Number::with_basic_unit(value / Microsecond.weight(), Microsecond);
+		} else {
+			return Number::with_basic_unit(value, Nanosecond);
+		}
+	} else if primitive == Area.primitive() {
+		if value >= d!(1000000000000) {
+			// 1 km2
+			return Number::with_basic_unit(value / SquareKilometer.weight(), SquareKilometer);
+		} else if value >= d!(10000000000) {
+			// 1 hectare
+			return Number::with_basic_unit(value / Hectare.weight(), Hectare);
+		} else if value >= d!(1000000) {
+			// 1 m2
+			return Number::with_basic_unit(value / SquareMeter.weight(), SquareMeter);
+		} else if value >= d!(100) {
+			// 1 cm2
+			return Number::with_basic_unit(value / SquareCentimeter.weight(), SquareCentimeter);
+		} else {
+			return Number::with_basic_unit(value, SquareMillimeter);
+		}
+	} else if primitive == Volume.primitive() {
+		if value >= d!(1000000000000000000) {
+			// 1 km3
+			return Number::with_basic_unit(value / CubicKilometer.weight(), CubicKilometer);
+		} else if value >= d!(1000000000) {
+			// 1 m3
+			return Number::with_basic_unit(value / CubicMeter.weight(), CubicMeter);
+		} else if value >= d!(1000000) {
+			// 1 l
+			return Number::with_basic_unit(value / Liter.weight(), Liter);
+		} else if value >= d!(1000) {
+			// 1 ml
+			return Number::with_basic_unit(value / Milliliter.weight(), Milliliter);
+		} else {
+			return Number::with_basic_unit(value, CubicMillimeter);
+		}
+	} else if primitive == Energy.primitive() {
+		if value >= d!(3600000000000000000) {
+			// 1 petawatthour
+			return Number::with_basic_unit(value / PetawattHour.weight(), PetawattHour);
+		} else if value >= d!(3600000000000000) {
+			// 1 terawatthour
+			return Number::with_basic_unit(value / TerawattHour.weight(), TerawattHour);
+		} else if value >= d!(3600000000000) {
+			// 1 gigawatthour
+			return Number::with_basic_unit(value / GigawattHour.weight(), GigawattHour);
+		} else if value >= d!(3600000000) {
+			// 1 megawatthour
+			return Number::with_basic_unit(value / MegawattHour.weight(), MegawattHour);
+		} else if value >= d!(3600000) {
+			// 1 kilowatthour
+			return Number::with_basic_unit(value / KilowattHour.weight(), KilowattHour);
+		} else if value >= d!(3600) {
+			// 1 watthour
+			return Number::with_basic_unit(value / WattHour.weight(), WattHour);
+		} else if value >= d!(1) {
+			// 1 joule
+			return Number::with_basic_unit(value, Joule);
+		} else {
+			return Number::with_basic_unit(value / Millijoule.weight(), Millijoule);
+		}
+	} else if primitive == Power.primitive() {
+		if value >= d!(1000000000000000) {
+			// 1 petawatt
+			return Number::with_basic_unit(value / Petawatt.weight(), Petawatt);
+		} else if value >= d!(1000000000000) {
+			// 1 terawatt
+			return Number::with_basic_unit(value / Terawatt.weight(), Terawatt);
+		} else if value >= d!(1000000000) {
+			// 1 gigawatt
+			return Number::with_basic_unit(value / Gigawatt.weight(), Gigawatt);
+		} else if value >= d!(1000000) {
+			// megawatt
+			return Number::with_basic_unit(value / Megawatt.weight(), Megawatt);
+		} else if value >= d!(1000) {
+			// 1 kilowatt
+			return Number::with_basic_unit(value / Kilowatt.weight(), Kilowatt);
+		} else if value >= d!(1) {
+			// 1 watt
+			return Number::with_basic_unit(value, Watt);
+		} else {
+			return Number::with_basic_unit(value / Milliwatt.weight(), Milliwatt);
+		}
+	} else if primitive == ElectricCurrent.primitive() {
+		if value >= d!(1000) {
+			// 1 kiloampere
+			return Number::with_basic_unit(value / Kiloampere.weight(), Kiloampere);
+		} else if value >= d!(1) {
+			// 1 ampere
+			return Number::with_basic_unit(value, Ampere);
+		} else {
+			return Number::with_basic_unit(value / Milliampere.weight(), Milliampere);
+		}
+	} else if primitive == Resistance.primitive() {
+		if value >= d!(1000) {
+			// 1 kiloohm
+			return Number::with_basic_unit(value / Kiloohm.weight(), Kiloohm);
+		} else if value >= d!(1) {
+			// 1 ohm
+			return Number::with_basic_unit(value, Ohm);
+		} else {
+			return Number::with_basic_unit(value / Milliohm.weight(), Milliohm);
+		}
+	} else if primitive == Voltage.primitive() {
+		if value >= d!(1000) {
+			// 1 kilovolt
+			return Number::with_basic_unit(value / Kilovolt.weight(), Kilovolt);
+		} else if value >= d!(1) {
+			// 1 volt
+			return Number::with_basic_unit(value, Volt);
+		} else {
+			return Number::with_basic_unit(value / Millivolt.weight(), Millivolt);
+		}
+	}
+	number
 }
 
 /// Convert a [`Number`] to an ideal [`Joule`] unit, if the number is a unit of [`Energy`].
@@ -700,45 +700,30 @@ pub fn to_ideal_joule_unit(number: Number) -> Number {
 /// - If you multiply [`ElectricCurrent`] with [`Resistance`], the result has a unit of [`Voltage`]
 /// - If you multiply [`Power`] with [`Time`], the result has a unit of [`Energy`]
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
-	actual_multiply(left, right, false)
-}
+	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+		println!("TEMP?");
+		// if temperature
+		Err(format!(
+			"Cannot multiply {:?} and {:?}",
+			left.unit, right.unit
+		))
+	} else {
+		let mut new_number = left;
+		new_number.value *= right.value;
+		for (r_unit, r_exp) in right.unit {
+			let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
+			match existing {
+				Some(existing) => existing.1 += r_exp,
+				None => new_number.unit.push((r_unit, r_exp)),
+			}
+		}
+		let new_number = to_ideal_unit(new_number);
+		Ok(new_number)
+	}
+	// todo: 8 megabytes per second * 1 minute
+	// todo: 8 megaFLOP per second * 1 minute
+	// todo: 1 amp * 1 ohm = 1 volt
 
-fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number, String> {
-	todo!();
-	// let lcat = left.unit.category();
-	// let rcat = right.unit.category();
-	// if left.unit == NoUnit && right.unit == NoUnit {
-	// 	// 3 * 2
-	// 	Ok(Number::new(left.value * right.value, left.unit))
-	// } else if left.unit.category() == Temperature || right.unit.category() == Temperature {
-	// 	// if temperature
-	// 	Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
-	// } else if left.unit == NoUnit && right.unit != NoUnit {
-	// 	// 3 * 2 anyunit
-	// 	Ok(Number::new(left.value * right.value, right.unit))
-	// } else if lcat == Length && rcat == Length {
-	// 	// length * length
-	// 	let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-	// } else if lcat == Length && rcat == Area {
-	// 	// length * area
-	// 	let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
-	// } else if lcat == Speed && rcat == Time {
-	// 	// 1 km/h * 1h
-	// 	let kph_value = left.value * left.unit.weight();
-	// 	let hours = convert(right, Hour)?;
-	// 	let result = kph_value * hours.value;
-	// 	let final_unit = match left.unit {
-	// 		KilometersPerHour => Kilometer,
-	// 		MetersPerSecond => Meter,
-	// 		MilesPerHour => Mile,
-	// 		FeetPerSecond => Foot,
-	// 		Knot => NauticalMile,
-	// 		_ => Meter,
-	// 	};
-	// 	let kilometers = Number::new(result, Kilometer);
-	// 	Ok(convert(kilometers, final_unit)?)
 	// } else if lcat == DataTransferRate && rcat == Time {
 	// 	// 8 megabytes per second * 1 minute
 	// 	let data_rate_value = left.value * left.unit.weight();
@@ -804,25 +789,10 @@ fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number,
 	// 	};
 	// 	let compute_work = Number::new(result, Flop);
 	// 	Ok(convert(compute_work, final_unit)?)
-	// } else if lcat == Voltage && rcat == ElectricCurrent {
-	// 	// 1 volt * 1 ampere = 1 watt
-	// 	let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Watt)))
 	// } else if lcat == ElectricCurrent && rcat == Resistance {
 	// 	// 1 amp * 1 ohm = 1 volt
 	// 	let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
 	// 	Ok(to_ideal_unit(Number::new(result, Watt)))
-	// } else if lcat == Power && rcat == Time {
-	// 	// 1 watt * 1 second = 1 joule
-	// 	let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight() / Unit::Second.weight());
-	// 	match right.unit {
-	// 		Second => Ok(to_ideal_joule_unit(Number::new(result, Joule))),
-	// 		_ => Ok(to_ideal_unit(Number::new(result, Joule))),
-	// 	}
-	// } else if swapped {
-	// 	Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
-	// } else {
-	// 	actual_multiply(right, left, true)
 	// }
 }
 
