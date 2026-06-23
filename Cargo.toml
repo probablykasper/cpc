@@ -23,6 +23,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 fastnum = "0.7"
+radix_trie = "0.3.0"
 unicode-segmentation = "1.13"
 web-time = "1.1.0"
 

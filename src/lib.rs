@@ -23,7 +23,7 @@
 //! ```
 
 use crate::units::Unit;
-use fastnum::{dec128 as d, D128};
+use fastnum::{D128, dec128 as d};
 use std::fmt::{self, Display};
 use web_time::Instant;
 
@@ -188,7 +188,7 @@ pub enum LexerKeyword {
 	Revolution,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 /// A token like a [`Number`](Token::Number), [`Operator`](Token::Operator), [`Unit`](Token::Unit) etc.
 ///
 /// Strings can be divided up into these tokens by the [`lexer`], and then put into the [`parser`].
@@ -209,6 +209,24 @@ pub enum Token {
 	/// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
 	Negative,
 	Unit(units::Unit),
+}
+impl fmt::Debug for Token {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Token::Operator(op) => write!(f, "Operator({:?})", op),
+			Token::UnaryOperator(op) => write!(f, "UnaryOperator({:?})", op),
+			Token::Number(num) => write!(f, "Number({num})"),
+			Token::FunctionIdentifier(id) => write!(f, "FunctionIdentifier({:?})", id),
+			Token::Constant(c) => write!(f, "Constant({:?})", c),
+			Token::Paren => write!(f, "Paren"),
+			Token::Per => write!(f, "Per"),
+			Token::LexerKeyword(op) => write!(f, "LexerKeyword({:?})", op),
+			Token::TextOperator(op) => write!(f, "TextOperator({:?})", op),
+			Token::NamedNumber(num) => write!(f, "NamedNumber({:?})", num),
+			Token::Negative => write!(f, "Negative"),
+			Token::Unit(u) => write!(f, "Unit({:?})", u),
+		}
+	}
 }
 
 #[macro_export]
@@ -235,11 +253,7 @@ macro_rules! numtok {
 ///     }
 /// }
 /// ```
-pub fn eval(
-	input: &str,
-	allow_trailing_operators: bool,
-	verbose: bool,
-) -> Result<Number, String> {
+pub fn eval(input: &str, allow_trailing_operators: bool, verbose: bool) -> Result<Number, String> {
 	let lex_start = Instant::now();
 
 	match lexer::lex(input, allow_trailing_operators) {
@@ -319,7 +333,10 @@ mod tests {
 		assert_eq!(default_eval("-2(-3)"), Number::new(d!(6), Unit::NoUnit));
 		assert_eq!(default_eval("-2(3)"), Number::new(d!(-6), Unit::NoUnit));
 		assert_eq!(default_eval("(3)-2"), Number::new(d!(1), Unit::NoUnit));
-		assert_eq!(default_eval("-1km to m"), Number::new(d!(-1000), Unit::Meter));
+		assert_eq!(
+			default_eval("-1km to m"),
+			Number::new(d!(-1000), Unit::Meter)
+		);
 		assert_eq!(default_eval("2*-3*0.5"), Number::new(d!(-3), Unit::NoUnit));
 		assert_eq!(default_eval("-3^2"), Number::new(d!(-9), Unit::NoUnit));
 		assert_eq!(default_eval("-1+2"), Number::new(d!(1), Unit::NoUnit));
