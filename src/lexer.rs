@@ -9,7 +9,7 @@ use crate::UnaryOperator::{Factorial, Percent};
 use crate::units::Unit::*;
 use fastnum::D128;
 use fastnum::decimal::Context;
-use radix_trie::{SubTrie, Trie, TrieCommon};
+use fxhash::FxHashMap;
 use std::fmt;
 use std::iter::Peekable;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
@@ -172,8 +172,8 @@ fn _parse_word_if_non_empty(_word: &str, _lexer: &mut Lexer) -> Result<(), Strin
 	// }
 }
 
-fn create_trie() -> Result<TokenTrie, String> {
-	let mut trie = TokenTrie::new();
+fn default_token_map() -> Result<TokenMap, String> {
+	let mut trie = TokenMap::new();
 
 	trie.try_add("to", Token::TextOperator(To))?;
 	trie.try_add("of", Token::TextOperator(Of))?;
@@ -925,6 +925,7 @@ struct Tokeniser {
 	i: usize,
 	atoms: Vec<Atom>,
 	tokens: Vec<Token>,
+	token_map: TokenMap,
 }
 
 fn resolve_semantic_tokens(atoms: Vec<Atom>) -> Result<Vec<Token>, String> {
@@ -932,6 +933,7 @@ fn resolve_semantic_tokens(atoms: Vec<Atom>) -> Result<Vec<Token>, String> {
 		i: 0,
 		atoms,
 		tokens: Vec::new(),
+		token_map: default_token_map()?,
 	};
 
 	while tokeniser.i < tokeniser.atoms.len() {
@@ -1002,44 +1004,54 @@ fn resolve_semantic_tokens(atoms: Vec<Atom>) -> Result<Vec<Token>, String> {
 // 	}
 // }
 
-// #[derive(Debug, Clone, PartialEq, Eq)]
-// struct StringVec(Vec<String>);
-// impl TrieKey for StringVec {
-// 	fn encode_bytes(&self) -> Vec<u8> {
-// 		let mut bytes = Vec::new();
-// 		for (i, s) in self.0.iter().enumerate() {
-// 			bytes.extend_from_slice(s.as_bytes());
-// 			if i < self.0.len() - 1 {
-// 				bytes.push(0xFF);
-// 			}
-// 		}
-// 		bytes
-// 	}
-// }
-
-struct TokenTrie {
-	trie: Trie<String, Token>,
+#[derive(Debug, Default)]
+struct TokenMap {
+	token: Option<Token>,
+	children: FxHashMap<String, TokenMap>,
 }
-impl TokenTrie {
-	pub fn new() -> TokenTrie {
-		TokenTrie { trie: Trie::new() }
+
+impl TokenMap {
+	pub fn new() -> Self {
+		Self::default()
 	}
-	pub fn try_add(&mut self, key: impl AsRef<str>, token: Token) -> Result<(), String> {
-		let key = key.as_ref().to_string();
-		match self.trie.get(&key) {
-			Some(_) => return Err(format!("Token already exists for key: {:?}", key)),
-			None => self.trie.insert(key, token),
-		};
-		Ok(())
+
+	pub fn try_add(&mut self, key: impl Into<String>, token: Token) -> Result<(), String> {
+		let key = key.into();
+		let mut node = self;
+		for word in key.split(' ') {
+			// Only allocate if the key doesn't already exist
+			node = if node.children.contains_key(word) {
+				node.children.get_mut(word).unwrap()
+			} else {
+				node.children.entry(word.to_string()).or_default()
+			};
+		}
+		match node.token {
+			Some(_) => Err(format!("Token already exists for key: {key:?}")),
+			None => {
+				node.token = Some(token);
+				Ok(())
+			}
+		}
 	}
-	pub fn try_add_multi(&mut self, keys: &[impl AsRef<str>], token: Token) -> Result<(), String> {
+
+	pub fn try_add_multi(
+		&mut self,
+		keys: &[impl Into<String> + Clone],
+		token: Token,
+	) -> Result<(), String> {
 		for key in keys {
-			self.try_add(key.as_ref(), token.clone())?;
+			self.try_add(key.clone(), token.clone())?;
 		}
 		Ok(())
 	}
-	pub fn get_raw_descendant(&self, key: &str) -> Option<SubTrie<'_, String, Token>> {
-		self.trie.get_raw_descendant(key)
+
+	pub fn get_descendant(&self, key: impl Into<String>) -> Option<&TokenMap> {
+		let mut node = self;
+		for word in key.into().split(' ') {
+			node = node.children.get(word)?;
+		}
+		Some(node)
 	}
 }
 
@@ -1047,8 +1059,6 @@ fn resolve_semantic_token(mut tokeniser: Tokeniser) -> Result<Tokeniser, String>
 	let mut i = tokeniser.i;
 	let atoms = &mut tokeniser.atoms;
 	let tokens = &mut tokeniser.tokens;
-
-	let trie = create_trie()?;
 
 	macro_rules! push_and_increment {
 		($token:expr) => {{
@@ -1103,12 +1113,12 @@ fn resolve_semantic_token(mut tokeniser: Tokeniser) -> Result<Tokeniser, String>
 			let mut word_count = 1;
 			let mut matched_token = None;
 			let mut matched_word_count = 1;
-			while let Some(subtrie) = trie.get_raw_descendant(&key) {
-				if let Some(value) = subtrie.value() {
+			while let Some(node) = tokeniser.token_map.get_descendant(&key) {
+				if let Some(value) = &node.token {
 					matched_token = Some(value);
 					matched_word_count = word_count;
 				}
-				if subtrie.children().next().is_none() {
+				if node.children.is_empty() {
 					break;
 				}
 				let next_ident = match atoms.get(i + word_count) {
