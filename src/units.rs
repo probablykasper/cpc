@@ -403,17 +403,6 @@ create_units!(
 	Fahrenheit:         (Temperature, d!(0), "fahrenheit", "fahrenheit"),
 );
 
-/// Returns the conversion factor between two units.
-///
-/// The conversion factor is what you need to multiply `unit` with to get
-/// `to_unit`. For example, the conversion factor from 1 minute to 1 second
-/// is 60.
-///
-/// This is not sufficient for [`Temperature`] units.
-pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> D128 {
-	unit.weight() / to_unit.weight()
-}
-
 fn combined_weight(unit: &[(Unit, isize)]) -> D128 {
 	unit.iter().fold(D128::from(1), |acc, (u, exp)| {
 		acc * integer_power(u.weight(), *exp)
@@ -438,28 +427,34 @@ pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, St
 		));
 	}
 	let value = number.value;
-	// let ok = |new_value| Ok(Number::with_unit(new_value, to_unit));
-	let primitive_u = number.primitive_unit();
 	if number.primitive_unit() == vec![(Kelvin, 1)] {
-		todo!();
-		// match (number.unit.0, to_unit) {
-		// 	(Kelvin, Kelvin) => ok(value),
-		// 	(Kelvin, Celsius) => ok(value - d!(273.15)),
-		// 	(Kelvin, Fahrenheit) => ok(value * d!(1.8) - d!(459.67)),
-		// 	(Celsius, Celsius) => ok(value),
-		// 	(Celsius, Kelvin) => ok(value + d!(273.15)),
-		// 	(Celsius, Fahrenheit) => ok(value * d!(1.8) + d!(32)),
-		// 	(Fahrenheit, Fahrenheit) => ok(value),
-		// 	(Fahrenheit, Kelvin) => ok((value + d!(459.67)) * d!(5) / d!(9)),
-		// 	(Fahrenheit, Celsius) => ok((value - d!(32)) / d!(1.8)),
-		// 	_ => Err(format!(
-		// 		"Error converting temperature {:?} to {:?}",
-		// 		number.unit, to_unit
-		// 	)),
-		// }
+		if number.unit.len() != 1
+			|| to_unit.len() != 1
+			|| number.unit[0].1 != 1
+			|| to_unit[0].1 != 1
+		{
+			return Err(format!(
+				"Cannot convert from {:?} to {:?}",
+				number.unit, to_unit
+			));
+		}
+		let ok = |new_value| Ok(Number::with_unit(new_value, to_unit.clone()));
+		match (number.unit[0].0, to_unit[0].0) {
+			(Kelvin, Kelvin) => ok(value),
+			(Kelvin, Celsius) => ok(value - d!(273.15)),
+			(Kelvin, Fahrenheit) => ok(value * d!(1.8) - d!(459.67)),
+			(Celsius, Celsius) => ok(value),
+			(Celsius, Kelvin) => ok(value + d!(273.15)),
+			(Celsius, Fahrenheit) => ok(value * d!(1.8) + d!(32)),
+			(Fahrenheit, Fahrenheit) => ok(value),
+			(Fahrenheit, Kelvin) => ok((value + d!(459.67)) * d!(5) / d!(9)),
+			(Fahrenheit, Celsius) => ok((value - d!(32)) / d!(1.8)),
+			_ => Err(format!(
+				"Error converting temperature {:?} to {:?}",
+				number.unit, to_unit
+			)),
+		}
 	} else {
-		// let conversion_factor = get_conversion_factor(number.unit, to_unit);
-
 		let source_weight = combined_weight(&number.unit);
 		let target_weight = combined_weight(&to_unit);
 
