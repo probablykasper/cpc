@@ -468,16 +468,16 @@ pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, St
 /// If one of two provided [`Number`]s has a larger [`Unit`] than the other, convert
 /// the large one to the unit of the small one.
 pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number), String> {
-	todo!();
-	// if left.unit.weight() == right.unit.weight() {
-	// 	Ok((left, right))
-	// } else if left.unit.weight() > right.unit.weight() {
-	// 	let left_converted = convert(left, right.unit)?;
-	// 	Ok((left_converted, right))
-	// } else {
-	// 	let right_converted = convert(right, left.unit)?;
-	// 	Ok((left, right_converted))
-	// }
+	assert!(left.primitive_unit() == right.primitive_unit());
+	if combined_weight(&left.unit) == combined_weight(&right.unit) {
+		Ok((left, right))
+	} else if combined_weight(&left.unit) > combined_weight(&right.unit) {
+		let left_converted = convert(left, right.unit.clone())?;
+		Ok((left_converted, right))
+	} else {
+		let right_converted = convert(right, left.unit.clone())?;
+		Ok((left, right_converted))
+	}
 }
 
 /// Return the sum of two [`Number`]s
