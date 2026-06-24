@@ -1,5 +1,6 @@
 use crate::Number;
 use fastnum::{D128, dec128 as d};
+use std::cmp::Reverse;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// An enum of all possible unit types, like [`Length`], [`DigitalStorage`] etc.
@@ -43,7 +44,7 @@ pub enum UnitType {
 }
 impl UnitType {
 	fn primitive(&self) -> Vec<(Unit, isize)> {
-		match self {
+		let units = match self {
 			Time => vec![(Second, 1)],
 			Length => vec![(Meter, 1)],
 			Area => vec![(Meter, 2)],
@@ -53,19 +54,38 @@ impl UnitType {
 			DataTransferRate => vec![(Bit, 1), (Second, -1)],
 			FlopCount => vec![(Flop, 1)],
 			FlopRate => vec![(Flop, 1), (Second, -1)],
-			Energy => vec![(Kilogram, 1), (Meter, 2), (Second, -2)],
-			Power => vec![(Kilogram, 1), (Meter, 2), (Second, -3)],
+			Energy => vec![(Meter, 2), (Kilogram, 1), (Second, -2)],
+			Power => vec![(Meter, 2), (Kilogram, 1), (Second, -3)],
 			ElectricCurrent => vec![(Ampere, 1)],
-			Resistance => vec![(Kilogram, 1), (Meter, 2), (Second, -3), (Ampere, -2)],
-			Voltage => vec![(Kilogram, 1), (Meter, 2), (Second, -3), (Ampere, -1)],
-			Pressure => vec![(Kilogram, 1), (Meter, -1), (Second, -2)],
+			Resistance => vec![(Meter, 2), (Kilogram, 1), (Second, -3), (Ampere, -2)],
+			Voltage => vec![(Meter, 2), (Kilogram, 1), (Second, -3), (Ampere, -1)],
+			Pressure => vec![(Kilogram, 1), (Second, -2), (Meter, -1)],
 			Frequency => vec![(Second, -1)],
 			Speed => vec![(Meter, 1), (Second, -1)],
 			Temperature => vec![(Kelvin, 1)],
+		};
+		#[cfg(debug_assertions)]
+		{
+			let u0 = units.clone();
+			let mut u1 = units.clone();
+			sort_units(&mut u1);
+			assert!(u0 == u1)
 		}
+		units
 	}
 }
 use UnitType::*;
+
+/// Sort for display and comparison purposes.
+pub fn sort_units(primitives: &mut Vec<(Unit, isize)>) {
+	primitives.sort_by_key(|u| {
+		(
+			u.1 < 0,            // multiplications first
+			Reverse(u.1.abs()), // largest first, like "sqm seconds"
+			u.0,                // then sort by unit, to have a fully deterministic order
+		)
+	});
+}
 
 pub fn primitive_unit(unit: &Vec<(Unit, isize)>) -> Vec<(Unit, isize)> {
 	let mut primitives: Vec<(Unit, isize)> = Vec::new();
@@ -79,6 +99,7 @@ pub fn primitive_unit(unit: &Vec<(Unit, isize)>) -> Vec<(Unit, isize)> {
 		}
 	}
 	primitives.retain(|(_, exponent)| exponent != &0);
+	sort_units(&mut primitives);
 	primitives
 }
 
@@ -652,7 +673,6 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 	}
 	// todo: 8 megabytes per second * 1 minute
 	// todo: 8 megaFLOP per second * 1 minute
-	// todo: 1 amp * 1 ohm = 1 volt
 
 	// } else if lcat == DataTransferRate && rcat == Time {
 	// 	// 8 megabytes per second * 1 minute
@@ -719,10 +739,6 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 	// 	};
 	// 	let compute_work = Number::new(result, Flop);
 	// 	Ok(convert(compute_work, final_unit)?)
-	// } else if lcat == ElectricCurrent && rcat == Resistance {
-	// 	// 1 amp * 1 ohm = 1 volt
-	// 	let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Watt)))
 	// }
 }
 

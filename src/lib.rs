@@ -97,12 +97,7 @@ impl Number {
 	fn get_unit_string(&self, plural: bool) -> String {
 		let mut s = String::new();
 		let mut units = self.unit.clone();
-		units.sort_by_key(|u| {
-			(
-				u.1 < 0,            // multiplications first
-				Reverse(u.1.abs()), // largest first, like "sqm seconds"
-			)
-		});
+		sort_units(&mut units);
 		let mut positives = units.iter().filter(|u| u.1 > 0).peekable();
 		while let Some(unit) = positives.next() {
 			if unit.1 <= 0 {
