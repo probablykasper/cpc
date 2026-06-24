@@ -22,28 +22,22 @@
 //! }
 //! ```
 
-use crate::units::{Unit, UnitType, primitive_unit};
+use crate::units::{Unit, UnitType, primitive_unit, sort_units};
 use fastnum::{D128, dec128 as d};
-use std::{
-	cmp::Reverse,
-	fmt::{self, Display},
-};
+use std::fmt::{self, Debug, Display};
 use web_time::Instant;
 
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
 /// Turns a string into [`Token`]s
-#[rustfmt::skip]
 pub mod lexer;
-#[rustfmt::skip]
 mod lookup;
 /// Turns [`Token`]s into an [`AstNode`](parser::AstNode)
 pub mod parser;
 /// Units, and functions you can use with them
-#[rustfmt::skip]
 pub mod units;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone)]
 /// A number with a `Unit`.
 ///
 /// Example:
@@ -52,10 +46,7 @@ pub mod units;
 /// use cpc::units::Unit;
 /// use fastnum::dec128;
 ///
-/// let x = Number {
-///   value: dec128!(100),
-///   unit: Unit::Meter,
-/// };
+/// let x = Number::with_basic_unit(dec128!(100), Unit::Meter);
 /// ```
 pub struct Number {
 	/// The value of the number
@@ -149,6 +140,26 @@ impl Display for Number {
 			_ => format!("{value} {word}"),
 		};
 		write!(f, "{output}")
+	}
+}
+impl Debug for Number {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let unit_strings: Vec<_> = self
+			.unit
+			.iter()
+			.map(|u| format!("{:?}^{}", u.0, u.1))
+			.collect();
+		write!(
+			f,
+			"Number({} {})",
+			self.get_simplified_value(),
+			unit_strings.join(" ")
+		)
+	}
+}
+impl PartialEq for Number {
+	fn eq(&self, other: &Self) -> bool {
+		self.value == other.value && self.primitive_unit() == other.primitive_unit()
 	}
 }
 
@@ -397,15 +408,15 @@ mod tests {
 
 	#[test]
 	fn test_evaluations() {
-		assert_eq!(default_eval("-2(-3)"), Number::new(d!(6), Unit::NoUnit));
-		assert_eq!(default_eval("-2(3)"), Number::new(d!(-6), Unit::NoUnit));
-		assert_eq!(default_eval("(3)-2"), Number::new(d!(1), Unit::NoUnit));
+		assert_eq!(default_eval("-2(-3)"), Number::new_unitless(d!(6)));
+		assert_eq!(default_eval("-2(3)"), Number::new_unitless(d!(-6)));
+		assert_eq!(default_eval("(3)-2"), Number::new_unitless(d!(1)));
 		assert_eq!(
 			default_eval("-1km to m"),
-			Number::new(d!(-1000), Unit::Meter)
+			Number::with_basic_unit(d!(-1000), Unit::Meter)
 		);
-		assert_eq!(default_eval("2*-3*0.5"), Number::new(d!(-3), Unit::NoUnit));
-		assert_eq!(default_eval("-3^2"), Number::new(d!(-9), Unit::NoUnit));
-		assert_eq!(default_eval("-1+2"), Number::new(d!(1), Unit::NoUnit));
+		assert_eq!(default_eval("2*-3*0.5"), Number::new_unitless(d!(-3)));
+		assert_eq!(default_eval("-3^2"), Number::new_unitless(d!(-9)));
+		assert_eq!(default_eval("-1+2"), Number::new_unitless(d!(1)));
 	}
 }

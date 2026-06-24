@@ -1,8 +1,9 @@
-use crate::NamedNumber::*;
 use crate::NamedNumber;
-use fastnum::{dec128 as d, D128};
+use crate::NamedNumber::*;
+use fastnum::{D128, dec128 as d};
 
 /// Returns the corresponding [`D128`] of a [`NamedNumber`]
+#[rustfmt::skip]
 pub fn lookup_named_number(named_number: &NamedNumber) -> D128 {
 	match named_number {
 		Hundred           => d!(100),

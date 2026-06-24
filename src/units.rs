@@ -108,7 +108,7 @@ pub fn primitive_unit(unit: &Vec<(Unit, isize)>) -> Vec<(Unit, isize)> {
 // and evaluator
 macro_rules! create_units {
 	( $( $variant:ident : $properties:expr ),*, ) => {
-		#[derive(Clone, Copy, PartialEq, Debug)]
+		#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord)]
 		/// A Unit enum. Note that it can also be [`NoUnit`].
 		pub enum Unit {
 			$($variant),*
@@ -671,75 +671,6 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 		let new_number = to_ideal_unit(new_number);
 		Ok(new_number)
 	}
-	// todo: 8 megabytes per second * 1 minute
-	// todo: 8 megaFLOP per second * 1 minute
-
-	// } else if lcat == DataTransferRate && rcat == Time {
-	// 	// 8 megabytes per second * 1 minute
-	// 	let data_rate_value = left.value * left.unit.weight();
-	// 	let seconds = convert(right, Second)?;
-	// 	let result = data_rate_value * seconds.value;
-	// 	let final_unit = match left.unit {
-	// 		BitsPerSecond => Bit,
-	// 		KilobitsPerSecond => Kilobit,
-	// 		MegabitsPerSecond => Megabit,
-	// 		GigabitsPerSecond => Gigabit,
-	// 		TerabitsPerSecond => Terabit,
-	// 		PetabitsPerSecond => Petabit,
-	// 		ExabitsPerSecond => Exabit,
-	// 		ZettabitsPerSecond => Zettabit,
-	// 		YottabitsPerSecond => Yottabit,
-	// 		KibibitsPerSecond => Kibibit,
-	// 		MebibitsPerSecond => Mebibit,
-	// 		GibibitsPerSecond => Gibibit,
-	// 		TebibitsPerSecond => Tebibit,
-	// 		PebibitsPerSecond => Pebibit,
-	// 		ExbibitsPerSecond => Exbibit,
-	// 		ZebibitsPerSecond => Zebibit,
-	// 		YobibitsPerSecond => Yobibit,
-	// 		BytesPerSecond => Byte,
-	// 		KilobytesPerSecond => Kilobyte,
-	// 		MegabytesPerSecond => Megabyte,
-	// 		GigabytesPerSecond => Gigabyte,
-	// 		TerabytesPerSecond => Terabyte,
-	// 		PetabytesPerSecond => Petabyte,
-	// 		ExabytesPerSecond => Exabyte,
-	// 		ZettabytesPerSecond => Zettabyte,
-	// 		YottabytesPerSecond => Yottabyte,
-	// 		KibibytesPerSecond => Kibibyte,
-	// 		MebibytesPerSecond => Mebibyte,
-	// 		GibibytesPerSecond => Gibibyte,
-	// 		TebibytesPerSecond => Tebibyte,
-	// 		PebibytesPerSecond => Pebibyte,
-	// 		ExbibytesPerSecond => Exbibyte,
-	// 		ZebibytesPerSecond => Zebibyte,
-	// 		YobibytesPerSecond => Yobibyte,
-	// 		_ => Bit,
-	// 	};
-	// 	let data_storage = Number::new(result, Bit);
-	// 	Ok(convert(data_storage, final_unit)?)
-	// } else if lcat == FlopRate && rcat == Time {
-	// 	// 8 megaFLOP per second * 1 minute
-	// 	let compute_perf_value = left.value * left.unit.weight();
-	// 	let seconds = convert(right, Second)?;
-	// 	let result = compute_perf_value * seconds.value;
-	// 	let final_unit = match left.unit {
-	// 		FlopPerSecond => Flop,
-	// 		KiloFlopPerSecond => KiloFlop,
-	// 		MegaFlopPerSecond => MegaFlop,
-	// 		GigaFlopPerSecond => GigaFlop,
-	// 		TeraFlopPerSecond => TeraFlop,
-	// 		PetaFlopPerSecond => PetaFlop,
-	// 		ExaFlopPerSecond => ExaFlop,
-	// 		ZettaFlopPerSecond => ZettaFlop,
-	// 		YottaFlopPerSecond => YottaFlop,
-	// 		RonnaFlopPerSecond => RonnaFlop,
-	// 		QuettaFlopPerSecond => QuettaFlop,
-	// 		_ => Flop,
-	// 	};
-	// 	let compute_work = Number::new(result, Flop);
-	// 	Ok(convert(compute_work, final_unit)?)
-	// }
 }
 
 /// Divide a [`Number`] by another [`Number`].
@@ -835,9 +766,9 @@ mod tests {
 
 			let value_string = &value.to_string();
 			let value_d128 = D128::from_str(value_string, Context::default()).unwrap();
-			let number = Number::new(value_d128, unit);
+			let number = Number::with_basic_unit(value_d128, unit);
 
-			let result = convert(number, to_unit);
+			let result = convert(number, vec![(to_unit, 1)]);
 			let string_result = &result.unwrap().value.to_string();
 			let float_result = f64::from_str(string_result).unwrap();
 
@@ -1182,10 +1113,10 @@ mod tests {
 		assert_float_eq!(convert_test(1000.0, Terahertz, Petahertz), 1.0);
 		assert_float_eq!(convert_test(60.0, Hertz, RevolutionsPerMinute), 1.0);
 
-		assert_float_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
+		// assert_float_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
 		assert_float_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);
-		assert_float_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
-		assert_float_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
+		// assert_float_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
+		// assert_float_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
 
 		assert_float_eq!(convert_test(274.15, Kelvin, Celsius), 1.0);
 		assert_float_eq!(convert_test(300.0, Kelvin, Fahrenheit), 80.33);
@@ -1193,5 +1124,48 @@ mod tests {
 		assert_float_eq!(convert_test(-15.0, Celsius, Fahrenheit), 5.0);
 		assert_float_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
 		assert_float_eq!(convert_test(5.0, Fahrenheit, Celsius), -15.0);
+	}
+
+	#[track_caller]
+	fn eval_test(a: &str, b: &str) {
+		let result_a = crate::eval(a, true, false).unwrap();
+		let result_b = crate::eval(b, true, false).unwrap();
+		assert_eq!(result_a, result_b, "{a} != {b}");
+	}
+	#[track_caller]
+	fn eval_approx_test(a: &str, b: &str) {
+		let result_a = crate::eval(a, true, false).unwrap();
+		let result_b = crate::eval(b, true, false).unwrap();
+		let diff_pct: D128 = result_a.value / result_b.value - 1;
+		let diff_pct = diff_pct.abs();
+		assert!(diff_pct <= d!(0.00000001), "{a} !≈ {b}")
+	}
+
+	#[test]
+	fn test_unit_evals() {
+		eval_test("3.6km/1h", "3.6 kph");
+		eval_test("0.3048 m/s to ft/s", "1 ft/s");
+		eval_test("1.609344 km/1h to mph", "1 mph");
+		eval_approx_test("1.852 kph to knots", "1 knots");
+		eval_test("120 seconds to minutes", "2 minutes");
+		eval_test("100 cm to m", "1 m");
+		eval_test("1 km2 to m2", "1000000 m2");
+		eval_test("1 liter to ml", "1000 ml");
+		eval_test("1 kg to g", "1000 g");
+		eval_test("1 KB to bytes", "1000 bytes");
+		eval_test("1 MBps to KBps", "1000 KBps");
+		eval_test("1 KFLOP to FLOP", "1000 FLOP");
+		eval_test("1 KFLOPs to FLOPs", "1000 FLOPs");
+		eval_test("1 kWh to Wh", "1000 Wh");
+		eval_test("1 kW to W", "1000 W");
+		eval_test("1000 mA to A", "1 A");
+		eval_test("1000 mΩ to Ω", "1 Ω");
+		eval_test("1000 mV to V", "1 V");
+		eval_test("1 bar to Pa", "100000 Pa");
+		eval_test("1 kHz to Hz", "1000 Hz");
+		eval_approx_test("1 km/h to m/s", "0.27777777777777777777 m/s");
+		eval_test("0 C to K", "273.15 K");
+		eval_test("8 megabytes per second * 1 minute", "480mb");
+		eval_test("8 megaFLOP per second * 1 minute", "480megaFLOP");
 	}
 }

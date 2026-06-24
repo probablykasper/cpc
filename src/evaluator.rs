@@ -249,7 +249,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::eval;
+	use crate::{eval, units::Unit::*};
 
 	fn eval_default<'a>(input: &'a str) -> Number {
 		let result = eval(input, true, false).unwrap();
@@ -257,7 +257,7 @@ mod tests {
 	}
 	fn eval_num<'a>(input: &'a str) -> String {
 		let result = eval(input, true, false).unwrap();
-		assert_eq!(result.unit, Unit::NoUnit);
+		assert!(result.is_unitless());
 
 		result.to_string()
 	}
@@ -269,7 +269,7 @@ mod tests {
 		assert_eq!(eval_num("(3)-2"), "1");
 		assert_eq!(
 			eval_default("-1km to m"),
-			Number::new(d!(-1000), Unit::Meter)
+			Number::with_basic_unit(d!(-1000), Meter)
 		);
 		assert_eq!(eval_num("2*-3*0.5"), "-3");
 		assert_eq!(eval_num("-3^2"), "-9");
