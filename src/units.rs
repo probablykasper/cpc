@@ -832,17 +832,6 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 		// x km ^ 3
 		let result = (left.value * left.unit.weight()).pow(right.value);
 		Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
-	} else if lcat == Length && rcat == Length && right.value == d!(1) {
-		// x km ^ 1 km
-		Ok(multiply(left, right)?)
-	} else if lcat == Length && rcat == Length && right.value == d!(2) {
-		// x km ^ 2 km
-		let pow2 = multiply(left, Number::new(d!(1), right.unit))?;
-		let pow3 = multiply(pow2, Number::new(d!(1), right.unit))?;
-		Ok(pow3)
-	} else if lcat == Length && rcat == Area && right.value == d!(1) {
-		// x km ^ km2
-		Ok(multiply(left, Number::new(d!(1), right.unit))?)
 	} else {
 		Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
 	}

@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Fix `^` allowing numbers to be raised to the power of units
+
 ## 3.1.0 - 2025 Jun 20
 - Add FLOP and FLOPS units
 - Update `fastnum` dependency
