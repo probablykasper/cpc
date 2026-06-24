@@ -397,20 +397,22 @@ fn integer_power(base: D128, exp: isize) -> D128 {
 pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, String> {
 	if number.primitive_unit() != primitive_unit(&to_unit) {
 		return Err(format!(
-			"Cannot convert from {:?} to {:?}",
-			number.unit, to_unit
+			"Cannot convert {} to {}",
+			number,
+			Number::with_unit(d!(0), to_unit).plural()
 		));
 	}
 	let value = number.value;
-	if number.primitive_unit() == vec![(Kelvin, 1)] {
+	if number.primitive_unit() == Temperature.primitive() {
 		if number.unit.len() != 1
 			|| to_unit.len() != 1
 			|| number.unit[0].1 != 1
 			|| to_unit[0].1 != 1
 		{
 			return Err(format!(
-				"Cannot convert from {:?} to {:?}",
-				number.unit, to_unit
+				"Cannot convert {} to {}",
+				number,
+				Number::with_unit(d!(0), to_unit).plural()
 			));
 		}
 		let ok = |new_value| Ok(Number::with_unit(new_value, to_unit.clone()));
@@ -425,8 +427,9 @@ pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, St
 			(Fahrenheit, Kelvin) => ok((value + d!(459.67)) * d!(5) / d!(9)),
 			(Fahrenheit, Celsius) => ok((value - d!(32)) / d!(1.8)),
 			_ => Err(format!(
-				"Error converting temperature {:?} to {:?}",
-				number.unit, to_unit
+				"Error converting temperature {} to {}",
+				number,
+				Number::with_unit(d!(0), to_unit).plural()
 			)),
 		}
 	} else {
@@ -465,7 +468,7 @@ pub fn add(left: Number, right: Number) -> Result<Number, String> {
 		let (left, right) = convert_to_lowest(left, right)?;
 		Ok(Number::with_unit(left.value + right.value, left.unit))
 	} else {
-		Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
+		Err(format!("Cannot add {} and {}", left, right))
 	}
 }
 
@@ -479,10 +482,7 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 		let (left, right) = convert_to_lowest(left, right)?;
 		Ok(Number::with_unit(left.value - right.value, left.unit))
 	} else {
-		Err(format!(
-			"Cannot subtract {:?} by {:?}",
-			left.unit, right.unit
-		))
+		Err(format!("Cannot subtract {} by {}", left, right))
 	}
 }
 
@@ -636,10 +636,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 /// Temperatures don't work
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
-		Err(format!(
-			"Cannot multiply {:?} and {:?}",
-			left.unit, right.unit
-		))
+		Err(format!("Cannot multiply {} and {}", left, right))
 	} else {
 		let mut new_number = left;
 		new_number.value *= right.value;
@@ -736,7 +733,7 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 /// Temperatures don't work.
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
-		Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
+		Err(format!("Cannot divide {} by {}", left, right))
 	} else {
 		let mut new_number = left;
 		new_number.value /= right.value;
@@ -759,13 +756,13 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 /// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
-		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+		Err(format!("Cannot modulo {} by {}", left, right))
 	} else if left.primitive_unit() == right.primitive_unit() {
 		// 5 km % 3 m
 		let (left, right) = convert_to_lowest(left, right)?;
 		Ok(Number::with_unit(left.value % right.value, left.unit))
 	} else {
-		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+		Err(format!("Cannot modulo {} by {}", left, right))
 	}
 }
 
@@ -778,10 +775,7 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 	// I tried converting `right` to use powi, but somehow that was slower
 	if left.contains_primitive(Temperature) || right.has_unit() {
-		Err(format!(
-			"Cannot raise {:?} to the power of {:?}",
-			left.unit, right.unit
-		))
+		Err(format!("Cannot raise {} to the power of {}", left, right))
 	} else if left.is_unitless() {
 		let result = left.value.pow(right.value);
 		let new_number = Number::new_unitless(result);

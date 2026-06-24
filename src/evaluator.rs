@@ -75,7 +75,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						let result = cbrt(child_answer.value);
 						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("cbrt() only accepts unitless numbers".to_string())
 					}
 				}
 				Sqrt => {
@@ -83,7 +83,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						let result = sqrt(child_answer.value);
 						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("sqrt() only accepts unitless numbers".to_string())
 					}
 				}
 				Log => {
@@ -91,7 +91,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						let result = child_answer.value.log10();
 						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("log() only accepts unitless numbers".to_string())
 					}
 				}
 				Ln => {
@@ -99,7 +99,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						let result = child_answer.value.ln();
 						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("ln() only accepts UnitType::NoType".to_string())
+						Err("ln() only accepts unitless numbers".to_string())
 					}
 				}
 				Exp => {
@@ -107,7 +107,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						let result = child_answer.value.exp();
 						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("exp() only accepts UnitType::NoType".to_string())
+						Err("exp() only accepts unitless numbers".to_string())
 					}
 				}
 				Round => {
