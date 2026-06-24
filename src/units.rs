@@ -629,19 +629,13 @@ pub fn to_ideal_unit(number: Number) -> Number {
 	number
 }
 
-/// Multiply two [`Number`]s
+/// Multiply two [`Number`]s.
 ///
-/// - Temperatures don't work
-/// - If you multiply a unit with a unitless number, the result gets that other unit
-/// - If you multiply [`Length`] with [`Length`], the result has a unit of [`Area`], etc.
-/// - If you multiply [`Speed`] with [`Time`], the result has a unit of [`Length`]
-/// - If you multiply [`Voltage`] with [`ElectricCurrent`], the result has a unit of [`Power`]
-/// - If you multiply [`ElectricCurrent`] with [`Resistance`], the result has a unit of [`Voltage`]
-/// - If you multiply [`Power`] with [`Time`], the result has a unit of [`Energy`]
+/// Units are converted accordingly.
+///
+/// Temperatures don't work
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
-		println!("TEMP?");
-		// if temperature
 		Err(format!(
 			"Cannot multiply {:?} and {:?}",
 			left.unit, right.unit
@@ -735,100 +729,29 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 	// }
 }
 
-/// Divide a [`Number`] by another [`Number`]
+/// Divide a [`Number`] by another [`Number`].
 ///
-/// - Temperatures don't work
-/// - If you divide a unit by that same unit, the result has no unit
-/// - If you divide [`Volume`] by [`Length`], the result has a unit of [`Area`], etc.
-/// - If you divide [`Length`] by [`Time`], the result has a unit of [`Speed`]
-/// - If you divide [`Length`] by [`Speed`], the result has a unit of [`Time`]
-/// - If you divide [`Power`] by [`ElectricCurrent`], the result has a unit of [`Volt`]
-/// - If you divide [`Voltage`] by [`ElectricCurrent`], the result has a unit of [`Ohm`]
-/// - If you divide [`Voltage`] by [`Resistance`], the result has a unit of [`Ampere`]
-/// - If you divide [`Power`] by [`Voltage`], the result has a unit of [`Ampere`]
-/// - If you divide [`Energy`] by [`Time`], the result has a unit of [`Power`]
+/// Units are converted accordingly.
+///
+/// Temperatures don't work.
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
-	todo!();
-	// let lcat = left.unit.category();
-	// let rcat = right.unit.category();
-	// if left.unit == NoUnit && right.unit == NoUnit {
-	// 	// 3 / 2
-	// 	Ok(Number::new(left.value / right.value, left.unit))
-	// } else if lcat == Temperature || rcat == Temperature {
-	// 	// if temperature
-	// 	Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
-	// } else if left.has_unit() && right.unit == NoUnit {
-	// 	// 1 km / 2
-	// 	Ok(Number::new(left.value / right.value, left.unit))
-	// } else if lcat == rcat {
-	// 	// 4 km / 2 km
-	// 	let (left, right) = convert_to_lowest(left, right)?;
-	// 	Ok(Number::new(left.value / right.value, NoUnit))
-	// } else if (lcat == Area && rcat == Length) || (lcat == Volume && rcat == Area) {
-	// 	// 1 km2 / 1 km, 1 km3 / 1 km2
-	// 	let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Millimeter)))
-	// } else if lcat == Volume && rcat == Length {
-	// 	// 1 km3 / 1 km
-	// 	let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-	// } else if lcat == Length && rcat == Time {
-	// 	// 1 km / 2s
-	// 	let final_unit = match (left.unit, right.unit) {
-	// 		(Kilometer, Hour) => KilometersPerHour,
-	// 		(Meter, Second) => MetersPerSecond,
-	// 		(Mile, Hour) => MilesPerHour,
-	// 		(Foot, Second) => FeetPerSecond,
-	// 		(NauticalMile, Hour) => Knot,
-	// 		_ => KilometersPerHour,
-	// 	};
-	// 	let kilometers = convert(left, Kilometer)?;
-	// 	let hours = convert(right, Hour)?;
-	// 	let kph = Number::new(kilometers.value / hours.value, KilometersPerHour);
-	// 	Ok(convert(kph, final_unit)?)
-	// } else if lcat == Length && rcat == Speed {
-	// 	// 12 km / 100 kph
-	// 	let kilometers = convert(left, Kilometer)?;
-	// 	let kilometers_per_hour = convert(right, KilometersPerHour)?;
-	// 	let hour = Number::new(kilometers.value / kilometers_per_hour.value, Hour);
-	// 	Ok(to_ideal_unit(hour))
-	// } else if lcat == DigitalStorage && rcat == DataTransferRate {
-	// 	// 1 kilobit / 1 bit per second
-	// 	let bits = convert(left, Bit)?;
-	// 	let bits_per_second = convert(right, BitsPerSecond)?;
-	// 	let seconds = Number::new(bits.value / bits_per_second.value, Second);
-	// 	Ok(to_ideal_unit(seconds))
-	// } else if lcat == FlopCount && rcat == FlopRate {
-	// 	// 1 kiloFLOP / 1 FLOP per second
-	// 	let flop = convert(left, Flop)?;
-	// 	let flop_per_second = convert(right, FlopPerSecond)?;
-	// 	let seconds = Number::new(flop.value / flop_per_second.value, Second);
-	// 	Ok(to_ideal_unit(seconds))
-	// } else if lcat == Power && rcat == ElectricCurrent {
-	// 	// 1 watt / 1 ampere = 1 volt
-	// 	let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Volt)))
-	// } else if lcat == Voltage && rcat == ElectricCurrent {
-	// 	// 1 volt / 1 ampere = 1 ohm
-	// 	let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Ohm)))
-	// } else if lcat == Voltage && rcat == Resistance {
-	// 	// 1 volt / 1 ohm = 1 amp
-	// 	let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Ampere)))
-	// } else if lcat == Power && rcat == Voltage {
-	// 	// 1 watt / 1 volt = 1 amp
-	// 	let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Ampere)))
-	// } else if lcat == Energy && rcat == Time {
-	// 	// 1 joule / 1 second = 1 watt
-	// 	let result = (left.value * left.unit.weight())
-	// 		/ (right.value * right.unit.weight() / Unit::Second.weight());
-	// 	Ok(to_ideal_unit(Number::new(result, Watt)))
-	// } else {
-	// 	Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
-	// }
+	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+		Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
+	} else {
+		let mut new_number = left;
+		new_number.value /= right.value;
+		for (r_unit, r_exp) in right.unit {
+			let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
+			match existing {
+				Some(existing) => existing.1 -= r_exp,
+				None => new_number.unit.push((r_unit, -r_exp)),
+			}
+		}
+		let new_number = to_ideal_unit(new_number);
+		Ok(new_number)
+	}
 }
+
 /// Modulo a [`Number`] by another [`Number`].
 ///
 /// `left` and `right` need to have the same [`UnitType`], and the result will have that same [`UnitType`].
