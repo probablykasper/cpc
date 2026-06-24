@@ -776,26 +776,34 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 /// - If you take [`Length`] to the power of [`Area`], the result has a unit of [`Volume`]
 /// - etc.
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
-	todo!();
-	// // I tried converting `right` to use powi, but somehow that was slower
-	// let lcat = left.unit.category();
-	// let rcat = left.unit.category();
-	// if left.unit == NoUnit && right.unit == NoUnit {
-	// 	// 3 ^ 2
-	// 	Ok(Number::new(left.value.pow(right.value), left.unit))
-	// } else if right.value == d!(1) && right.unit == NoUnit {
-	// 	Ok(left)
-	// } else if lcat == Length && right.unit == NoUnit && right.value == d!(2) {
-	// 	// x km ^ 2
-	// 	let result = (left.value * left.unit.weight()).pow(right.value);
-	// 	Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-	// } else if lcat == Length && right.unit == NoUnit && right.value == d!(3) {
-	// 	// x km ^ 3
-	// 	let result = (left.value * left.unit.weight()).pow(right.value);
-	// 	Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
-	// } else {
-	// 	Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
-	// }
+	// I tried converting `right` to use powi, but somehow that was slower
+	if left.contains_primitive(Temperature) || right.has_unit() {
+		Err(format!(
+			"Cannot raise {:?} to the power of {:?}",
+			left.unit, right.unit
+		))
+	} else if left.is_unitless() {
+		let result = left.value.pow(right.value);
+		let new_number = Number::new_unitless(result);
+		Ok(new_number)
+	} else {
+		let exp: isize = match (right.value.try_into(), right.value.is_integral()) {
+			(Ok(exp), true) => exp,
+			_ => {
+				return Err(format!(
+					"Cannot raise {} to the power of {}. Numbers with units can only be raised to integer powers",
+					left, right
+				));
+			}
+		};
+		let result = left.value.pow(right.value);
+		let mut new_number = Number::with_unit(result, left.unit);
+		for (_, unit_exp) in new_number.unit.iter_mut() {
+			*unit_exp *= exp;
+		}
+		let new_number = to_ideal_unit(new_number);
+		Ok(new_number)
+	}
 }
 
 #[cfg(test)]
