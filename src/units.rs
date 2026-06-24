@@ -646,6 +646,52 @@ pub fn to_ideal_unit(number: Number) -> Number {
 		} else {
 			return Number::with_basic_unit(value / Millivolt.weight(), Millivolt);
 		}
+	} else if primitive == DigitalStorage.primitive() {
+		let bits = &[
+			Bit, Kilobit, Megabit, Gigabit, Terabit, Petabit, Exabit, Zettabit, Yottabit,
+		];
+		let bibits = &[
+			Bit, Kibibit, Mebibit, Gibibit, Tebibit, Pebibit, Exbibit, Zebibit, Yobibit,
+		];
+		let bytes = &[
+			Byte, Kilobyte, Megabyte, Gigabyte, Terabyte, Petabyte, Exabyte, Zettabyte, Yottabyte,
+		];
+		let bibytes = &[
+			Byte, Kibibyte, Mebibyte, Gibibyte, Tebibyte, Pebibyte, Exbibyte, Zebibyte, Yobibyte,
+		];
+		for unit in &number.unit {
+			if unit.0.category() == DigitalStorage || unit.0.category() == DataTransferRate {
+				let weight = unit.0.weight();
+				let candidates = if weight % 8192 == d!(0) {
+					bibytes
+				} else if weight % 8000 == d!(0) {
+					bytes
+				} else if weight % 1024 == d!(0) {
+					bibits
+				} else {
+					bits
+				};
+				let unit = candidates
+					.iter()
+					.rev()
+					.find(|&&u| value >= u.weight())
+					.copied()
+					.unwrap_or(candidates[0]);
+				return Number::with_basic_unit(value / unit.weight(), unit);
+			}
+		}
+	} else if primitive == FlopCount.primitive() {
+		let candidates = [
+			Flop, KiloFlop, MegaFlop, GigaFlop, TeraFlop, PetaFlop, ExaFlop, ZettaFlop, YottaFlop,
+			RonnaFlop, QuettaFlop,
+		];
+		let unit = candidates
+			.iter()
+			.rev()
+			.find(|&&u| value >= u.weight())
+			.copied()
+			.unwrap_or(candidates[0]);
+		return Number::with_basic_unit(value / unit.weight(), unit);
 	}
 	number
 }
