@@ -1,6 +1,9 @@
 # Changelog
 
 ## Next
+- Rewrite units to be exponent-based, making units much more powerful
+- Add generic unit multiplication/division, such as `1kg/1m` or `1m*1kg`.
+- Add generic unit simplification. For example, `1kg*1sqm/1s/1s/1s/1a` now becomes `1 volt`
 - Fix `^` allowing numbers to be raised to the power of units
 
 ## 3.1.0 - 2025 Jun 20

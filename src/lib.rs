@@ -22,25 +22,22 @@
 //! }
 //! ```
 
-use crate::units::Unit;
-use fastnum::{dec128 as d, D128};
-use std::fmt::{self, Display};
+use crate::units::{Unit, UnitType, primitive_unit, sort_units};
+use fastnum::{D128, dec128 as d};
+use std::fmt::{self, Debug, Display};
 use web_time::Instant;
 
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
 /// Turns a string into [`Token`]s
-#[rustfmt::skip]
 pub mod lexer;
-#[rustfmt::skip]
 mod lookup;
 /// Turns [`Token`]s into an [`AstNode`](parser::AstNode)
 pub mod parser;
 /// Units, and functions you can use with them
-#[rustfmt::skip]
 pub mod units;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone)]
 /// A number with a `Unit`.
 ///
 /// Example:
@@ -49,38 +46,120 @@ pub mod units;
 /// use cpc::units::Unit;
 /// use fastnum::dec128;
 ///
-/// let x = Number {
-///   value: dec128!(100),
-///   unit: Unit::Meter,
-/// };
+/// let x = Number::with_basic_unit(dec128!(100), Unit::Meter);
 /// ```
 pub struct Number {
-	/// The number part of a [`Number`] struct
+	/// The value of the number
 	pub value: D128,
-	/// The unit of a [`Number`] struct. This can be [`NoType`](units::UnitType::NoType)
-	pub unit: Unit,
+	/// The unit and exponent
+	pub unit: Vec<(Unit, isize)>,
 }
-
 impl Number {
-	pub const fn new(value: D128, unit: Unit) -> Number {
+	pub fn new_unitless(value: D128) -> Number {
+		Number {
+			value,
+			unit: vec![],
+		}
+	}
+	pub fn with_basic_unit(value: D128, unit: Unit) -> Number {
+		Number {
+			value,
+			unit: vec![(unit, 1)],
+		}
+	}
+	pub fn with_unit(value: D128, unit: Vec<(Unit, isize)>) -> Number {
 		Number { value, unit }
+	}
+	pub fn has_unit(&self) -> bool {
+		!self.unit.is_empty()
+	}
+	pub fn is_unitless(&self) -> bool {
+		self.unit.is_empty()
 	}
 	pub fn get_simplified_value(&self) -> D128 {
 		self.value.reduce()
+	}
+	pub fn primitive_unit(&self) -> Vec<(Unit, isize)> {
+		primitive_unit(&self.unit)
+	}
+	pub fn contains_primitive(&self, unit: UnitType) -> bool {
+		self.unit.iter().any(|(u, _)| u.category() == unit)
+	}
+	fn get_unit_string(&self, plural: bool) -> String {
+		let mut s = String::new();
+		let mut units = self.unit.clone();
+		sort_units(&mut units);
+		let mut positives = units.iter().filter(|u| u.1 > 0).peekable();
+		while let Some(unit) = positives.next() {
+			if unit.1 <= 0 {
+				continue;
+			}
+			if s.len() != 0 {
+				s.push_str(" * ");
+			}
+			// only the last multiplication should be plural: `100 minute meters / volt hour`
+			let is_last = positives.peek().is_none();
+			match is_last && plural {
+				false => s.push_str(unit.0.singular()),
+				true => s.push_str(unit.0.plural()),
+			};
+			if unit.1.abs() >= 2 {
+				s.push_str("^");
+				s.push_str(&unit.1.to_string());
+			}
+		}
+		for unit in units {
+			if unit.1 >= 0 {
+				continue;
+			}
+			s.push_str(" / ");
+			s.push_str(unit.0.singular());
+			if unit.1.abs() >= 2 {
+				s.push_str("^");
+				s.push_str(&unit.1.to_string());
+			}
+		}
+		s
+	}
+	pub fn singular(&self) -> String {
+		self.get_unit_string(false)
+	}
+	pub fn plural(&self) -> String {
+		self.get_unit_string(true)
 	}
 }
 impl Display for Number {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let value = self.get_simplified_value();
 		let word = match self.value == d!(1) {
-			true => self.unit.singular(),
-			false => self.unit.plural(),
+			true => self.singular(),
+			false => self.plural(),
 		};
-		let output = match word {
+		let output = match word.as_str() {
 			"" => format!("{value}"),
 			_ => format!("{value} {word}"),
 		};
 		write!(f, "{output}")
+	}
+}
+impl Debug for Number {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let unit_strings: Vec<_> = self
+			.unit
+			.iter()
+			.map(|u| format!("{:?}^{}", u.0, u.1))
+			.collect();
+		write!(
+			f,
+			"Number({} {})",
+			self.get_simplified_value(),
+			unit_strings.join(" ")
+		)
+	}
+}
+impl PartialEq for Number {
+	fn eq(&self, other: &Self) -> bool {
+		self.value == other.value && self.primitive_unit() == other.primitive_unit()
 	}
 }
 
@@ -187,7 +266,7 @@ pub enum LexerKeyword {
 	Revolution,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 /// A token like a [`Number`](Token::Number), [`Operator`](Token::Operator), [`Unit`](Token::Unit) etc.
 ///
 /// Strings can be divided up into these tokens by the [`lexer`], and then put into the [`parser`].
@@ -208,6 +287,24 @@ pub enum Token {
 	/// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
 	Negative,
 	Unit(units::Unit),
+}
+impl fmt::Debug for Token {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Token::Operator(op) => write!(f, "Operator({:?})", op),
+			Token::UnaryOperator(op) => write!(f, "UnaryOperator({:?})", op),
+			Token::Number(num) => write!(f, "Number({num})"),
+			Token::FunctionIdentifier(id) => write!(f, "FunctionIdentifier({:?})", id),
+			Token::Constant(c) => write!(f, "Constant({:?})", c),
+			Token::Paren => write!(f, "Paren"),
+			Token::Per => write!(f, "Per"),
+			Token::LexerKeyword(op) => write!(f, "LexerKeyword({:?})", op),
+			Token::TextOperator(op) => write!(f, "TextOperator({:?})", op),
+			Token::NamedNumber(num) => write!(f, "NamedNumber({:?})", num),
+			Token::Negative => write!(f, "Negative"),
+			Token::Unit(u) => write!(f, "Unit({:?})", u),
+		}
+	}
 }
 
 #[macro_export]
@@ -234,11 +331,7 @@ macro_rules! numtok {
 ///     }
 /// }
 /// ```
-pub fn eval(
-	input: &str,
-	allow_trailing_operators: bool,
-	verbose: bool,
-) -> Result<Number, String> {
+pub fn eval(input: &str, allow_trailing_operators: bool, verbose: bool) -> Result<Number, String> {
 	let lex_start = Instant::now();
 
 	match lexer::lex(input, allow_trailing_operators) {
@@ -315,12 +408,15 @@ mod tests {
 
 	#[test]
 	fn test_evaluations() {
-		assert_eq!(default_eval("-2(-3)"), Number::new(d!(6), Unit::NoUnit));
-		assert_eq!(default_eval("-2(3)"), Number::new(d!(-6), Unit::NoUnit));
-		assert_eq!(default_eval("(3)-2"), Number::new(d!(1), Unit::NoUnit));
-		assert_eq!(default_eval("-1km to m"), Number::new(d!(-1000), Unit::Meter));
-		assert_eq!(default_eval("2*-3*0.5"), Number::new(d!(-3), Unit::NoUnit));
-		assert_eq!(default_eval("-3^2"), Number::new(d!(-9), Unit::NoUnit));
-		assert_eq!(default_eval("-1+2"), Number::new(d!(1), Unit::NoUnit));
+		assert_eq!(default_eval("-2(-3)"), Number::new_unitless(d!(6)));
+		assert_eq!(default_eval("-2(3)"), Number::new_unitless(d!(-6)));
+		assert_eq!(default_eval("(3)-2"), Number::new_unitless(d!(1)));
+		assert_eq!(
+			default_eval("-1km to m"),
+			Number::with_basic_unit(d!(-1000), Unit::Meter)
+		);
+		assert_eq!(default_eval("2*-3*0.5"), Number::new_unitless(d!(-3)));
+		assert_eq!(default_eval("-3^2"), Number::new_unitless(d!(-9)));
+		assert_eq!(default_eval("-1+2"), Number::new_unitless(d!(1)));
 	}
 }

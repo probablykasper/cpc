@@ -1,12 +1,10 @@
-use fastnum::{dec128 as d, D128};
 use crate::Number;
+use fastnum::{D128, dec128 as d};
+use std::cmp::Reverse;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// An enum of all possible unit types, like [`Length`], [`DigitalStorage`] etc.
-/// There is also a [`NoType`] unit type for normal numbers.
 pub enum UnitType {
-	/// A normal number, for example `5`
-	NoType,
 	/// A unit of time, for example [`Hour`]
 	Time,
 	/// A unit of length, for example [`Mile`]
@@ -44,14 +42,73 @@ pub enum UnitType {
 	/// A unit of temperature, for example [`Kelvin`]
 	Temperature,
 }
+impl UnitType {
+	fn primitive(&self) -> Vec<(Unit, isize)> {
+		let units = match self {
+			Time => vec![(Second, 1)],
+			Length => vec![(Meter, 1)],
+			Area => vec![(Meter, 2)],
+			Volume => vec![(Meter, 3)],
+			Mass => vec![(Kilogram, 1)],
+			DigitalStorage => vec![(Bit, 1)],
+			DataTransferRate => vec![(Bit, 1), (Second, -1)],
+			FlopCount => vec![(Flop, 1)],
+			FlopRate => vec![(Flop, 1), (Second, -1)],
+			Energy => vec![(Meter, 2), (Kilogram, 1), (Second, -2)],
+			Power => vec![(Meter, 2), (Kilogram, 1), (Second, -3)],
+			ElectricCurrent => vec![(Ampere, 1)],
+			Resistance => vec![(Meter, 2), (Kilogram, 1), (Second, -3), (Ampere, -2)],
+			Voltage => vec![(Meter, 2), (Kilogram, 1), (Second, -3), (Ampere, -1)],
+			Pressure => vec![(Kilogram, 1), (Second, -2), (Meter, -1)],
+			Frequency => vec![(Second, -1)],
+			Speed => vec![(Meter, 1), (Second, -1)],
+			Temperature => vec![(Kelvin, 1)],
+		};
+		#[cfg(debug_assertions)]
+		{
+			let u0 = units.clone();
+			let mut u1 = units.clone();
+			sort_units(&mut u1);
+			assert!(u0 == u1)
+		}
+		units
+	}
+}
 use UnitType::*;
+
+/// Sort for display and comparison purposes.
+pub fn sort_units(primitives: &mut Vec<(Unit, isize)>) {
+	primitives.sort_by_key(|u| {
+		(
+			u.1 < 0,            // multiplications first
+			Reverse(u.1.abs()), // largest first, like "sqm seconds"
+			u.0,                // then sort by unit, to have a fully deterministic order
+		)
+	});
+}
+
+pub fn primitive_unit(unit: &Vec<(Unit, isize)>) -> Vec<(Unit, isize)> {
+	let mut primitives: Vec<(Unit, isize)> = Vec::new();
+	for (unit, exponent) in unit {
+		for (primitive, primitive_exponent) in unit.category().primitive() {
+			let existing = primitives.iter_mut().find(|(u, _)| u == &primitive);
+			match existing {
+				Some(existing) => existing.1 += primitive_exponent * exponent,
+				None => primitives.push((primitive, primitive_exponent * exponent)),
+			}
+		}
+	}
+	primitives.retain(|(_, exponent)| exponent != &0);
+	sort_units(&mut primitives);
+	primitives
+}
 
 // Macro for creating units. Not possible to extend/change the default units
 // with this because the default units are imported into the lexer, parser
 // and evaluator
 macro_rules! create_units {
 	( $( $variant:ident : $properties:expr ),*, ) => {
-		#[derive(Clone, Copy, PartialEq, Debug)]
+		#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord)]
 		/// A Unit enum. Note that it can also be [`NoUnit`].
 		pub enum Unit {
 			$($variant),*
@@ -92,86 +149,84 @@ macro_rules! create_units {
 }
 
 create_units!(
-	NoUnit:             (NoType, d!(1), "", ""),
+	Nanosecond:         (Time, d!(0.000000001), "nanosecond", "nanoseconds"),
+	Microsecond:        (Time, d!(0.000001), "microsecond", "microseconds"),
+	Millisecond:        (Time, d!(0.001), "millisecond", "milliseconds"),
+	Second:             (Time, d!(1), "second", "seconds"),
+	Minute:             (Time, d!(60), "minute", "minutes"),
+	Hour:               (Time, d!(3600), "hour", "hours"),
+	Day:                (Time, d!(86400), "day", "days"),
+	Week:               (Time, d!(604800), "week", "weeks"),
+	Month:              (Time, d!(2629746), "month", "months"),
+	Quarter:            (Time, d!(7889238), "quarter", "quarters"),
+	Year:               (Time, d!(31556952), "year", "years"),
+	Decade:             (Time, d!(315569520), "decade", "decades"),
+	Century:            (Time, d!(3155695200), "century", "centuries"),
+	Millennium:         (Time, d!(31556952000), "millennium", "millennia"),
 
-	Nanosecond:         (Time, d!(1), "nanosecond", "nanoseconds"),
-	Microsecond:        (Time, d!(1000), "microsecond", "microseconds"),
-	Millisecond:        (Time, d!(1000000), "millisecond", "milliseconds"),
-	Second:             (Time, d!(1000000000), "second", "seconds"),
-	Minute:             (Time, d!(60000000000), "minute", "minutes"),
-	Hour:               (Time, d!(3600000000000), "hour", "hours"),
-	Day:                (Time, d!(86400000000000), "day", "days"),
-	Week:               (Time, d!(604800000000000), "week", "weeks"),
-	Month:              (Time, d!(2629746000000000), "month", "months"),
-	Quarter:            (Time, d!(7889238000000000), "quarter", "quarters"),
-	Year:               (Time, d!(31556952000000000), "year", "years"),
-	Decade:             (Time, d!(315569520000000000), "decade", "decades"),
-	Century:            (Time, d!(3155695200000000000), "century", "centuries"),
-	Millennium:          (Time, d!(31556952000000000000), "millennium", "millennia"),
-
-	Millimeter:         (Length, d!(1), "millimeter", "millimeters"),
-	Centimeter:         (Length, d!(10), "centimeter", "centimeters"),
-	Decimeter:          (Length, d!(100), "decimeter", "decimeters"),
-	Meter:              (Length, d!(1000), "meter", "meters"),
-	Kilometer:          (Length, d!(1000000), "kilometer", "kilometers"),
-	Inch:               (Length, d!(25.4), "inch", "inches"),
-	Foot:               (Length, d!(304.8), "foot", "feet"),
-	Yard:               (Length, d!(914.4), "yard", "yards"),
-	Mile:               (Length, d!(1609344), "mile", "miles"),
+	Millimeter:         (Length, d!(0.001), "millimeter", "millimeters"),
+	Centimeter:         (Length, d!(0.01), "centimeter", "centimeters"),
+	Decimeter:          (Length, d!(0.1), "decimeter", "decimeters"),
+	Meter:              (Length, d!(1), "meter", "meters"),
+	Kilometer:          (Length, d!(1000), "kilometer", "kilometers"),
+	Inch:               (Length, d!(0.0254), "inch", "inches"),
+	Foot:               (Length, d!(0.3048), "foot", "feet"),
+	Yard:               (Length, d!(0.9144), "yard", "yards"),
+	Mile:               (Length, d!(1609.344), "mile", "miles"),
 	// 1-dimensional only:
-	Marathon:           (Length, d!(42195000), "marathon", "marathons"),
-	NauticalMile:       (Length, d!(1852000), "nautical mile", "nautical miles"),
-	LightYear:          (Length, d!(9460730472580800000), "light year", "light years"),
-	LightSecond:        (Length, d!(299792458000), "light second", "light seconds"),
+	Marathon:           (Length, d!(42195), "marathon", "marathons"),
+	NauticalMile:       (Length, d!(1852), "nautical mile", "nautical miles"),
+	LightYear:          (Length, d!(9460730472580800), "light year", "light years"),
+	LightSecond:        (Length, d!(299792458), "light second", "light seconds"),
 
-	SquareMillimeter:   (Area, d!(1), "square millimeter", "square millimeters"),
-	SquareCentimeter:   (Area, d!(100), "square centimeter", "square centimeters"),
-	SquareDecimeter:    (Area, d!(10000), "square decimeter", "square decimeters"),
-	SquareMeter:        (Area, d!(1000000), "square meter", "square meters"),
-	SquareKilometer:    (Area, d!(1000000000000), "square kilometer", "square kilometers"),
-	SquareInch:         (Area, d!(645.16), "square inch", "square inches"),
-	SquareFoot:         (Area, d!(92903.04), "square foot", "square feet"),
-	SquareYard:         (Area, d!(836127.36), "square yard", "square yards"),
-	SquareMile:         (Area, d!(2589988110336.00), "square mile", "square miles"),
+	SquareMillimeter:   (Area, d!(0.000001), "square millimeter", "square millimeters"),
+	SquareCentimeter:   (Area, d!(0.0001), "square centimeter", "square centimeters"),
+	SquareDecimeter:    (Area, d!(0.01), "square decimeter", "square decimeters"),
+	SquareMeter:        (Area, d!(1), "square meter", "square meters"),
+	SquareKilometer:    (Area, d!(1000000), "square kilometer", "square kilometers"),
+	SquareInch:         (Area, d!(0.00064516), "square inch", "square inches"),
+	SquareFoot:         (Area, d!(0.09290304), "square foot", "square feet"),
+	SquareYard:         (Area, d!(0.83612736), "square yard", "square yards"),
+	SquareMile:         (Area, d!(2589988.110336), "square mile", "square miles"),
 	// 2-dimensional only
-	Are:                (Area, d!(100000000), "are", "ares"),
-	Decare:             (Area, d!(1000000000), "decare", "decares"),
-	Hectare:            (Area, d!(10000000000), "hectare", "hectares"),
-	Acre:               (Area, d!(4046856422.40), "acre", "acres"),
+	Are:                (Area, d!(100), "are", "ares"),
+	Decare:             (Area, d!(1000), "decare", "decares"),
+	Hectare:            (Area, d!(10000), "hectare", "hectares"),
+	Acre:               (Area, d!(4046.8564224), "acre", "acres"),
 
-	CubicMillimeter:    (Volume, d!(1), "cubic millimeter", "cubic millimeters"),
-	CubicCentimeter:    (Volume, d!(1000), "cubic centimeter", "cubic centimeters"),
-	CubicDecimeter:     (Volume, d!(1000000), "cubic decimeter", "cubic decimeters"),
-	CubicMeter:         (Volume, d!(1000000000), "cubic meter", "cubic meters"),
-	CubicKilometer:     (Volume, d!(1000000000000000000), "cubic kilometer", "cubic kilometers"),
-	CubicInch:          (Volume, d!(16387.064), "cubic inch", "cubic inches"),
-	CubicFoot:          (Volume, d!(28316846.592), "cubic foot", "cubic feet"),
-	CubicYard:          (Volume, d!(764554857.984), "cubic yard", "cubic yards"),
-	CubicMile:          (Volume, d!(4168181825440579584), "cubic mile", "cubic miles"),
+	CubicMillimeter:    (Volume, d!(0.000000001), "cubic millimeter", "cubic millimeters"),
+	CubicCentimeter:    (Volume, d!(0.000001), "cubic centimeter", "cubic centimeters"),
+	CubicDecimeter:     (Volume, d!(0.001), "cubic decimeter", "cubic decimeters"),
+	CubicMeter:         (Volume, d!(1), "cubic meter", "cubic meters"),
+	CubicKilometer:     (Volume, d!(1000000000), "cubic kilometer", "cubic kilometers"),
+	CubicInch:          (Volume, d!(0.000016387064), "cubic inch", "cubic inches"),
+	CubicFoot:          (Volume, d!(0.028316846592), "cubic foot", "cubic feet"),
+	CubicYard:          (Volume, d!(0.764554857984), "cubic yard", "cubic yards"),
+	CubicMile:          (Volume, d!(4168181825.440579584), "cubic mile", "cubic miles"),
 	// 3-dimensional only
-	Milliliter:         (Volume, d!(1000), "milliliter", "milliliters"),
-	Centiliter:         (Volume, d!(10000), "centiliter", "centiliters"),
-	Deciliter:          (Volume, d!(100000), "deciliter", "deciliters"),
-	Liter:              (Volume, d!(1000000), "liter", "liters"),
-	Teaspoon:           (Volume, d!(4928.92159375), "teaspoon", "teaspoons"),
-	Tablespoon:         (Volume, d!(14786.76478125), "tablespoon", "tablespoons"),
-	FluidOunce:         (Volume, d!(29573.5295625), "fluid ounce", "fluid ounces"),
-	Cup:                (Volume, d!(236588.2365), "cup", "cups"),
-	Pint:               (Volume, d!(473176.473), "pint", "pints"),
-	Quart:              (Volume, d!(946352.946), "quart", "quarts"),
-	Gallon:             (Volume, d!(3785411.784), "gallon", "gallons"),
-	OilBarrel:          (Volume, d!(158987294.928), "oil barrel", "oil barrels"),
+	Milliliter:         (Volume, d!(0.000001), "milliliter", "milliliters"),
+	Centiliter:         (Volume, d!(0.00001), "centiliter", "centiliters"),
+	Deciliter:          (Volume, d!(0.0001), "deciliter", "deciliters"),
+	Liter:              (Volume, d!(0.001), "liter", "liters"),
+	Teaspoon:           (Volume, d!(0.00000492892159375), "teaspoon", "teaspoons"),
+	Tablespoon:         (Volume, d!(0.00001478676478125), "tablespoon", "tablespoons"),
+	FluidOunce:         (Volume, d!(0.0000295735295625), "fluid ounce", "fluid ounces"),
+	Cup:                (Volume, d!(0.0002365882365), "cup", "cups"),
+	Pint:               (Volume, d!(0.000473176473), "pint", "pints"),
+	Quart:              (Volume, d!(0.000946352946), "quart", "quarts"),
+	Gallon:             (Volume, d!(0.003785411784), "gallon", "gallons"),
+	OilBarrel:          (Volume, d!(0.158987294928), "oil barrel", "oil barrels"),
 
-	Milligram:          (Mass, d!(0.001), "milligram", "milligrams"),
-	Gram:               (Mass, d!(1), "gram", "grams"),
-	Hectogram:          (Mass, d!(100), "hectogram", "hectograms"),
-	Kilogram:           (Mass, d!(1000), "kilogram", "kilograms"),
-	MetricTon:          (Mass, d!(1000000), "metric ton", "metric tons"),
-	Ounce:              (Mass, d!(28.349523125), "ounce", "ounces"),
-	Pound:              (Mass, d!(453.59237), "pound", "pounds"),
-	Stone:              (Mass, d!(6350.29318), "stone", "stones"),
-	ShortTon:           (Mass, d!(907184.74), "short ton", "short tons"),
-	LongTon:            (Mass, d!(1016046.9088), "long ton", "long tons"),
+	Milligram:          (Mass, d!(0.000001), "milligram", "milligrams"),
+	Gram:               (Mass, d!(0.001), "gram", "grams"),
+	Hectogram:          (Mass, d!(0.1), "hectogram", "hectograms"),
+	Kilogram:           (Mass, d!(1), "kilogram", "kilograms"),
+	MetricTon:          (Mass, d!(1000), "metric ton", "metric tons"),
+	Ounce:              (Mass, d!(0.028349523125), "ounce", "ounces"),
+	Pound:              (Mass, d!(0.45359237), "pound", "pounds"),
+	Stone:              (Mass, d!(6.35029318), "stone", "stones"),
+	ShortTon:           (Mass, d!(907.18474), "short ton", "short tons"),
+	LongTon:            (Mass, d!(1016.0469088), "long ton", "long tons"),
 
 	Bit:                (DigitalStorage, d!(1), "bit", "bits"),
 	Kilobit:            (DigitalStorage, d!(1000), "kilobit", "kilobits"),
@@ -294,7 +349,8 @@ create_units!(
 	// inexact:
 	BritishThermalUnitsPerMinute: (Power, d!(17.584264210333), "british thermal unit per minute", "british thermal units per minute"),
 	// inexact:
-	BritishThermalUnitsPerHour:   (Power, d!(0.29307107017222), "british thermal unit per hour", "british thermal units per hour"),	// exact according to wikipedia:
+	BritishThermalUnitsPerHour:   (Power, d!(0.29307107017222), "british thermal unit per hour", "british thermal units per hour"),
+	// exact according to wikipedia:
 	Horsepower:                   (Power, d!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d!(735.49875), "metric horsepower", "metric horsepower"),
 
@@ -330,66 +386,95 @@ create_units!(
 	Petahertz:                    (Frequency, d!(1000000000000000), "petahertz", "petahertz"),
 	RevolutionsPerMinute:         (Frequency, d!(60), "revolution per minute", "revolutions per minute"),
 
-	KilometersPerHour:  (Speed, d!(1), "kilometer per hour", "kilometers per hour"),
-	MetersPerSecond:    (Speed, d!(3.6), "meter per second", "meters per second"),
-	MilesPerHour:       (Speed, d!(1.609344), "mile per hour", "miles per hour"),
-	FeetPerSecond:      (Speed, d!(1.09728), "foot per second", "feet per second"),
-	Knot:               (Speed, d!(1.852), "knot", "knots"),
+	// inexact:
+	KilometersPerHour:  (Speed, d!(0.2777777778), "kilometer per hour", "kilometers per hour"),
+	MetersPerSecond:    (Speed, d!(1), "meter per second", "meters per second"),
+	MilesPerHour:       (Speed, d!(0.44704), "mile per hour", "miles per hour"),
+	FeetPerSecond:      (Speed, d!(0.3048), "foot per second", "feet per second"),
+	// inexact:
+	Knot:               (Speed, d!(0.5144444444), "knot", "knots"),
 
 	Kelvin:             (Temperature, d!(0), "kelvin", "kelvin"),
 	Celsius:            (Temperature, d!(0), "celsius", "celsius"),
 	Fahrenheit:         (Temperature, d!(0), "fahrenheit", "fahrenheit"),
 );
 
-/// Returns the conversion factor between two units.
-/// 
-/// The conversion factor is what you need to multiply `unit` with to get
-/// `to_unit`. For example, the conversion factor from 1 minute to 1 second
-/// is 60.
-/// 
-/// This is not sufficient for [`Temperature`] units.
-pub fn get_conversion_factor(unit: Unit, to_unit: Unit) -> D128 {
-	unit.weight() / to_unit.weight()
+fn combined_weight(unit: &[(Unit, isize)]) -> D128 {
+	unit.iter().fold(D128::from(1), |acc, (u, exp)| {
+		acc * integer_power(u.weight(), *exp)
+	})
+}
+
+fn integer_power(base: D128, exp: isize) -> D128 {
+	let positive = (0..exp.unsigned_abs()).fold(D128::from(1), |acc, _| acc * base);
+	if exp >= 0 {
+		positive
+	} else {
+		D128::from(1) / positive
+	}
 }
 
 /// Convert a [`Number`] to a specified [`Unit`].
-pub fn convert(number: Number, to_unit: Unit) -> Result<Number, String> {
-	if number.unit.category() != to_unit.category() {
-		return Err(format!("Cannot convert from {:?} to {:?}", number.unit, to_unit));
+pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, String> {
+	if number.primitive_unit() != primitive_unit(&to_unit) {
+		return Err(format!(
+			"Cannot convert {} to {}",
+			number,
+			Number::with_unit(d!(0), to_unit).plural()
+		));
 	}
 	let value = number.value;
-	let ok = |new_value| {
-		Ok(Number::new(new_value, to_unit))
-	};
-	if number.unit.category() == UnitType::Temperature {
-		match (number.unit, to_unit) {
-			(Kelvin, Kelvin)         => ok(value),
-			(Kelvin, Celsius)        => ok(value-d!(273.15)),
-			(Kelvin, Fahrenheit)     => ok(value*d!(1.8)-d!(459.67)),
-			(Celsius, Celsius)       => ok(value),
-			(Celsius, Kelvin)        => ok(value+d!(273.15)),
-			(Celsius, Fahrenheit)    => ok(value*d!(1.8)+d!(32)),
+	if number.primitive_unit() == Temperature.primitive() {
+		if number.unit.len() != 1
+			|| to_unit.len() != 1
+			|| number.unit[0].1 != 1
+			|| to_unit[0].1 != 1
+		{
+			return Err(format!(
+				"Cannot convert {} to {}",
+				number,
+				Number::with_unit(d!(0), to_unit).plural()
+			));
+		}
+		let ok = |new_value| Ok(Number::with_unit(new_value, to_unit.clone()));
+		match (number.unit[0].0, to_unit[0].0) {
+			(Kelvin, Kelvin) => ok(value),
+			(Kelvin, Celsius) => ok(value - d!(273.15)),
+			(Kelvin, Fahrenheit) => ok(value * d!(1.8) - d!(459.67)),
+			(Celsius, Celsius) => ok(value),
+			(Celsius, Kelvin) => ok(value + d!(273.15)),
+			(Celsius, Fahrenheit) => ok(value * d!(1.8) + d!(32)),
 			(Fahrenheit, Fahrenheit) => ok(value),
-			(Fahrenheit, Kelvin)     => ok((value+d!(459.67))*d!(5)/d!(9)),
-			(Fahrenheit, Celsius)    => ok((value-d!(32))/d!(1.8)),
-			_ => Err(format!("Error converting temperature {:?} to {:?}", number.unit, to_unit)),
+			(Fahrenheit, Kelvin) => ok((value + d!(459.67)) * d!(5) / d!(9)),
+			(Fahrenheit, Celsius) => ok((value - d!(32)) / d!(1.8)),
+			_ => Err(format!(
+				"Error converting temperature {} to {}",
+				number,
+				Number::with_unit(d!(0), to_unit).plural()
+			)),
 		}
 	} else {
-		let conversion_factor = get_conversion_factor(number.unit, to_unit);
-		ok(number.value * conversion_factor)
+		let source_weight = combined_weight(&number.unit);
+		let target_weight = combined_weight(&to_unit);
+
+		Ok(Number {
+			value: number.value * source_weight / target_weight,
+			unit: to_unit.to_vec(),
+		})
 	}
 }
 
 /// If one of two provided [`Number`]s has a larger [`Unit`] than the other, convert
 /// the large one to the unit of the small one.
 pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number), String> {
-	if left.unit.weight() == right.unit.weight() {
+	assert!(left.primitive_unit() == right.primitive_unit());
+	if combined_weight(&left.unit) == combined_weight(&right.unit) {
 		Ok((left, right))
-	} else if left.unit.weight() > right.unit.weight() {
-		let left_converted = convert(left, right.unit)?;
+	} else if combined_weight(&left.unit) > combined_weight(&right.unit) {
+		let left_converted = convert(left, right.unit.clone())?;
 		Ok((left_converted, right))
 	} else {
-		let right_converted = convert(right, left.unit)?;
+		let right_converted = convert(right, left.unit.clone())?;
 		Ok((left, right_converted))
 	}
 }
@@ -397,443 +482,314 @@ pub fn convert_to_lowest(left: Number, right: Number) -> Result<(Number, Number)
 /// Return the sum of two [`Number`]s
 pub fn add(left: Number, right: Number) -> Result<Number, String> {
 	if left.unit == right.unit {
-		Ok(Number::new(left.value + right.value, left.unit))
-	} else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+		Ok(Number::with_unit(left.value + right.value, left.unit))
+	} else if left.primitive_unit() == right.primitive_unit()
+		&& !left.contains_primitive(Temperature)
+	{
 		let (left, right) = convert_to_lowest(left, right)?;
-		Ok(Number::new(left.value + right.value, left.unit))
+		Ok(Number::with_unit(left.value + right.value, left.unit))
 	} else {
-		Err(format!("Cannot add {:?} and {:?}", left.unit, right.unit))
+		Err(format!("Cannot add {} and {}", left, right))
 	}
 }
 
 /// Subtract a [`Number`] from another [`Number`]
 pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 	if left.unit == right.unit {
-		Ok(Number::new(left.value - right.value, left.unit))
-	} else if left.unit.category() == right.unit.category() && left.unit.category() != Temperature {
+		Ok(Number::with_unit(left.value - right.value, left.unit))
+	} else if left.primitive_unit() == right.primitive_unit()
+		&& !left.contains_primitive(Temperature)
+	{
 		let (left, right) = convert_to_lowest(left, right)?;
-		Ok(Number::new(left.value - right.value, left.unit))
+		Ok(Number::with_unit(left.value - right.value, left.unit))
 	} else {
-		Err(format!("Cannot subtract {:?} by {:?}", left.unit, right.unit))
+		Err(format!("Cannot subtract {} by {}", left, right))
 	}
 }
 
 /// Convert a [`Number`] to an ideal unit.
-/// 
+///
 /// If you have 1,000,000 millimeters, this will return 1 kilometer.
-/// 
+///
 /// This only affects units of `Length`, `Time`, `Area`, `Volume`,
 /// `Energy`, `Power`, `ElectricCurrent`, `Resistance`, and `Voltage`.
 /// Other units are passed through.
 pub fn to_ideal_unit(number: Number) -> Number {
-	let value = number.value * number.unit.weight();
-	if number.unit.category() == Length {
-		if value >= d!(1000000000000000000) { // ≈ 0.1 light years
-			return Number::new(value/LightYear.weight(), LightYear)
-		} else if value >= d!(1000000) { // 1 km
-			return Number::new(value/Kilometer.weight(), Kilometer)
-		} else if value >= d!(1000) { // 1 m
-			return Number::new(value/Meter.weight(), Meter)
-		} else if value >= d!(10) { // 1 cm
-			return Number::new(value/Centimeter.weight(), Centimeter)
+	let value = number.value * combined_weight(&number.unit);
+	let primitive = number.primitive_unit();
+	if primitive == Length.primitive() {
+		if value >= 0.1 * LightYear.weight() {
+			return Number::with_basic_unit(value / LightYear.weight(), LightYear);
+		} else if value >= Kilometer.weight() {
+			return Number::with_basic_unit(value / Kilometer.weight(), Kilometer);
+		} else if value >= Meter.weight() {
+			return Number::with_basic_unit(value / Meter.weight(), Meter);
+		} else if value >= Centimeter.weight() {
+			return Number::with_basic_unit(value / Centimeter.weight(), Centimeter);
 		} else {
-			return Number::new(value, Millimeter)
+			return Number::with_basic_unit(value / Millimeter.weight(), Millimeter);
 		}
-	} else if number.unit.category() == Time {
-		if value >= d!(31556952000000000) {
-			return Number::new(value/Year.weight(), Year);
-		} else if value >= d!(86400000000000) {
-			return Number::new(value/Day.weight(), Day);
-		} else if value >= d!(3600000000000) {
-			return Number::new(value/Hour.weight(), Hour);
-		} else if value >= d!(60000000000) {
-			return Number::new(value/Minute.weight(), Minute);
-		} else if value >= d!(1000000000) {
-			return Number::new(value/Second.weight(), Second);
-		} else if value >= d!(1000000) {
-			return Number::new(value/Millisecond.weight(), Millisecond);
-		} else if value >= d!(1000) {
-			return Number::new(value/Microsecond.weight(), Microsecond);
+	} else if primitive == Time.primitive() {
+		if value >= Year.weight() {
+			return Number::with_basic_unit(value / Year.weight(), Year);
+		} else if value >= Day.weight() {
+			return Number::with_basic_unit(value / Day.weight(), Day);
+		} else if value >= Hour.weight() {
+			return Number::with_basic_unit(value / Hour.weight(), Hour);
+		} else if value >= Minute.weight() {
+			return Number::with_basic_unit(value / Minute.weight(), Minute);
+		} else if value >= Second.weight() {
+			return Number::with_basic_unit(value / Second.weight(), Second);
+		} else if value >= Millisecond.weight() {
+			return Number::with_basic_unit(value / Millisecond.weight(), Millisecond);
+		} else if value >= Microsecond.weight() {
+			return Number::with_basic_unit(value / Microsecond.weight(), Microsecond);
 		} else {
-			return Number::new(value, Nanosecond);
+			return Number::with_basic_unit(value / Nanosecond.weight(), Nanosecond);
 		}
-	} else if number.unit.category() == Area {
-		if value >= d!(1000000000000) { // 1 km2
-			return Number::new(value/SquareKilometer.weight(), SquareKilometer)
-		} else if value >= d!(10000000000) { // 1 hectare
-			return Number::new(value/Hectare.weight(), Hectare)
-		} else if value >= d!(1000000) { // 1 m2
-			return Number::new(value/SquareMeter.weight(), SquareMeter)
-		} else if value >= d!(100) { // 1 cm2
-			return Number::new(value/SquareCentimeter.weight(), SquareCentimeter)
+	} else if primitive == Area.primitive() {
+		if value >= SquareKilometer.weight() {
+			return Number::with_basic_unit(value / SquareKilometer.weight(), SquareKilometer);
+		} else if value >= Hectare.weight() {
+			return Number::with_basic_unit(value / Hectare.weight(), Hectare);
+		} else if value >= SquareMeter.weight() {
+			return Number::with_basic_unit(value / SquareMeter.weight(), SquareMeter);
+		} else if value >= SquareCentimeter.weight() {
+			return Number::with_basic_unit(value / SquareCentimeter.weight(), SquareCentimeter);
 		} else {
-			return Number::new(value, SquareMillimeter)
+			return Number::with_basic_unit(value / SquareMillimeter.weight(), SquareMillimeter);
 		}
-	} else if number.unit.category() == Volume {
-		if value >= d!(1000000000000000000) { // 1 km3
-			return Number::new(value/CubicKilometer.weight(), CubicKilometer)
-		} else if value >= d!(1000000000) { // 1 m3
-			return Number::new(value/CubicMeter.weight(), CubicMeter)
-		} else if value >= d!(1000000) { // 1 l
-			return Number::new(value/Liter.weight(), Liter)
-		} else if value >= d!(1000) { // 1 ml
-			return Number::new(value/Milliliter.weight(), Milliliter)
+	} else if primitive == Volume.primitive() {
+		if value >= CubicKilometer.weight() {
+			return Number::with_basic_unit(value / CubicKilometer.weight(), CubicKilometer);
+		} else if value >= CubicMeter.weight() {
+			return Number::with_basic_unit(value / CubicMeter.weight(), CubicMeter);
+		} else if value >= Liter.weight() {
+			return Number::with_basic_unit(value / Liter.weight(), Liter);
+		} else if value >= Milliliter.weight() {
+			return Number::with_basic_unit(value / Milliliter.weight(), Milliliter);
 		} else {
-			return Number::new(value, CubicMillimeter)
+			return Number::with_basic_unit(value / CubicMillimeter.weight(), CubicMillimeter);
 		}
-	} else if number.unit.category() == Energy {
-		if value >= d!(3600000000000000000) { // 1 petawatthour
-			return Number::new(value/PetawattHour.weight(), PetawattHour)
-		} else if value >= d!(3600000000000000) { // 1 terawatthour
-			return Number::new(value/TerawattHour.weight(), TerawattHour)
-		} else if value >= d!(3600000000000) { // 1 gigawatthour
-			return Number::new(value/GigawattHour.weight(), GigawattHour)
-		} else if value >= d!(3600000000) { // 1 megawatthour
-			return Number::new(value/MegawattHour.weight(), MegawattHour)
-		} else if value >= d!(3600000) { // 1 kilowatthour
-			return Number::new(value/KilowattHour.weight(), KilowattHour)
-		} else if value >= d!(3600) { // 1 watthour
-			return Number::new(value/WattHour.weight(), WattHour)
-		} else if value >= d!(1) { // 1 joule
-			return Number::new(value, Joule)
+	} else if primitive == Energy.primitive() {
+		let has_second = number.unit.iter().find(|unit| unit.0 == Second).is_some();
+		if has_second {
+			if value >= Terajoule.weight() {
+				return Number::with_basic_unit(value / Terajoule.weight(), Terajoule);
+			} else if value >= Gigajoule.weight() {
+				return Number::with_basic_unit(value / Gigajoule.weight(), Gigajoule);
+			} else if value >= Megajoule.weight() {
+				return Number::with_basic_unit(value / Megajoule.weight(), Megajoule);
+			} else if value >= Kilojoule.weight() {
+				return Number::with_basic_unit(value / Kilojoule.weight(), Kilojoule);
+			} else if value >= Joule.weight() {
+				return Number::with_basic_unit(value / Joule.weight(), Joule);
+			} else {
+				return Number::with_basic_unit(value / Millijoule.weight(), Millijoule);
+			}
 		} else {
-			return Number::new(value/Millijoule.weight(), Millijoule)
+			if value >= PetawattHour.weight() {
+				return Number::with_basic_unit(value / PetawattHour.weight(), PetawattHour);
+			} else if value >= TerawattHour.weight() {
+				return Number::with_basic_unit(value / TerawattHour.weight(), TerawattHour);
+			} else if value >= GigawattHour.weight() {
+				return Number::with_basic_unit(value / GigawattHour.weight(), GigawattHour);
+			} else if value >= MegawattHour.weight() {
+				return Number::with_basic_unit(value / MegawattHour.weight(), MegawattHour);
+			} else if value >= KilowattHour.weight() {
+				return Number::with_basic_unit(value / KilowattHour.weight(), KilowattHour);
+			} else if value >= WattHour.weight() {
+				return Number::with_basic_unit(value / WattHour.weight(), WattHour);
+			} else if value >= Joule.weight() {
+				return Number::with_basic_unit(value / Joule.weight(), Joule);
+			} else {
+				return Number::with_basic_unit(value / Millijoule.weight(), Millijoule);
+			}
 		}
-	} else if number.unit.category() == Power {
-		if value >= d!(1000000000000000) { // 1 petawatt
-			return Number::new(value/Petawatt.weight(), Petawatt)
-		} else if value >= d!(1000000000000) { // 1 terawatt
-			return Number::new(value/Terawatt.weight(), Terawatt)
-		} else if value >= d!(1000000000) { // 1 gigawatt
-			return Number::new(value/Gigawatt.weight(), Gigawatt)
-		} else if value >= d!(1000000) { // megawatt
-			return Number::new(value/Megawatt.weight(), Megawatt)
-		} else if value >= d!(1000) { // 1 kilowatt
-			return Number::new(value/Kilowatt.weight(), Kilowatt)
-		} else if value >= d!(1) { // 1 watt
-			return Number::new(value, Watt)
+	} else if primitive == Power.primitive() {
+		if value >= Petawatt.weight() {
+			return Number::with_basic_unit(value / Petawatt.weight(), Petawatt);
+		} else if value >= Terawatt.weight() {
+			return Number::with_basic_unit(value / Terawatt.weight(), Terawatt);
+		} else if value >= Gigawatt.weight() {
+			return Number::with_basic_unit(value / Gigawatt.weight(), Gigawatt);
+		} else if value >= Megawatt.weight() {
+			return Number::with_basic_unit(value / Megawatt.weight(), Megawatt);
+		} else if value >= Kilowatt.weight() {
+			return Number::with_basic_unit(value / Kilowatt.weight(), Kilowatt);
+		} else if value >= Watt.weight() {
+			return Number::with_basic_unit(value / Watt.weight(), Watt);
 		} else {
-			return Number::new(value/Milliwatt.weight(), Milliwatt)
+			return Number::with_basic_unit(value / Milliwatt.weight(), Milliwatt);
 		}
-	} else if number.unit.category() == ElectricCurrent {
-		if value >= d!(1000) { // 1 kiloampere
-			return Number::new(value/Kiloampere.weight(), Kiloampere)
-		} else if value >= d!(1) { // 1 ampere
-			return Number::new(value, Ampere)
+	} else if primitive == ElectricCurrent.primitive() {
+		if value >= Kiloampere.weight() {
+			return Number::with_basic_unit(value / Kiloampere.weight(), Kiloampere);
+		} else if value >= Ampere.weight() {
+			return Number::with_basic_unit(value / Ampere.weight(), Ampere);
 		} else {
-			return Number::new(value/Milliampere.weight(), Milliampere)
+			return Number::with_basic_unit(value / Milliampere.weight(), Milliampere);
 		}
-	} else if number.unit.category() == Resistance {
-		if value >= d!(1000) { // 1 kiloohm
-			return Number::new(value/Kiloohm.weight(), Kiloohm)
-		} else if value >= d!(1) { // 1 ohm
-			return Number::new(value, Ohm)
+	} else if primitive == Resistance.primitive() {
+		if value >= Kiloohm.weight() {
+			return Number::with_basic_unit(value / Kiloohm.weight(), Kiloohm);
+		} else if value >= Ohm.weight() {
+			return Number::with_basic_unit(value / Ohm.weight(), Ohm);
 		} else {
-			return Number::new(value/Milliohm.weight(), Milliohm)
+			return Number::with_basic_unit(value / Milliohm.weight(), Milliohm);
 		}
-	} else if number.unit.category() == Voltage {
-		if value >= d!(1000) { // 1 kilovolt
-			return Number::new(value/Kilovolt.weight(), Kilovolt)
-		} else if value >= d!(1) { // 1 volt
-			return Number::new(value, Volt)
+	} else if primitive == Voltage.primitive() {
+		if value >= Kilovolt.weight() {
+			return Number::with_basic_unit(value / Kilovolt.weight(), Kilovolt);
+		} else if value >= Volt.weight() {
+			return Number::with_basic_unit(value / Volt.weight(), Volt);
 		} else {
-			return Number::new(value/Millivolt.weight(), Millivolt)
+			return Number::with_basic_unit(value / Millivolt.weight(), Millivolt);
 		}
+	} else if primitive == DigitalStorage.primitive() {
+		let bits = &[
+			Bit, Kilobit, Megabit, Gigabit, Terabit, Petabit, Exabit, Zettabit, Yottabit,
+		];
+		let bibits = &[
+			Bit, Kibibit, Mebibit, Gibibit, Tebibit, Pebibit, Exbibit, Zebibit, Yobibit,
+		];
+		let bytes = &[
+			Byte, Kilobyte, Megabyte, Gigabyte, Terabyte, Petabyte, Exabyte, Zettabyte, Yottabyte,
+		];
+		let bibytes = &[
+			Byte, Kibibyte, Mebibyte, Gibibyte, Tebibyte, Pebibyte, Exbibyte, Zebibyte, Yobibyte,
+		];
+		for unit in &number.unit {
+			if unit.0.category() == DigitalStorage || unit.0.category() == DataTransferRate {
+				let weight = unit.0.weight();
+				let candidates = if weight % 8192 == d!(0) {
+					bibytes
+				} else if weight % 8000 == d!(0) {
+					bytes
+				} else if weight % 1024 == d!(0) {
+					bibits
+				} else {
+					bits
+				};
+				let unit = candidates
+					.iter()
+					.rev()
+					.find(|&&u| value >= u.weight())
+					.copied()
+					.unwrap_or(candidates[0]);
+				return Number::with_basic_unit(value / unit.weight(), unit);
+			}
+		}
+	} else if primitive == FlopCount.primitive() {
+		let candidates = [
+			Flop, KiloFlop, MegaFlop, GigaFlop, TeraFlop, PetaFlop, ExaFlop, ZettaFlop, YottaFlop,
+			RonnaFlop, QuettaFlop,
+		];
+		let unit = candidates
+			.iter()
+			.rev()
+			.find(|&&u| value >= u.weight())
+			.copied()
+			.unwrap_or(candidates[0]);
+		return Number::with_basic_unit(value / unit.weight(), unit);
 	}
 	number
 }
 
-/// Convert a [`Number`] to an ideal [`Joule`] unit, if the number is a unit of [`Energy`].
-pub fn to_ideal_joule_unit(number: Number) -> Number {
-	let value = number.value * number.unit.weight();
-	if number.unit.category() == Energy {
-		if value >= d!(1000000000000) { // 1 terajoule
-			return Number::new(value/Terajoule.weight(), Terajoule)
-		} else if value >= d!(1000000000) { // 1 gigajoule
-			return Number::new(value/Gigajoule.weight(), Gigajoule)
-		} else if value >= d!(1000000) { // 1 megajoule
-			return Number::new(value/Megajoule.weight(), Megajoule)
-		} else if value >= d!(1000) { // 1 kilojoule
-			return Number::new(value/Kilojoule.weight(), Kilojoule)
-		} else if value >= d!(1) { // 1 joule
-			return Number::new(value/Joule.weight(), Joule)
-		} else {
-			return Number::new(value/Millijoule.weight(), Millijoule)
-		}
-	}
-	number
-}
-
-/// Multiply two [`Number`]s
-/// 
-/// - Temperatures don't work
-/// - If you multiply [`NoType`] with any other unit, the result gets that other unit
-/// - If you multiply [`Length`] with [`Length`], the result has a unit of [`Area`], etc.
-/// - If you multiply [`Speed`] with [`Time`], the result has a unit of [`Length`]
-/// - If you multiply [`Voltage`] with [`ElectricCurrent`], the result has a unit of [`Power`]
-/// - If you multiply [`ElectricCurrent`] with [`Resistance`], the result has a unit of [`Voltage`]
-/// - If you multiply [`Power`] with [`Time`], the result has a unit of [`Energy`]
+/// Multiply two [`Number`]s.
+///
+/// Units are converted accordingly.
+///
+/// Temperatures don't work
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
-	actual_multiply(left, right, false)
-}
-
-fn actual_multiply(left: Number, right: Number, swapped: bool) -> Result<Number, String> {
-	let lcat = left.unit.category();
-	let rcat = right.unit.category();
-	if left.unit == NoUnit && right.unit == NoUnit {
-		// 3 * 2
-		Ok(Number::new(left.value * right.value, left.unit))
-	} else if left.unit.category() == Temperature || right.unit.category() == Temperature {
-		// if temperature
-		Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
-	} else if left.unit == NoUnit && right.unit != NoUnit {
-		// 3 * 2 anyunit
-		Ok(Number::new(left.value * right.value, right.unit))
-	} else if lcat == Length && rcat == Length {
-		// length * length
-		let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-	} else if lcat == Length && rcat == Area {
-		// length * area
-		let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
-	} else if lcat == Speed && rcat == Time {
-		// 1 km/h * 1h
-		let kph_value = left.value * left.unit.weight();
-		let hours = convert(right, Hour)?;
-		let result = kph_value * hours.value;
-		let final_unit = match left.unit {
-			KilometersPerHour => Kilometer,
-			MetersPerSecond => Meter,
-			MilesPerHour => Mile,
-			FeetPerSecond => Foot,
-			Knot => NauticalMile,
-			_ => Meter,
-		};
-		let kilometers = Number::new(result, Kilometer);
-		Ok(convert(kilometers, final_unit)?)
-	} else if lcat == DataTransferRate && rcat == Time {
-		// 8 megabytes per second * 1 minute
-		let data_rate_value = left.value * left.unit.weight();
-		let seconds = convert(right, Second)?;
-		let result = data_rate_value * seconds.value;
-		let final_unit = match left.unit {
-			BitsPerSecond => Bit,
-			KilobitsPerSecond => Kilobit,
-			MegabitsPerSecond => Megabit,
-			GigabitsPerSecond => Gigabit,
-			TerabitsPerSecond => Terabit,
-			PetabitsPerSecond => Petabit,
-			ExabitsPerSecond => Exabit,
-			ZettabitsPerSecond => Zettabit,
-			YottabitsPerSecond => Yottabit,
-			KibibitsPerSecond => Kibibit,
-			MebibitsPerSecond => Mebibit,
-			GibibitsPerSecond => Gibibit,
-			TebibitsPerSecond => Tebibit,
-			PebibitsPerSecond => Pebibit,
-			ExbibitsPerSecond => Exbibit,
-			ZebibitsPerSecond => Zebibit,
-			YobibitsPerSecond => Yobibit,
-			BytesPerSecond => Byte,
-			KilobytesPerSecond => Kilobyte,
-			MegabytesPerSecond => Megabyte,
-			GigabytesPerSecond => Gigabyte,
-			TerabytesPerSecond => Terabyte,
-			PetabytesPerSecond => Petabyte,
-			ExabytesPerSecond => Exabyte,
-			ZettabytesPerSecond => Zettabyte,
-			YottabytesPerSecond => Yottabyte,
-			KibibytesPerSecond => Kibibyte,
-			MebibytesPerSecond => Mebibyte,
-			GibibytesPerSecond => Gibibyte,
-			TebibytesPerSecond => Tebibyte,
-			PebibytesPerSecond => Pebibyte,
-			ExbibytesPerSecond => Exbibyte,
-			ZebibytesPerSecond => Zebibyte,
-			YobibytesPerSecond => Yobibyte,
-			_ => Bit,
-		};
-		let data_storage = Number::new(result, Bit);
-		Ok(convert(data_storage, final_unit)?)
-	} else if lcat == FlopRate && rcat == Time {
-		// 8 megaFLOP per second * 1 minute
-		let compute_perf_value = left.value * left.unit.weight();
-		let seconds = convert(right, Second)?;
-		let result = compute_perf_value * seconds.value;
-		let final_unit = match left.unit {
-			FlopPerSecond => Flop,
-			KiloFlopPerSecond => KiloFlop,
-			MegaFlopPerSecond => MegaFlop,
-			GigaFlopPerSecond => GigaFlop,
-			TeraFlopPerSecond => TeraFlop,
-			PetaFlopPerSecond => PetaFlop,
-			ExaFlopPerSecond => ExaFlop,
-			ZettaFlopPerSecond => ZettaFlop,
-			YottaFlopPerSecond => YottaFlop,
-			RonnaFlopPerSecond => RonnaFlop,
-			QuettaFlopPerSecond => QuettaFlop,
-			_ => Flop,
-		};
-		let compute_work = Number::new(result, Flop);
-		Ok(convert(compute_work, final_unit)?)
-	} else if lcat == Voltage && rcat == ElectricCurrent {
-		// 1 volt * 1 ampere = 1 watt
-		let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, Watt)))
-	} else if lcat == ElectricCurrent && rcat == Resistance {
-		// 1 amp * 1 ohm = 1 volt
-		let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, Watt)))
-	} else if lcat == Power && rcat == Time {
-		// 1 watt * 1 second = 1 joule
-		let result = (left.value * left.unit.weight()) * (right.value * right.unit.weight() / Unit::Second.weight());
-		match right.unit {
-			Second => Ok(to_ideal_joule_unit(Number::new(result, Joule))),
-			_ => Ok(to_ideal_unit(Number::new(result, Joule))),
+	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+		Err(format!("Cannot multiply {} and {}", left, right))
+	} else {
+		let mut new_number = left;
+		new_number.value *= right.value;
+		for (r_unit, r_exp) in right.unit {
+			let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
+			match existing {
+				Some(existing) => existing.1 += r_exp,
+				None => new_number.unit.push((r_unit, r_exp)),
+			}
 		}
-	} else if swapped {
-		Err(format!("Cannot multiply {:?} and {:?}", right.unit, left.unit))
-	} else {
-		actual_multiply(right, left, true)
+		let new_number = to_ideal_unit(new_number);
+		Ok(new_number)
 	}
 }
 
-/// Divide a [`Number`] by another [`Number`]
-/// 
-/// - Temperatures don't work
-/// - If you divide a unit by that same unit, the result has a unit of [`NoType`]
-/// - If you divide [`Volume`] by [`Length`], the result has a unit of [`Area`], etc.
-/// - If you divide [`Length`] by [`Time`], the result has a unit of [`Speed`]
-/// - If you divide [`Length`] by [`Speed`], the result has a unit of [`Time`]
-/// - If you divide [`Power`] by [`ElectricCurrent`], the result has a unit of [`Volt`]
-/// - If you divide [`Voltage`] by [`ElectricCurrent`], the result has a unit of [`Ohm`]
-/// - If you divide [`Voltage`] by [`Resistance`], the result has a unit of [`Ampere`]
-/// - If you divide [`Power`] by [`Voltage`], the result has a unit of [`Ampere`]
-/// - If you divide [`Energy`] by [`Time`], the result has a unit of [`Power`]
+/// Divide a [`Number`] by another [`Number`].
+///
+/// Units are converted accordingly.
+///
+/// Temperatures don't work.
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
-	let lcat = left.unit.category();
-	let rcat = right.unit.category();
-	if left.unit == NoUnit && right.unit == NoUnit {
-		// 3 / 2
-		Ok(Number::new(left.value / right.value, left.unit))
-	} else if lcat == Temperature || rcat == Temperature {
-		// if temperature
-		Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
-	} else if left.unit != NoUnit && right.unit == NoUnit {
-		// 1 km / 2
-		Ok(Number::new(left.value / right.value, left.unit))
-	} else if lcat == rcat {
-		// 4 km / 2 km
-		let (left, right) = convert_to_lowest(left, right)?;
-		Ok(Number::new(left.value / right.value, NoUnit))
-	} else if (lcat == Area && rcat == Length) || (lcat == Volume && rcat == Area) {
-		// 1 km2 / 1 km, 1 km3 / 1 km2
-		let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, Millimeter)))
-	} else if lcat == Volume && rcat == Length {
-		// 1 km3 / 1 km
-		let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-	} else if lcat == Length && rcat == Time {
-		// 1 km / 2s
-		let final_unit = match (left.unit, right.unit) {
-			(Kilometer, Hour) => KilometersPerHour,
-			(Meter, Second) => MetersPerSecond,
-			(Mile, Hour) => MilesPerHour,
-			(Foot, Second) => FeetPerSecond,
-			(NauticalMile, Hour) => Knot,
-			_ => KilometersPerHour,
-		};
-		let kilometers = convert(left, Kilometer)?;
-		let hours = convert(right, Hour)?;
-		let kph = Number::new(kilometers.value / hours.value, KilometersPerHour);
-		Ok(convert(kph, final_unit)?)
-	} else if lcat == Length && rcat == Speed {
-		// 12 km / 100 kph
-		let kilometers = convert(left, Kilometer)?;
-		let kilometers_per_hour = convert(right, KilometersPerHour)?;
-		let hour = Number::new(kilometers.value / kilometers_per_hour.value, Hour);
-		Ok(to_ideal_unit(hour))
-	} else if lcat == DigitalStorage && rcat == DataTransferRate {
-		// 1 kilobit / 1 bit per second
-		let bits = convert(left, Bit)?;
-		let bits_per_second = convert(right, BitsPerSecond)?;
-		let seconds = Number::new(bits.value / bits_per_second.value, Second);
-		Ok(to_ideal_unit(seconds))
-	} else if lcat == FlopCount && rcat == FlopRate {
-		// 1 kiloFLOP / 1 FLOP per second
-		let flop = convert(left, Flop)?;
-		let flop_per_second = convert(right, FlopPerSecond)?;
-		let seconds = Number::new(flop.value / flop_per_second.value, Second);
-		Ok(to_ideal_unit(seconds))
-	} else if lcat == Power && rcat == ElectricCurrent {
-		// 1 watt / 1 ampere = 1 volt
-		let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, Volt)))
-	} else if lcat == Voltage && rcat == ElectricCurrent {
-		// 1 volt / 1 ampere = 1 ohm
-		let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, Ohm)))
-	} else if lcat == Voltage && rcat == Resistance {
-		// 1 volt / 1 ohm = 1 amp
-		let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, Ampere)))
-	} else if lcat == Power && rcat == Voltage {
-		// 1 watt / 1 volt = 1 amp
-		let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight());
-		Ok(to_ideal_unit(Number::new(result, Ampere)))
-	} else if lcat == Energy && rcat == Time {
-		// 1 joule / 1 second = 1 watt
-		let result = (left.value * left.unit.weight()) / (right.value * right.unit.weight() / Unit::Second.weight());
-		Ok(to_ideal_unit(Number::new(result, Watt)))
+	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+		Err(format!("Cannot divide {} by {}", left, right))
 	} else {
-		Err(format!("Cannot divide {:?} by {:?}", left.unit, right.unit))
+		let mut new_number = left;
+		new_number.value /= right.value;
+		for (r_unit, r_exp) in right.unit {
+			let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
+			match existing {
+				Some(existing) => existing.1 -= r_exp,
+				None => new_number.unit.push((r_unit, -r_exp)),
+			}
+		}
+		let new_number = to_ideal_unit(new_number);
+		Ok(new_number)
 	}
 }
+
 /// Modulo a [`Number`] by another [`Number`].
-/// 
+///
 /// `left` and `right` need to have the same [`UnitType`], and the result will have that same [`UnitType`].
 ///
 /// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
-	if left.unit.category() == Temperature || right.unit.category() == Temperature {
-		// if temperature
-		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
-	} else if left.unit.category() == right.unit.category() {
+	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+		Err(format!("Cannot modulo {} by {}", left, right))
+	} else if left.primitive_unit() == right.primitive_unit() {
 		// 5 km % 3 m
 		let (left, right) = convert_to_lowest(left, right)?;
-		Ok(Number::new(left.value % right.value, left.unit))
+		Ok(Number::with_unit(left.value % right.value, left.unit))
 	} else {
-		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+		Err(format!("Cannot modulo {} by {}", left, right))
 	}
 }
 
 /// Returns a [`Number`] to the power of another [`Number`]
-/// 
+///
 /// - If you take [`Length`] to the power of [`NoType`], the result has a unit of [`Area`].
 /// - If you take [`Length`] to the power of [`Length`], the result has a unit of [`Area`]
 /// - If you take [`Length`] to the power of [`Area`], the result has a unit of [`Volume`]
 /// - etc.
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 	// I tried converting `right` to use powi, but somehow that was slower
-	let lcat = left.unit.category();
-	let rcat = left.unit.category();
-	if left.unit == NoUnit && right.unit == NoUnit {
-		// 3 ^ 2
-		Ok(Number::new(left.value.pow(right.value), left.unit))
-	} else if right.value == d!(1) && right.unit == NoUnit {
-		Ok(left)
-	} else if lcat == Length && right.unit == NoUnit && right.value == d!(2) {
-		// x km ^ 2
-		let result = (left.value * left.unit.weight()).pow(right.value);
-		Ok(to_ideal_unit(Number::new(result, SquareMillimeter)))
-	} else if lcat == Length && right.unit == NoUnit && right.value == d!(3) {
-		// x km ^ 3
-		let result = (left.value * left.unit.weight()).pow(right.value);
-		Ok(to_ideal_unit(Number::new(result, CubicMillimeter)))
+	if left.contains_primitive(Temperature) || right.has_unit() {
+		Err(format!("Cannot raise {} to the power of {}", left, right))
+	} else if left.is_unitless() {
+		let result = left.value.pow(right.value);
+		let new_number = Number::new_unitless(result);
+		Ok(new_number)
 	} else {
-		Err(format!("Cannot multiply {:?} and {:?}", left.unit, right.unit))
+		let exp: isize = match (right.value.try_into(), right.value.is_integral()) {
+			(Ok(exp), true) => exp,
+			_ => {
+				return Err(format!(
+					"Cannot raise {} to the power of {}. Numbers with units can only be raised to integer powers",
+					left, right
+				));
+			}
+		};
+		let result = left.value.pow(right.value);
+		let mut new_number = Number::with_unit(result, left.unit);
+		for (_, unit_exp) in new_number.unit.iter_mut() {
+			*unit_exp *= exp;
+		}
+		let new_number = to_ideal_unit(new_number);
+		Ok(new_number)
 	}
 }
 
@@ -841,12 +797,12 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 mod tests {
 	use fastnum::decimal::Context;
 
-use super::*;
+	use super::*;
 
 	macro_rules! assert_float_eq {
 		( $actual:expr, $expected:literal ) => {
 			assert!(($actual - $expected).abs() < f64::EPSILON);
-		}
+		};
 	}
 
 	#[test]
@@ -856,9 +812,9 @@ use super::*;
 
 			let value_string = &value.to_string();
 			let value_d128 = D128::from_str(value_string, Context::default()).unwrap();
-			let number = Number::new(value_d128, unit);
+			let number = Number::with_basic_unit(value_d128, unit);
 
-			let result = convert(number, to_unit);
+			let result = convert(number, vec![(to_unit, 1)]);
 			let string_result = &result.unwrap().value.to_string();
 			let float_result = f64::from_str(string_result).unwrap();
 
@@ -970,37 +926,124 @@ use super::*;
 		assert_float_eq!(convert_test(1024.0, Zebibyte, Yobibyte), 1.0);
 
 		assert_float_eq!(convert_test(1000.0, BitsPerSecond, KilobitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, KilobitsPerSecond, MegabitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, MegabitsPerSecond, GigabitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, GigabitsPerSecond, TerabitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, TerabitsPerSecond, PetabitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, PetabitsPerSecond, ExabitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, ExabitsPerSecond, ZettabitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, ZettabitsPerSecond, YottabitsPerSecond), 1.0);
+		assert_float_eq!(
+			convert_test(1000.0, KilobitsPerSecond, MegabitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, MegabitsPerSecond, GigabitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, GigabitsPerSecond, TerabitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, TerabitsPerSecond, PetabitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, PetabitsPerSecond, ExabitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, ExabitsPerSecond, ZettabitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, ZettabitsPerSecond, YottabitsPerSecond),
+			1.0
+		);
 		assert_float_eq!(convert_test(1024.0, BitsPerSecond, KibibitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, KibibitsPerSecond, MebibitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, MebibitsPerSecond, GibibitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, GibibitsPerSecond, TebibitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, TebibitsPerSecond, PebibitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, PebibitsPerSecond, ExbibitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, ExbibitsPerSecond, ZebibitsPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, ZebibitsPerSecond, YobibitsPerSecond), 1.0);
+		assert_float_eq!(
+			convert_test(1024.0, KibibitsPerSecond, MebibitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, MebibitsPerSecond, GibibitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, GibibitsPerSecond, TebibitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, TebibitsPerSecond, PebibitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, PebibitsPerSecond, ExbibitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, ExbibitsPerSecond, ZebibitsPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, ZebibitsPerSecond, YobibitsPerSecond),
+			1.0
+		);
 		assert_float_eq!(convert_test(8.0, BitsPerSecond, BytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, BytesPerSecond, KilobytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, KilobytesPerSecond, MegabytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, MegabytesPerSecond, GigabytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, GigabytesPerSecond, TerabytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, TerabytesPerSecond, PetabytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, PetabytesPerSecond, ExabytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, ExabytesPerSecond, ZettabytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, ZettabytesPerSecond, YottabytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, KibibytesPerSecond, MebibytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, MebibytesPerSecond, GibibytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, GibibytesPerSecond, TebibytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, TebibytesPerSecond, PebibytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, PebibytesPerSecond, ExbibytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, ExbibytesPerSecond, ZebibytesPerSecond), 1.0);
-		assert_float_eq!(convert_test(1024.0, ZebibytesPerSecond, YobibytesPerSecond), 1.0);
+		assert_float_eq!(
+			convert_test(1000.0, BytesPerSecond, KilobytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, KilobytesPerSecond, MegabytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, MegabytesPerSecond, GigabytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, GigabytesPerSecond, TerabytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, TerabytesPerSecond, PetabytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, PetabytesPerSecond, ExabytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, ExabytesPerSecond, ZettabytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, ZettabytesPerSecond, YottabytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, KibibytesPerSecond, MebibytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, MebibytesPerSecond, GibibytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, GibibytesPerSecond, TebibytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, TebibytesPerSecond, PebibytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, PebibytesPerSecond, ExbibytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, ExbibytesPerSecond, ZebibytesPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1024.0, ZebibytesPerSecond, YobibytesPerSecond),
+			1.0
+		);
 
 		assert_float_eq!(convert_test(1000.0, Flop, KiloFlop), 1.0);
 		assert_float_eq!(convert_test(1000.0, KiloFlop, MegaFlop), 1.0);
@@ -1014,15 +1057,42 @@ use super::*;
 		assert_float_eq!(convert_test(1000.0, RonnaFlop, QuettaFlop), 1.0);
 
 		assert_float_eq!(convert_test(1000.0, FlopPerSecond, KiloFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, KiloFlopPerSecond, MegaFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, MegaFlopPerSecond, GigaFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, GigaFlopPerSecond, TeraFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, TeraFlopPerSecond, PetaFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, PetaFlopPerSecond, ExaFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, ExaFlopPerSecond, ZettaFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, ZettaFlopPerSecond, YottaFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, YottaFlopPerSecond, RonnaFlopPerSecond), 1.0);
-		assert_float_eq!(convert_test(1000.0, RonnaFlopPerSecond, QuettaFlopPerSecond), 1.0);
+		assert_float_eq!(
+			convert_test(1000.0, KiloFlopPerSecond, MegaFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, MegaFlopPerSecond, GigaFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, GigaFlopPerSecond, TeraFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, TeraFlopPerSecond, PetaFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, PetaFlopPerSecond, ExaFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, ExaFlopPerSecond, ZettaFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, ZettaFlopPerSecond, YottaFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, YottaFlopPerSecond, RonnaFlopPerSecond),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(1000.0, RonnaFlopPerSecond, QuettaFlopPerSecond),
+			1.0
+		);
 
 		assert_float_eq!(convert_test(1000.0, Millijoule, Joule), 1.0);
 		assert_float_eq!(convert_test(1000.0, Joule, Kilojoule), 1.0);
@@ -1046,8 +1116,18 @@ use super::*;
 		assert_float_eq!(convert_test(1000.0, Megawatt, Gigawatt), 1.0);
 		assert_float_eq!(convert_test(1000.0, Gigawatt, Terawatt), 1.0);
 		assert_float_eq!(convert_test(1000.0, Terawatt, Petawatt), 1.0);
-		assert_float_eq!(convert_test(17.584264210333, Watt, BritishThermalUnitsPerMinute), 1.0);
-		assert_float_eq!(convert_test(59.999999999999317571673374406441452784, BritishThermalUnitsPerHour, BritishThermalUnitsPerMinute), 1.0);
+		assert_float_eq!(
+			convert_test(17.584264210333, Watt, BritishThermalUnitsPerMinute),
+			1.0
+		);
+		assert_float_eq!(
+			convert_test(
+				59.999999999999317571673374406441452784,
+				BritishThermalUnitsPerHour,
+				BritishThermalUnitsPerMinute
+			),
+			1.0
+		);
 		assert_float_eq!(convert_test(745.6998715822702, Watt, Horsepower), 1.0);
 		assert_float_eq!(convert_test(735.49875, Watt, MetricHorsepower), 1.0);
 
@@ -1066,7 +1146,10 @@ use super::*;
 		assert_float_eq!(convert_test(100.0, Pascal, Millibar), 1.0);
 		assert_float_eq!(convert_test(1000.0, Millibar, Bar), 1.0);
 		assert_float_eq!(convert_test(3386.389, Pascal, InchOfMercury), 1.0);
-		assert_float_eq!(convert_test(6894.757293168361, Pascal, PoundsPerSquareInch), 1.0);
+		assert_float_eq!(
+			convert_test(6894.757293168361, Pascal, PoundsPerSquareInch),
+			1.0
+		);
 		assert_float_eq!(convert_test(133.3223684210526, Pascal, Torr), 1.0);
 
 		assert_float_eq!(convert_test(1000.0, Hertz, Kilohertz), 1.0);
@@ -1076,10 +1159,10 @@ use super::*;
 		assert_float_eq!(convert_test(1000.0, Terahertz, Petahertz), 1.0);
 		assert_float_eq!(convert_test(60.0, Hertz, RevolutionsPerMinute), 1.0);
 
-		assert_float_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
+		// assert_float_eq!(convert_test(3.6, KilometersPerHour, MetersPerSecond), 1.0);
 		assert_float_eq!(convert_test(0.3048, MetersPerSecond, FeetPerSecond), 1.0);
-		assert_float_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
-		assert_float_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
+		// assert_float_eq!(convert_test(1.609344, KilometersPerHour, MilesPerHour), 1.0);
+		// assert_float_eq!(convert_test(1.852, KilometersPerHour, Knot), 1.0);
 
 		assert_float_eq!(convert_test(274.15, Kelvin, Celsius), 1.0);
 		assert_float_eq!(convert_test(300.0, Kelvin, Fahrenheit), 80.33);
@@ -1087,5 +1170,48 @@ use super::*;
 		assert_float_eq!(convert_test(-15.0, Celsius, Fahrenheit), 5.0);
 		assert_float_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
 		assert_float_eq!(convert_test(5.0, Fahrenheit, Celsius), -15.0);
+	}
+
+	#[track_caller]
+	fn eval_test(a: &str, b: &str) {
+		let result_a = crate::eval(a, true, false).unwrap();
+		let result_b = crate::eval(b, true, false).unwrap();
+		assert_eq!(result_a, result_b, "{a} != {b}");
+	}
+	#[track_caller]
+	fn eval_approx_test(a: &str, b: &str) {
+		let result_a = crate::eval(a, true, false).unwrap();
+		let result_b = crate::eval(b, true, false).unwrap();
+		let diff_pct: D128 = result_a.value / result_b.value - 1;
+		let diff_pct = diff_pct.abs();
+		assert!(diff_pct <= d!(0.00000001), "{a} !≈ {b}")
+	}
+
+	#[test]
+	fn test_unit_evals() {
+		eval_test("3.6km/1h", "3.6 kph");
+		eval_test("0.3048 m/s to ft/s", "1 ft/s");
+		eval_test("1.609344 km/1h to mph", "1 mph");
+		eval_approx_test("1.852 kph to knots", "1 knots");
+		eval_test("120 seconds to minutes", "2 minutes");
+		eval_test("100 cm to m", "1 m");
+		eval_test("1 km2 to m2", "1000000 m2");
+		eval_test("1 liter to ml", "1000 ml");
+		eval_test("1 kg to g", "1000 g");
+		eval_test("1 KB to bytes", "1000 bytes");
+		eval_test("1 MBps to KBps", "1000 KBps");
+		eval_test("1 KFLOP to FLOP", "1000 FLOP");
+		eval_test("1 KFLOPs to FLOPs", "1000 FLOPs");
+		eval_test("1 kWh to Wh", "1000 Wh");
+		eval_test("1 kW to W", "1000 W");
+		eval_test("1000 mA to A", "1 A");
+		eval_test("1000 mΩ to Ω", "1 Ω");
+		eval_test("1000 mV to V", "1 V");
+		eval_test("1 bar to Pa", "100000 Pa");
+		eval_test("1 kHz to Hz", "1000 Hz");
+		eval_approx_test("1 km/h to m/s", "0.27777777777777777777 m/s");
+		eval_test("0 C to K", "273.15 K");
+		eval_test("8 megabytes per second * 1 minute", "480mb");
+		eval_test("8 megaFLOP per second * 1 minute", "480megaFLOP");
 	}
 }

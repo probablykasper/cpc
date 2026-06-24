@@ -1,13 +1,13 @@
-use crate::lookup::{lookup_factorial, lookup_named_number};
-use crate::parser::AstNode;
-use crate::units::{add, convert, divide, modulo, multiply, pow, subtract, Unit, UnitType};
-use crate::Constant::{Pi, E};
+use crate::Constant::{E, Pi};
 use crate::FunctionIdentifier::*;
 use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
 use crate::TextOperator::{Of, To};
 use crate::UnaryOperator::{Factorial, Percent};
+use crate::lookup::{lookup_factorial, lookup_named_number};
+use crate::parser::AstNode;
+use crate::units::{add, convert, divide, modulo, multiply, pow, subtract};
 use crate::{Number, Token};
-use fastnum::{dec128 as d, decimal::RoundingMode, D128};
+use fastnum::{D128, dec128 as d, decimal::RoundingMode};
 
 /// Evaluate an [`AstNode`] into a [`Number`]
 pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
@@ -61,59 +61,53 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 	let token = &ast_node.token;
 	let children = &ast_node.children;
 	match token {
-		Token::Number(number) => Ok(Number::new(*number, Unit::NoUnit)),
+		Token::Number(number) => Ok(Number::new_unitless(*number)),
 		Token::Constant(constant) => match constant {
-			Pi => Ok(Number::new(
-				D128::PI,
-				Unit::NoUnit,
-			)),
-			E => Ok(Number::new(
-				D128::E,
-				Unit::NoUnit,
-			)),
+			Pi => Ok(Number::new_unitless(D128::PI)),
+			E => Ok(Number::new_unitless(D128::E)),
 		},
 		Token::FunctionIdentifier(function) => {
 			let child_node = children.get(0).ok_or("Paren has no child[0]")?;
 			let child_answer = evaluate_node(child_node)?;
 			match function {
 				Cbrt => {
-					if child_answer.unit.category() == UnitType::NoType {
+					if child_answer.is_unitless() {
 						let result = cbrt(child_answer.value);
-						Ok(Number::new(result, child_answer.unit))
+						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("cbrt() only accepts unitless numbers".to_string())
 					}
 				}
 				Sqrt => {
-					if child_answer.unit.category() == UnitType::NoType {
+					if child_answer.is_unitless() {
 						let result = sqrt(child_answer.value);
-						Ok(Number::new(result, child_answer.unit))
+						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("sqrt() only accepts unitless numbers".to_string())
 					}
 				}
 				Log => {
-					if child_answer.unit.category() == UnitType::NoType {
+					if child_answer.is_unitless() {
 						let result = child_answer.value.log10();
-						Ok(Number::new(result, child_answer.unit))
+						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("log() only accepts UnitType::NoType".to_string())
+						Err("log() only accepts unitless numbers".to_string())
 					}
 				}
 				Ln => {
-					if child_answer.unit.category() == UnitType::NoType {
+					if child_answer.is_unitless() {
 						let result = child_answer.value.ln();
-						Ok(Number::new(result, child_answer.unit))
+						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("ln() only accepts UnitType::NoType".to_string())
+						Err("ln() only accepts unitless numbers".to_string())
 					}
 				}
 				Exp => {
-					if child_answer.unit.category() == UnitType::NoType {
+					if child_answer.is_unitless() {
 						let result = child_answer.value.exp();
-						Ok(Number::new(result, child_answer.unit))
+						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
-						Err("exp() only accepts UnitType::NoType".to_string())
+						Err("exp() only accepts unitless numbers".to_string())
 					}
 				}
 				Round => {
@@ -122,43 +116,43 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						.value
 						.with_rounding_mode(RoundingMode::HalfUp)
 						.round(0);
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Ceil => {
 					let result = child_answer.value.ceil();
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Floor => {
 					let result = child_answer.value.floor();
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Abs => {
 					let result = child_answer.value.abs();
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Sin => {
 					let result = sin(child_answer.value);
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Cos => {
 					let result = cos(child_answer.value);
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Tan => {
 					let result = tan(child_answer.value);
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 			}
 		}
 		Token::Unit(unit) => {
 			let child_node = children.get(0).ok_or("Unit has no child[0]")?;
 			let child_answer = evaluate_node(child_node)?;
-			Ok(Number::new(child_answer.value, *unit))
+			Ok(Number::with_basic_unit(child_answer.value, *unit))
 		}
 		Token::Negative => {
 			let child_node = children.get(0).ok_or("Negative has no child[0]")?;
 			let child_answer = evaluate_node(child_node)?;
-			Ok(Number::new(-child_answer.value, child_answer.unit))
+			Ok(Number::with_unit(-child_answer.value, child_answer.unit))
 		}
 		Token::Paren => {
 			let child_node = children.get(0).ok_or("Paren has no child[0]")?;
@@ -170,7 +164,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				.ok_or(format!("Token {:?} has no child[0]", token))?;
 			let child_answer = evaluate_node(child_node)?;
 			match operator {
-				Percent => Ok(Number::new(
+				Percent => Ok(Number::with_unit(
 					child_answer.value / d!(100),
 					child_answer.unit,
 				)),
@@ -181,7 +175,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 							"Can only perform factorial on integers from 0 to 1000".to_string()
 						);
 					}
-					Ok(Number::new(result, child_answer.unit))
+					Ok(Number::with_unit(result, child_answer.unit))
 				}
 			}
 		}
@@ -198,7 +192,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			}
 			let child_answer = evaluate_node(child_node)?;
 			let result = child_answer.value * named_number_value;
-			Ok(Number::new(result, child_answer.unit))
+			Ok(Number::with_unit(result, child_answer.unit))
 		}
 		Token::TextOperator(operator) => {
 			let left_child = children
@@ -212,7 +206,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				To => {
 					if let Token::Unit(right_unit) = right_child.token {
 						let left = evaluate_node(left_child)?;
-						let result = convert(left, right_unit)?;
+						let result = convert(left, vec![(right_unit, 1)])?;
 						Ok(result)
 					} else {
 						Err("Right side of To operator needs to be a unit".to_string())
@@ -221,8 +215,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				Of => {
 					let left = evaluate_node(left_child)?;
 					let right = evaluate_node(right_child)?;
-					if left.unit == Unit::NoUnit {
-						Ok(Number::new(left.value * right.value, right.unit))
+					if left.is_unitless() {
+						Ok(Number::with_unit(left.value * right.value, right.unit))
 					} else {
 						Err("Left side of the Of operator must be NoUnit".to_string())
 					}
@@ -254,8 +248,8 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
-	use crate::eval;
 	use super::*;
+	use crate::{eval, units::Unit::*};
 
 	fn eval_default<'a>(input: &'a str) -> Number {
 		let result = eval(input, true, false).unwrap();
@@ -263,7 +257,7 @@ mod tests {
 	}
 	fn eval_num<'a>(input: &'a str) -> String {
 		let result = eval(input, true, false).unwrap();
-		assert_eq!(result.unit, Unit::NoUnit);
+		assert!(result.is_unitless());
 
 		result.to_string()
 	}
@@ -273,31 +267,52 @@ mod tests {
 		assert_eq!(eval_num("-2(-3)"), "6");
 		assert_eq!(eval_num("-2(3)"), "-6");
 		assert_eq!(eval_num("(3)-2"), "1");
-		assert_eq!(eval_default("-1km to m"), Number::new(d!(-1000), Unit::Meter));
+		assert_eq!(
+			eval_default("-1km to m"),
+			Number::with_basic_unit(d!(-1000), Meter)
+		);
 		assert_eq!(eval_num("2*-3*0.5"), "-3");
 		assert_eq!(eval_num("-3^2"), "-9");
 		assert_eq!(eval_num("e^2"), "7.3890560989306502272304274605750078132");
-		assert_eq!(eval_num("e^2.5"), "12.1824939607034734380701759511679661832");
+		assert_eq!(
+			eval_num("e^2.5"),
+			"12.1824939607034734380701759511679661832"
+		);
 		assert_eq!(eval_num("-1+2"), "1");
 	}
 
 	#[test]
 	fn test_functions() {
 		assert_eq!(eval_num("cbrt(125)"), "5");
-		assert_eq!(eval_num("cbrt(2)"), "1.25992104989487316476721060727822835057");
+		assert_eq!(
+			eval_num("cbrt(2)"),
+			"1.25992104989487316476721060727822835057"
+		);
 
 		assert_eq!(eval_num("sqrt(25)"), "5");
-		assert_eq!(eval_num("sqrt(2)"), "1.41421356237309504880168872420969807857");
+		assert_eq!(
+			eval_num("sqrt(2)"),
+			"1.41421356237309504880168872420969807857"
+		);
 
 		assert_eq!(eval_num("log(100)"), "2");
-		assert_eq!(eval_num("log(2)"), "0.301029995663981195213738894724493026768");
+		assert_eq!(
+			eval_num("log(2)"),
+			"0.301029995663981195213738894724493026768"
+		);
 
 		assert_eq!(eval_num("ln(1)"), "0");
-		assert_eq!(eval_num("ln(2)"), "0.69314718055994530941723212145817656808");
+		assert_eq!(
+			eval_num("ln(2)"),
+			"0.69314718055994530941723212145817656808"
+		);
 		assert_eq!(eval_num("ln(e)"), "1");
 		assert_eq!(eval_num("ln(e^2)"), "2");
 
-		assert_eq!(eval_num("exp(1)"), "2.71828182845904523536028747135266249776");
+		assert_eq!(
+			eval_num("exp(1)"),
+			"2.71828182845904523536028747135266249776"
+		);
 
 		assert_eq!(eval_num("round(1.4)"), "1");
 		assert_eq!(eval_num("round(1.6)"), "2");
@@ -312,11 +327,26 @@ mod tests {
 
 		assert_eq!(eval_num("abs(-3)"), "3");
 
-		assert_eq!(eval_num("sin(2)"), "0.9092974268256816953960198659117448427");
-		assert_eq!(eval_num("sin(-2)"), "-0.9092974268256816953960198659117448427");
+		assert_eq!(
+			eval_num("sin(2)"),
+			"0.9092974268256816953960198659117448427"
+		);
+		assert_eq!(
+			eval_num("sin(-2)"),
+			"-0.9092974268256816953960198659117448427"
+		);
 
-		assert_eq!(eval_num("cos(2)"), "-0.41614683654714238699756822950076218977");
-		assert_eq!(eval_num("cos(-2)"), "-0.41614683654714238699756822950076218977");
-		assert_eq!(eval_num("tan(2)"), "-2.18503986326151899164330610231368254343");
+		assert_eq!(
+			eval_num("cos(2)"),
+			"-0.41614683654714238699756822950076218977"
+		);
+		assert_eq!(
+			eval_num("cos(-2)"),
+			"-0.41614683654714238699756822950076218977"
+		);
+		assert_eq!(
+			eval_num("tan(2)"),
+			"-2.18503986326151899164330610231368254343"
+		);
 	}
 }
