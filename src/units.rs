@@ -44,51 +44,23 @@ pub enum UnitType {
 impl UnitType {
 	fn primitive(&self) -> Vec<(Unit, isize)> {
 		match self {
-			// Time => vec![(Time, 1)],
-			// Length => vec![(Length, 1)],
-			// Area => vec![(Length, 2)],
-			// Volume => vec![(Length, 3)],
-			// Mass => vec![(Mass, 1)],
-			// DigitalStorage => vec![(DigitalStorage, 1)],
-			// DataTransferRate => vec![(DigitalStorage, 1), (Time, -1)],
-			// FlopCount => vec![(FlopCount, 1)],
-			// FlopRate => vec![(FlopCount, 1), (Time, -1)],
-			// Energy => vec![(Mass, 1), (Length, 2), (Time, -2)],
-			// Power => vec![(Mass, 1), (Length, 2), (Time, -3)],
-			// ElectricCurrent => vec![(ElectricCurrent, 1)],
-			// Resistance => vec![(Mass, 1), (Length, 2), (Time, -3), (ElectricCurrent, -2)],
-			// Voltage => vec![(Mass, 1), (Length, 2), (Time, -3), (ElectricCurrent, -1)],
-			// Pressure => vec![(Mass, 1), (Length, -1), (Time, -2)],
-			// Frequency => vec![(Time, -1)],
-			// Speed => vec![(Length, 1), (Time, -1)],
-			// Temperature => vec![(Temperature, 1)],
-			Time => vec![(Nanosecond, 1)],
-			Length => vec![(Millimeter, 1)],
-			Area => vec![(Millimeter, 2)],
-			Volume => vec![(Millimeter, 3)],
-			Mass => vec![(Gram, 1)],
+			Time => vec![(Second, 1)],
+			Length => vec![(Meter, 1)],
+			Area => vec![(Meter, 2)],
+			Volume => vec![(Meter, 3)],
+			Mass => vec![(Kilogram, 1)],
 			DigitalStorage => vec![(Bit, 1)],
-			DataTransferRate => vec![(Bit, 1), (Nanosecond, -1)],
+			DataTransferRate => vec![(Bit, 1), (Second, -1)],
 			FlopCount => vec![(Flop, 1)],
-			FlopRate => vec![(Flop, 1), (Nanosecond, -1)],
-			Energy => vec![(Gram, 1), (SquareMillimeter, 2), (Nanosecond, -2)],
-			Power => vec![(Gram, 1), (SquareMillimeter, 2), (Nanosecond, -3)],
+			FlopRate => vec![(Flop, 1), (Second, -1)],
+			Energy => vec![(Kilogram, 1), (Meter, 2), (Second, -2)],
+			Power => vec![(Kilogram, 1), (Meter, 2), (Second, -3)],
 			ElectricCurrent => vec![(Ampere, 1)],
-			Resistance => vec![
-				(Gram, 1),
-				(SquareMillimeter, 2),
-				(Nanosecond, -3),
-				(Ampere, -2),
-			],
-			Voltage => vec![
-				(Gram, 1),
-				(SquareMillimeter, 2),
-				(Nanosecond, -3),
-				(Ampere, -1),
-			],
-			Pressure => vec![(Gram, 1), (Millimeter, -1), (Nanosecond, -2)],
-			Frequency => vec![(Nanosecond, -1)],
-			Speed => vec![(Millimeter, 1), (Nanosecond, -1)],
+			Resistance => vec![(Kilogram, 1), (Meter, 2), (Second, -3), (Ampere, -2)],
+			Voltage => vec![(Kilogram, 1), (Meter, 2), (Second, -3), (Ampere, -1)],
+			Pressure => vec![(Kilogram, 1), (Meter, -1), (Second, -2)],
+			Frequency => vec![(Second, -1)],
+			Speed => vec![(Meter, 1), (Second, -1)],
 			Temperature => vec![(Kelvin, 1)],
 		}
 	}
@@ -156,84 +128,84 @@ macro_rules! create_units {
 }
 
 create_units!(
-	Nanosecond:         (Time, d!(1), "nanosecond", "nanoseconds"),
-	Microsecond:        (Time, d!(1000), "microsecond", "microseconds"),
-	Millisecond:        (Time, d!(1000000), "millisecond", "milliseconds"),
-	Second:             (Time, d!(1000000000), "second", "seconds"),
-	Minute:             (Time, d!(60000000000), "minute", "minutes"),
-	Hour:               (Time, d!(3600000000000), "hour", "hours"),
-	Day:                (Time, d!(86400000000000), "day", "days"),
-	Week:               (Time, d!(604800000000000), "week", "weeks"),
-	Month:              (Time, d!(2629746000000000), "month", "months"),
-	Quarter:            (Time, d!(7889238000000000), "quarter", "quarters"),
-	Year:               (Time, d!(31556952000000000), "year", "years"),
-	Decade:             (Time, d!(315569520000000000), "decade", "decades"),
-	Century:            (Time, d!(3155695200000000000), "century", "centuries"),
-	Millennium:          (Time, d!(31556952000000000000), "millennium", "millennia"),
+	Nanosecond:         (Time, d!(0.000000001), "nanosecond", "nanoseconds"),
+	Microsecond:        (Time, d!(0.000001), "microsecond", "microseconds"),
+	Millisecond:        (Time, d!(0.001), "millisecond", "milliseconds"),
+	Second:             (Time, d!(1), "second", "seconds"),
+	Minute:             (Time, d!(60), "minute", "minutes"),
+	Hour:               (Time, d!(3600), "hour", "hours"),
+	Day:                (Time, d!(86400), "day", "days"),
+	Week:               (Time, d!(604800), "week", "weeks"),
+	Month:              (Time, d!(2629746), "month", "months"),
+	Quarter:            (Time, d!(7889238), "quarter", "quarters"),
+	Year:               (Time, d!(31556952), "year", "years"),
+	Decade:             (Time, d!(315569520), "decade", "decades"),
+	Century:            (Time, d!(3155695200), "century", "centuries"),
+	Millennium:         (Time, d!(31556952000), "millennium", "millennia"),
 
-	Millimeter:         (Length, d!(1), "millimeter", "millimeters"),
-	Centimeter:         (Length, d!(10), "centimeter", "centimeters"),
-	Decimeter:          (Length, d!(100), "decimeter", "decimeters"),
-	Meter:              (Length, d!(1000), "meter", "meters"),
-	Kilometer:          (Length, d!(1000000), "kilometer", "kilometers"),
-	Inch:               (Length, d!(25.4), "inch", "inches"),
-	Foot:               (Length, d!(304.8), "foot", "feet"),
-	Yard:               (Length, d!(914.4), "yard", "yards"),
-	Mile:               (Length, d!(1609344), "mile", "miles"),
+	Millimeter:         (Length, d!(0.001), "millimeter", "millimeters"),
+	Centimeter:         (Length, d!(0.01), "centimeter", "centimeters"),
+	Decimeter:          (Length, d!(0.1), "decimeter", "decimeters"),
+	Meter:              (Length, d!(1), "meter", "meters"),
+	Kilometer:          (Length, d!(1000), "kilometer", "kilometers"),
+	Inch:               (Length, d!(0.0254), "inch", "inches"),
+	Foot:               (Length, d!(0.3048), "foot", "feet"),
+	Yard:               (Length, d!(0.9144), "yard", "yards"),
+	Mile:               (Length, d!(1609.344), "mile", "miles"),
 	// 1-dimensional only:
-	Marathon:           (Length, d!(42195000), "marathon", "marathons"),
-	NauticalMile:       (Length, d!(1852000), "nautical mile", "nautical miles"),
-	LightYear:          (Length, d!(9460730472580800000), "light year", "light years"),
-	LightSecond:        (Length, d!(299792458000), "light second", "light seconds"),
+	Marathon:           (Length, d!(42195), "marathon", "marathons"),
+	NauticalMile:       (Length, d!(1852), "nautical mile", "nautical miles"),
+	LightYear:          (Length, d!(9460730472580800), "light year", "light years"),
+	LightSecond:        (Length, d!(299792458), "light second", "light seconds"),
 
-	SquareMillimeter:   (Area, d!(1), "square millimeter", "square millimeters"),
-	SquareCentimeter:   (Area, d!(100), "square centimeter", "square centimeters"),
-	SquareDecimeter:    (Area, d!(10000), "square decimeter", "square decimeters"),
-	SquareMeter:        (Area, d!(1000000), "square meter", "square meters"),
-	SquareKilometer:    (Area, d!(1000000000000), "square kilometer", "square kilometers"),
-	SquareInch:         (Area, d!(645.16), "square inch", "square inches"),
-	SquareFoot:         (Area, d!(92903.04), "square foot", "square feet"),
-	SquareYard:         (Area, d!(836127.36), "square yard", "square yards"),
-	SquareMile:         (Area, d!(2589988110336.00), "square mile", "square miles"),
+	SquareMillimeter:   (Area, d!(0.000001), "square millimeter", "square millimeters"),
+	SquareCentimeter:   (Area, d!(0.0001), "square centimeter", "square centimeters"),
+	SquareDecimeter:    (Area, d!(0.01), "square decimeter", "square decimeters"),
+	SquareMeter:        (Area, d!(1), "square meter", "square meters"),
+	SquareKilometer:    (Area, d!(1000000), "square kilometer", "square kilometers"),
+	SquareInch:         (Area, d!(0.00064516), "square inch", "square inches"),
+	SquareFoot:         (Area, d!(0.09290304), "square foot", "square feet"),
+	SquareYard:         (Area, d!(0.83612736), "square yard", "square yards"),
+	SquareMile:         (Area, d!(2589988.110336), "square mile", "square miles"),
 	// 2-dimensional only
-	Are:                (Area, d!(100000000), "are", "ares"),
-	Decare:             (Area, d!(1000000000), "decare", "decares"),
-	Hectare:            (Area, d!(10000000000), "hectare", "hectares"),
-	Acre:               (Area, d!(4046856422.40), "acre", "acres"),
+	Are:                (Area, d!(100), "are", "ares"),
+	Decare:             (Area, d!(1000), "decare", "decares"),
+	Hectare:            (Area, d!(10000), "hectare", "hectares"),
+	Acre:               (Area, d!(4046.8564224), "acre", "acres"),
 
-	CubicMillimeter:    (Volume, d!(1), "cubic millimeter", "cubic millimeters"),
-	CubicCentimeter:    (Volume, d!(1000), "cubic centimeter", "cubic centimeters"),
-	CubicDecimeter:     (Volume, d!(1000000), "cubic decimeter", "cubic decimeters"),
-	CubicMeter:         (Volume, d!(1000000000), "cubic meter", "cubic meters"),
-	CubicKilometer:     (Volume, d!(1000000000000000000), "cubic kilometer", "cubic kilometers"),
-	CubicInch:          (Volume, d!(16387.064), "cubic inch", "cubic inches"),
-	CubicFoot:          (Volume, d!(28316846.592), "cubic foot", "cubic feet"),
-	CubicYard:          (Volume, d!(764554857.984), "cubic yard", "cubic yards"),
-	CubicMile:          (Volume, d!(4168181825440579584), "cubic mile", "cubic miles"),
+	CubicMillimeter:    (Volume, d!(0.000000001), "cubic millimeter", "cubic millimeters"),
+	CubicCentimeter:    (Volume, d!(0.000001), "cubic centimeter", "cubic centimeters"),
+	CubicDecimeter:     (Volume, d!(0.001), "cubic decimeter", "cubic decimeters"),
+	CubicMeter:         (Volume, d!(1), "cubic meter", "cubic meters"),
+	CubicKilometer:     (Volume, d!(1000000000), "cubic kilometer", "cubic kilometers"),
+	CubicInch:          (Volume, d!(0.000016387064), "cubic inch", "cubic inches"),
+	CubicFoot:          (Volume, d!(0.028316846592), "cubic foot", "cubic feet"),
+	CubicYard:          (Volume, d!(0.764554857984), "cubic yard", "cubic yards"),
+	CubicMile:          (Volume, d!(4168181825.440579584), "cubic mile", "cubic miles"),
 	// 3-dimensional only
-	Milliliter:         (Volume, d!(1000), "milliliter", "milliliters"),
-	Centiliter:         (Volume, d!(10000), "centiliter", "centiliters"),
-	Deciliter:          (Volume, d!(100000), "deciliter", "deciliters"),
-	Liter:              (Volume, d!(1000000), "liter", "liters"),
-	Teaspoon:           (Volume, d!(4928.92159375), "teaspoon", "teaspoons"),
-	Tablespoon:         (Volume, d!(14786.76478125), "tablespoon", "tablespoons"),
-	FluidOunce:         (Volume, d!(29573.5295625), "fluid ounce", "fluid ounces"),
-	Cup:                (Volume, d!(236588.2365), "cup", "cups"),
-	Pint:               (Volume, d!(473176.473), "pint", "pints"),
-	Quart:              (Volume, d!(946352.946), "quart", "quarts"),
-	Gallon:             (Volume, d!(3785411.784), "gallon", "gallons"),
-	OilBarrel:          (Volume, d!(158987294.928), "oil barrel", "oil barrels"),
+	Milliliter:         (Volume, d!(0.000001), "milliliter", "milliliters"),
+	Centiliter:         (Volume, d!(0.00001), "centiliter", "centiliters"),
+	Deciliter:          (Volume, d!(0.0001), "deciliter", "deciliters"),
+	Liter:              (Volume, d!(0.001), "liter", "liters"),
+	Teaspoon:           (Volume, d!(0.00000492892159375), "teaspoon", "teaspoons"),
+	Tablespoon:         (Volume, d!(0.00001478676478125), "tablespoon", "tablespoons"),
+	FluidOunce:         (Volume, d!(0.0000295735295625), "fluid ounce", "fluid ounces"),
+	Cup:                (Volume, d!(0.0002365882365), "cup", "cups"),
+	Pint:               (Volume, d!(0.000473176473), "pint", "pints"),
+	Quart:              (Volume, d!(0.000946352946), "quart", "quarts"),
+	Gallon:             (Volume, d!(0.003785411784), "gallon", "gallons"),
+	OilBarrel:          (Volume, d!(0.158987294928), "oil barrel", "oil barrels"),
 
-	Milligram:          (Mass, d!(0.001), "milligram", "milligrams"),
-	Gram:               (Mass, d!(1), "gram", "grams"),
-	Hectogram:          (Mass, d!(100), "hectogram", "hectograms"),
-	Kilogram:           (Mass, d!(1000), "kilogram", "kilograms"),
-	MetricTon:          (Mass, d!(1000000), "metric ton", "metric tons"),
-	Ounce:              (Mass, d!(28.349523125), "ounce", "ounces"),
-	Pound:              (Mass, d!(453.59237), "pound", "pounds"),
-	Stone:              (Mass, d!(6350.29318), "stone", "stones"),
-	ShortTon:           (Mass, d!(907184.74), "short ton", "short tons"),
-	LongTon:            (Mass, d!(1016046.9088), "long ton", "long tons"),
+	Milligram:          (Mass, d!(0.000001), "milligram", "milligrams"),
+	Gram:               (Mass, d!(0.001), "gram", "grams"),
+	Hectogram:          (Mass, d!(0.1), "hectogram", "hectograms"),
+	Kilogram:           (Mass, d!(1), "kilogram", "kilograms"),
+	MetricTon:          (Mass, d!(1000), "metric ton", "metric tons"),
+	Ounce:              (Mass, d!(0.028349523125), "ounce", "ounces"),
+	Pound:              (Mass, d!(0.45359237), "pound", "pounds"),
+	Stone:              (Mass, d!(6.35029318), "stone", "stones"),
+	ShortTon:           (Mass, d!(907.18474), "short ton", "short tons"),
+	LongTon:            (Mass, d!(1016.0469088), "long ton", "long tons"),
 
 	Bit:                (DigitalStorage, d!(1), "bit", "bits"),
 	Kilobit:            (DigitalStorage, d!(1000), "kilobit", "kilobits"),
@@ -356,7 +328,8 @@ create_units!(
 	// inexact:
 	BritishThermalUnitsPerMinute: (Power, d!(17.584264210333), "british thermal unit per minute", "british thermal units per minute"),
 	// inexact:
-	BritishThermalUnitsPerHour:   (Power, d!(0.29307107017222), "british thermal unit per hour", "british thermal units per hour"),	// exact according to wikipedia:
+	BritishThermalUnitsPerHour:   (Power, d!(0.29307107017222), "british thermal unit per hour", "british thermal units per hour"),
+	// exact according to wikipedia:
 	Horsepower:                   (Power, d!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d!(735.49875), "metric horsepower", "metric horsepower"),
 
@@ -392,11 +365,13 @@ create_units!(
 	Petahertz:                    (Frequency, d!(1000000000000000), "petahertz", "petahertz"),
 	RevolutionsPerMinute:         (Frequency, d!(60), "revolution per minute", "revolutions per minute"),
 
-	KilometersPerHour:  (Speed, d!(1), "kilometer per hour", "kilometers per hour"),
-	MetersPerSecond:    (Speed, d!(3.6), "meter per second", "meters per second"),
-	MilesPerHour:       (Speed, d!(1.609344), "mile per hour", "miles per hour"),
-	FeetPerSecond:      (Speed, d!(1.09728), "foot per second", "feet per second"),
-	Knot:               (Speed, d!(1.852), "knot", "knots"),
+	// inexact:
+	KilometersPerHour:  (Speed, d!(0.2777777778), "kilometer per hour", "kilometers per hour"),
+	MetersPerSecond:    (Speed, d!(1), "meter per second", "meters per second"),
+	MilesPerHour:       (Speed, d!(0.44704), "mile per hour", "miles per hour"),
+	FeetPerSecond:      (Speed, d!(0.3048), "foot per second", "feet per second"),
+	// inexact:
+	Knot:               (Speed, d!(0.5144444444), "knot", "knots"),
 
 	Kelvin:             (Temperature, d!(0), "kelvin", "kelvin"),
 	Celsius:            (Temperature, d!(0), "celsius", "celsius"),
@@ -522,172 +497,136 @@ pub fn to_ideal_unit(number: Number) -> Number {
 	let value = number.value * combined_weight(&number.unit);
 	let primitive = number.primitive_unit();
 	if primitive == Length.primitive() {
-		if value >= d!(1000000000000000000) {
-			// ≈ 0.1 light years
+		if value >= 0.1 * LightYear.weight() {
 			return Number::with_basic_unit(value / LightYear.weight(), LightYear);
-		} else if value >= d!(1000000) {
-			// 1 km
+		} else if value >= Kilometer.weight() {
 			return Number::with_basic_unit(value / Kilometer.weight(), Kilometer);
-		} else if value >= d!(1000) {
-			// 1 m
+		} else if value >= Meter.weight() {
 			return Number::with_basic_unit(value / Meter.weight(), Meter);
-		} else if value >= d!(10) {
-			// 1 cm
+		} else if value >= Centimeter.weight() {
 			return Number::with_basic_unit(value / Centimeter.weight(), Centimeter);
 		} else {
-			return Number::with_basic_unit(value, Millimeter);
+			return Number::with_basic_unit(value / Millimeter.weight(), Millimeter);
 		}
 	} else if primitive == Time.primitive() {
-		if value >= d!(31556952000000000) {
+		if value >= Year.weight() {
 			return Number::with_basic_unit(value / Year.weight(), Year);
-		} else if value >= d!(86400000000000) {
+		} else if value >= Day.weight() {
 			return Number::with_basic_unit(value / Day.weight(), Day);
-		} else if value >= d!(3600000000000) {
+		} else if value >= Hour.weight() {
 			return Number::with_basic_unit(value / Hour.weight(), Hour);
-		} else if value >= d!(60000000000) {
+		} else if value >= Minute.weight() {
 			return Number::with_basic_unit(value / Minute.weight(), Minute);
-		} else if value >= d!(1000000000) {
+		} else if value >= Second.weight() {
 			return Number::with_basic_unit(value / Second.weight(), Second);
-		} else if value >= d!(1000000) {
+		} else if value >= Millisecond.weight() {
 			return Number::with_basic_unit(value / Millisecond.weight(), Millisecond);
-		} else if value >= d!(1000) {
+		} else if value >= Microsecond.weight() {
 			return Number::with_basic_unit(value / Microsecond.weight(), Microsecond);
 		} else {
-			return Number::with_basic_unit(value, Nanosecond);
+			return Number::with_basic_unit(value / Nanosecond.weight(), Nanosecond);
 		}
 	} else if primitive == Area.primitive() {
-		if value >= d!(1000000000000) {
-			// 1 km2
+		if value >= SquareKilometer.weight() {
 			return Number::with_basic_unit(value / SquareKilometer.weight(), SquareKilometer);
-		} else if value >= d!(10000000000) {
-			// 1 hectare
+		} else if value >= Hectare.weight() {
 			return Number::with_basic_unit(value / Hectare.weight(), Hectare);
-		} else if value >= d!(1000000) {
-			// 1 m2
+		} else if value >= SquareMeter.weight() {
 			return Number::with_basic_unit(value / SquareMeter.weight(), SquareMeter);
-		} else if value >= d!(100) {
-			// 1 cm2
+		} else if value >= SquareCentimeter.weight() {
 			return Number::with_basic_unit(value / SquareCentimeter.weight(), SquareCentimeter);
 		} else {
-			return Number::with_basic_unit(value, SquareMillimeter);
+			return Number::with_basic_unit(value / SquareMillimeter.weight(), SquareMillimeter);
 		}
 	} else if primitive == Volume.primitive() {
-		if value >= d!(1000000000000000000) {
-			// 1 km3
+		if value >= CubicKilometer.weight() {
 			return Number::with_basic_unit(value / CubicKilometer.weight(), CubicKilometer);
-		} else if value >= d!(1000000000) {
-			// 1 m3
+		} else if value >= CubicMeter.weight() {
 			return Number::with_basic_unit(value / CubicMeter.weight(), CubicMeter);
-		} else if value >= d!(1000000) {
-			// 1 l
+		} else if value >= Liter.weight() {
 			return Number::with_basic_unit(value / Liter.weight(), Liter);
-		} else if value >= d!(1000) {
-			// 1 ml
+		} else if value >= Milliliter.weight() {
 			return Number::with_basic_unit(value / Milliliter.weight(), Milliliter);
 		} else {
-			return Number::with_basic_unit(value, CubicMillimeter);
+			return Number::with_basic_unit(value / CubicMillimeter.weight(), CubicMillimeter);
 		}
 	} else if primitive == Energy.primitive() {
-		if value >= d!(3600000000000000000) {
-			// 1 petawatthour
-			return Number::with_basic_unit(value / PetawattHour.weight(), PetawattHour);
-		} else if value >= d!(3600000000000000) {
-			// 1 terawatthour
-			return Number::with_basic_unit(value / TerawattHour.weight(), TerawattHour);
-		} else if value >= d!(3600000000000) {
-			// 1 gigawatthour
-			return Number::with_basic_unit(value / GigawattHour.weight(), GigawattHour);
-		} else if value >= d!(3600000000) {
-			// 1 megawatthour
-			return Number::with_basic_unit(value / MegawattHour.weight(), MegawattHour);
-		} else if value >= d!(3600000) {
-			// 1 kilowatthour
-			return Number::with_basic_unit(value / KilowattHour.weight(), KilowattHour);
-		} else if value >= d!(3600) {
-			// 1 watthour
-			return Number::with_basic_unit(value / WattHour.weight(), WattHour);
-		} else if value >= d!(1) {
-			// 1 joule
-			return Number::with_basic_unit(value, Joule);
+		let has_second = number.unit.iter().find(|unit| unit.0 == Second).is_some();
+		if has_second {
+			if value >= Terajoule.weight() {
+				return Number::with_basic_unit(value / Terajoule.weight(), Terajoule);
+			} else if value >= Gigajoule.weight() {
+				return Number::with_basic_unit(value / Gigajoule.weight(), Gigajoule);
+			} else if value >= Megajoule.weight() {
+				return Number::with_basic_unit(value / Megajoule.weight(), Megajoule);
+			} else if value >= Kilojoule.weight() {
+				return Number::with_basic_unit(value / Kilojoule.weight(), Kilojoule);
+			} else if value >= Joule.weight() {
+				return Number::with_basic_unit(value / Joule.weight(), Joule);
+			} else {
+				return Number::with_basic_unit(value / Millijoule.weight(), Millijoule);
+			}
 		} else {
-			return Number::with_basic_unit(value / Millijoule.weight(), Millijoule);
+			if value >= PetawattHour.weight() {
+				return Number::with_basic_unit(value / PetawattHour.weight(), PetawattHour);
+			} else if value >= TerawattHour.weight() {
+				return Number::with_basic_unit(value / TerawattHour.weight(), TerawattHour);
+			} else if value >= GigawattHour.weight() {
+				return Number::with_basic_unit(value / GigawattHour.weight(), GigawattHour);
+			} else if value >= MegawattHour.weight() {
+				return Number::with_basic_unit(value / MegawattHour.weight(), MegawattHour);
+			} else if value >= KilowattHour.weight() {
+				return Number::with_basic_unit(value / KilowattHour.weight(), KilowattHour);
+			} else if value >= WattHour.weight() {
+				return Number::with_basic_unit(value / WattHour.weight(), WattHour);
+			} else if value >= Joule.weight() {
+				return Number::with_basic_unit(value / Joule.weight(), Joule);
+			} else {
+				return Number::with_basic_unit(value / Millijoule.weight(), Millijoule);
+			}
 		}
 	} else if primitive == Power.primitive() {
-		if value >= d!(1000000000000000) {
-			// 1 petawatt
+		if value >= Petawatt.weight() {
 			return Number::with_basic_unit(value / Petawatt.weight(), Petawatt);
-		} else if value >= d!(1000000000000) {
-			// 1 terawatt
+		} else if value >= Terawatt.weight() {
 			return Number::with_basic_unit(value / Terawatt.weight(), Terawatt);
-		} else if value >= d!(1000000000) {
-			// 1 gigawatt
+		} else if value >= Gigawatt.weight() {
 			return Number::with_basic_unit(value / Gigawatt.weight(), Gigawatt);
-		} else if value >= d!(1000000) {
-			// megawatt
+		} else if value >= Megawatt.weight() {
 			return Number::with_basic_unit(value / Megawatt.weight(), Megawatt);
-		} else if value >= d!(1000) {
-			// 1 kilowatt
+		} else if value >= Kilowatt.weight() {
 			return Number::with_basic_unit(value / Kilowatt.weight(), Kilowatt);
-		} else if value >= d!(1) {
-			// 1 watt
-			return Number::with_basic_unit(value, Watt);
+		} else if value >= Watt.weight() {
+			return Number::with_basic_unit(value / Watt.weight(), Watt);
 		} else {
 			return Number::with_basic_unit(value / Milliwatt.weight(), Milliwatt);
 		}
 	} else if primitive == ElectricCurrent.primitive() {
-		if value >= d!(1000) {
-			// 1 kiloampere
+		if value >= Kiloampere.weight() {
 			return Number::with_basic_unit(value / Kiloampere.weight(), Kiloampere);
-		} else if value >= d!(1) {
-			// 1 ampere
-			return Number::with_basic_unit(value, Ampere);
+		} else if value >= Ampere.weight() {
+			return Number::with_basic_unit(value / Ampere.weight(), Ampere);
 		} else {
 			return Number::with_basic_unit(value / Milliampere.weight(), Milliampere);
 		}
 	} else if primitive == Resistance.primitive() {
-		if value >= d!(1000) {
-			// 1 kiloohm
+		if value >= Kiloohm.weight() {
 			return Number::with_basic_unit(value / Kiloohm.weight(), Kiloohm);
-		} else if value >= d!(1) {
-			// 1 ohm
-			return Number::with_basic_unit(value, Ohm);
+		} else if value >= Ohm.weight() {
+			return Number::with_basic_unit(value / Ohm.weight(), Ohm);
 		} else {
 			return Number::with_basic_unit(value / Milliohm.weight(), Milliohm);
 		}
 	} else if primitive == Voltage.primitive() {
-		if value >= d!(1000) {
-			// 1 kilovolt
+		if value >= Kilovolt.weight() {
 			return Number::with_basic_unit(value / Kilovolt.weight(), Kilovolt);
-		} else if value >= d!(1) {
-			// 1 volt
-			return Number::with_basic_unit(value, Volt);
+		} else if value >= Volt.weight() {
+			return Number::with_basic_unit(value / Volt.weight(), Volt);
 		} else {
 			return Number::with_basic_unit(value / Millivolt.weight(), Millivolt);
 		}
 	}
 	number
-}
-
-/// Convert a [`Number`] to an ideal [`Joule`] unit, if the number is a unit of [`Energy`].
-pub fn to_ideal_joule_unit(number: Number) -> Number {
-	todo!();
-	// let value = number.value * number.unit.weight();
-	// if number.unit.category() == Energy {
-	// 	if value >= d!(1000000000000) { // 1 terajoule
-	// 		return Number::new(value/Terajoule.weight(), Terajoule)
-	// 	} else if value >= d!(1000000000) { // 1 gigajoule
-	// 		return Number::new(value/Gigajoule.weight(), Gigajoule)
-	// 	} else if value >= d!(1000000) { // 1 megajoule
-	// 		return Number::new(value/Megajoule.weight(), Megajoule)
-	// 	} else if value >= d!(1000) { // 1 kilojoule
-	// 		return Number::new(value/Kilojoule.weight(), Kilojoule)
-	// 	} else if value >= d!(1) { // 1 joule
-	// 		return Number::new(value/Joule.weight(), Joule)
-	// 	} else {
-	// 		return Number::new(value/Millijoule.weight(), Millijoule)
-	// 	}
-	// }
-	// number
 }
 
 /// Multiply two [`Number`]s
