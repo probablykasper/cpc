@@ -24,7 +24,10 @@
 
 use crate::units::{Unit, UnitType, primitive_unit};
 use fastnum::{D128, dec128 as d};
-use std::fmt::{self, Display};
+use std::{
+	cmp::Reverse,
+	fmt::{self, Display},
+};
 use web_time::Instant;
 
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
@@ -60,7 +63,6 @@ pub struct Number {
 	/// The unit and exponent
 	pub unit: Vec<(Unit, isize)>,
 }
-
 impl Number {
 	pub fn new_unitless(value: D128) -> Number {
 		Number {
@@ -94,16 +96,38 @@ impl Number {
 	}
 	fn get_unit_string(&self, plural: bool) -> String {
 		let mut s = String::new();
-		for unit in &self.unit {
-			match unit.1.is_positive() {
-				true if s.len() == 0 => (),
-				true => s.push_str(" * "),
-				false => s.push_str(" / "),
+		let mut units = self.unit.clone();
+		units.sort_by_key(|u| {
+			(
+				u.1 < 0,            // multiplications first
+				Reverse(u.1.abs()), // largest first, like "sqm seconds"
+			)
+		});
+		let mut positives = units.iter().filter(|u| u.1 > 0).peekable();
+		while let Some(unit) = positives.next() {
+			if unit.1 <= 0 {
+				continue;
 			}
-			match plural {
+			if s.len() != 0 {
+				s.push_str(" * ");
+			}
+			// only the last multiplication should be plural: `100 minute meters / volt hour`
+			let is_last = positives.peek().is_none();
+			match is_last && plural {
 				false => s.push_str(unit.0.singular()),
 				true => s.push_str(unit.0.plural()),
 			};
+			if unit.1.abs() >= 2 {
+				s.push_str("^");
+				s.push_str(&unit.1.to_string());
+			}
+		}
+		for unit in units {
+			if unit.1 >= 0 {
+				continue;
+			}
+			s.push_str(" / ");
+			s.push_str(unit.0.singular());
 			if unit.1.abs() >= 2 {
 				s.push_str("^");
 				s.push_str(&unit.1.to_string());
