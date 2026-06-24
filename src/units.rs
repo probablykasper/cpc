@@ -758,17 +758,15 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 ///
 /// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
-	todo!();
-	// if left.unit.category() == Temperature || right.unit.category() == Temperature {
-	// 	// if temperature
-	// 	Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
-	// } else if left.unit.category() == right.unit.category() {
-	// 	// 5 km % 3 m
-	// 	let (left, right) = convert_to_lowest(left, right)?;
-	// 	Ok(Number::new(left.value % right.value, left.unit))
-	// } else {
-	// 	Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
-	// }
+	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+	} else if left.primitive_unit() == right.primitive_unit() {
+		// 5 km % 3 m
+		let (left, right) = convert_to_lowest(left, right)?;
+		Ok(Number::with_unit(left.value % right.value, left.unit))
+	} else {
+		Err(format!("Cannot modulo {:?} by {:?}", left.unit, right.unit))
+	}
 }
 
 /// Returns a [`Number`] to the power of another [`Number`]
