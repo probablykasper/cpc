@@ -1,9 +1,9 @@
-use crate::Constant::{E, Pi};
-use crate::FunctionIdentifier::{Abs, Cbrt, Ceil, Cos, Exp, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
+use crate::Constant::*;
+use crate::FunctionIdentifier::*;
 use crate::LexerKeyword::*;
 use crate::NamedNumber::*;
-use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
-use crate::TextOperator::{Of, To};
+use crate::Operator::*;
+use crate::TextOperator::*;
 use crate::Token;
 use crate::UnaryOperator::{Factorial, Percent};
 use crate::units::Unit::*;
@@ -929,12 +929,17 @@ struct Tokeniser {
 }
 
 fn resolve_semantic_tokens(atoms: Vec<Atom>) -> Result<Vec<Token>, String> {
+	let start = std::time::Instant::now();
+
 	let mut tokeniser = Tokeniser {
 		i: 0,
 		atoms,
 		tokens: Vec::new(),
 		token_map: default_token_map()?,
 	};
+	let time = std::time::Instant::now().duration_since(start).as_nanos() as f32;
+
+	println!("\u{23f1}  {:.3}ms dtm", time / 1000.0 / 1000.0);
 
 	while tokeniser.i < tokeniser.atoms.len() {
 		tokeniser = resolve_semantic_token(tokeniser)?;

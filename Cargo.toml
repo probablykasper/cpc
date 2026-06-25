@@ -24,6 +24,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 fastnum = "0.7"
 fxhash = "0.2.1"
+phf = "0.14.0"
 radix_trie = "0.3.0"
 unicode-segmentation = "1.13"
 web-time = "1.1.0"

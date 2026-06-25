@@ -30,6 +30,7 @@ use web_time::Instant;
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
 pub mod newunits;
+mod token_match;
 /// Turns a string into [`Token`]s
 #[rustfmt::skip]
 pub mod lexer;
