@@ -350,7 +350,6 @@ create_units!(
 	BritishThermalUnitsPerMinute: (Power, d!(17.584264210333), "british thermal unit per minute", "british thermal units per minute"),
 	// inexact:
 	BritishThermalUnitsPerHour:   (Power, d!(0.29307107017222), "british thermal unit per hour", "british thermal units per hour"),
-	// exact according to wikipedia:
 	Horsepower:                   (Power, d!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d!(735.49875), "metric horsepower", "metric horsepower"),
 
