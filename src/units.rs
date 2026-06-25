@@ -148,6 +148,11 @@ macro_rules! create_units {
 	}
 }
 
+macro_rules! inexact {
+	($a:tt / $b:tt) => {
+		d!($a) / d!($b)
+	};
+}
 create_units!(
 	Nanosecond:         (Time, d!(0.000000001), "nanosecond", "nanoseconds"),
 	Microsecond:        (Time, d!(0.000001), "microsecond", "microseconds"),
@@ -346,10 +351,8 @@ create_units!(
 	Gigawatt:                     (Power, d!(1000000000), "gigawatt", "gigawatts"),
 	Terawatt:                     (Power, d!(1000000000000), "terawatt", "terawatts"),
 	Petawatt:                     (Power, d!(1000000000000000), "petawatt", "petawatts"),
-	// inexact:
-	BritishThermalUnitsPerMinute: (Power, d!(17.584264210333), "british thermal unit per minute", "british thermal units per minute"),
-	// inexact:
-	BritishThermalUnitsPerHour:   (Power, d!(0.29307107017222), "british thermal unit per hour", "british thermal units per hour"),
+	BritishThermalUnitsPerMinute: (Power, inexact!(1055.05585262 / 60), "british thermal unit per minute", "british thermal units per minute"),
+	BritishThermalUnitsPerHour:   (Power, inexact!(1055.05585262 / 3600), "british thermal unit per hour", "british thermal units per hour"),
 	Horsepower:                   (Power, d!(745.69987158227022), "horsepower", "horsepower"),
 	MetricHorsepower:             (Power, d!(735.49875), "metric horsepower", "metric horsepower"),
 
@@ -372,10 +375,8 @@ create_units!(
 	Millibar:                     (Pressure, d!(100), "millibar", "millibars"),
 	Bar:                          (Pressure, d!(100000), "bar", "bars"),
 	InchOfMercury:                (Pressure, d!(3386.389), "inch of mercury", "inches of mercury"),
-	// inexact:
-	PoundsPerSquareInch:          (Pressure, d!(6894.757293168361), "pound per square inch", "pounds per square inch"),
-	// inexact:
-	Torr:                         (Pressure, d!(133.3223684210526), "torr", "torr"),
+	PoundsPerSquareInch:          (Pressure, inexact!(8896443230521/1290320000), "pound per square inch", "pounds per square inch"),
+	Torr:                         (Pressure, inexact!(4053000 / 30400), "torr", "torr"),
 
 	Hertz:                        (Frequency, d!(1), "hertz", "hertz"),
 	Kilohertz:                    (Frequency, d!(1000), "kilohertz", "kilohertz"),
@@ -385,13 +386,11 @@ create_units!(
 	Petahertz:                    (Frequency, d!(1000000000000000), "petahertz", "petahertz"),
 	RevolutionsPerMinute:         (Frequency, d!(60), "revolution per minute", "revolutions per minute"),
 
-	// inexact:
-	KilometersPerHour:  (Speed, d!(0.2777777778), "kilometer per hour", "kilometers per hour"),
+	KilometersPerHour:  (Speed, inexact!(1 / 3.6), "kilometer per hour", "kilometers per hour"),
 	MetersPerSecond:    (Speed, d!(1), "meter per second", "meters per second"),
 	MilesPerHour:       (Speed, d!(0.44704), "mile per hour", "miles per hour"),
 	FeetPerSecond:      (Speed, d!(0.3048), "foot per second", "feet per second"),
-	// inexact:
-	Knot:               (Speed, d!(0.5144444444), "knot", "knots"),
+	Knot:               (Speed, inexact!(463 / 900), "knot", "knots"),
 
 	Kelvin:             (Temperature, d!(0), "kelvin", "kelvin"),
 	Celsius:            (Temperature, d!(0), "celsius", "celsius"),
@@ -728,7 +727,7 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 		Err(format!("Cannot divide {} by {}", left, right))
 	} else {
 		let mut new_number = left;
-		new_number.value /= right.value;
+		new_number.value = new_number.value / right.value;
 		for (r_unit, r_exp) in right.unit {
 			let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
 			match existing {
@@ -800,7 +799,12 @@ mod tests {
 
 	macro_rules! assert_float_eq {
 		( $actual:expr, $expected:literal ) => {
-			assert!(($actual - $expected).abs() < f64::EPSILON);
+			assert!(
+				($actual - $expected).abs() < f64::EPSILON,
+				"assertion `left == right` failed\n  left: {:?}\n right: {:?}",
+				$actual,
+				$expected
+			);
 		};
 	}
 
@@ -1116,12 +1120,16 @@ mod tests {
 		assert_float_eq!(convert_test(1000.0, Gigawatt, Terawatt), 1.0);
 		assert_float_eq!(convert_test(1000.0, Terawatt, Petawatt), 1.0);
 		assert_float_eq!(
-			convert_test(17.584264210333, Watt, BritishThermalUnitsPerMinute),
+			convert_test(
+				17.5842642103333333333333333333333333334,
+				Watt,
+				BritishThermalUnitsPerMinute
+			),
 			1.0
 		);
 		assert_float_eq!(
 			convert_test(
-				59.999999999999317571673374406441452784,
+				60.0,
 				BritishThermalUnitsPerHour,
 				BritishThermalUnitsPerMinute
 			),
@@ -1149,7 +1157,10 @@ mod tests {
 			convert_test(6894.757293168361, Pascal, PoundsPerSquareInch),
 			1.0
 		);
-		assert_float_eq!(convert_test(133.3223684210526, Pascal, Torr), 1.0);
+		assert_float_eq!(
+			convert_test(133.322368421052631578947368421052631579, Pascal, Torr),
+			1.0
+		);
 
 		assert_float_eq!(convert_test(1000.0, Hertz, Kilohertz), 1.0);
 		assert_float_eq!(convert_test(1000.0, Kilohertz, Megahertz), 1.0);
