@@ -7,6 +7,7 @@ use crate::lookup::{lookup_factorial, lookup_named_number};
 use crate::parser::AstNode;
 use crate::units::{add, convert, divide, modulo, multiply, pow, subtract};
 use crate::{Number, Token};
+use fastnum::decimal::Context;
 use fastnum::{D128, dec128 as d, decimal::RoundingMode};
 
 /// Evaluate an [`AstNode`] into a [`Number`]
@@ -22,16 +23,6 @@ pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
 /// All return values of this function are hard-coded.
 pub fn factorial(input: D128) -> D128 {
 	lookup_factorial(input.try_into().unwrap())
-}
-
-/// Returns the square root of a [`struct@d128`]
-pub fn sqrt(input: D128) -> D128 {
-	input.sqrt()
-}
-
-/// Returns the cube root of a [`struct@d128`]
-pub fn cbrt(input: D128) -> D128 {
-	input.cbrt()
 }
 
 /// Returns the sine of a [`struct@d128`]
@@ -56,6 +47,12 @@ pub fn tan(input: D128) -> D128 {
 	input.tan()
 }
 
+/// Turn `old` into `new` without updating the signal
+fn replace_without_updating_signals(old: D128, new: D128) -> D128 {
+	let new_without_signal = D128::parse_str(&new.to_string(), Context::default());
+	old - old + new_without_signal
+}
+
 /// Evaluate an [`AstNode`] into a [`Number`]
 fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 	let token = &ast_node.token;
@@ -70,20 +67,36 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			let child_node = children.get(0).ok_or("Paren has no child[0]")?;
 			let child_answer = evaluate_node(child_node)?;
 			match function {
-				Cbrt => {
-					if child_answer.is_unitless() {
-						let result = cbrt(child_answer.value);
-						Ok(Number::with_unit(result, child_answer.unit))
-					} else {
-						Err("cbrt() only accepts unitless numbers".to_string())
-					}
-				}
 				Sqrt => {
 					if child_answer.is_unitless() {
-						let result = sqrt(child_answer.value);
+						let mut result = child_answer.value.sqrt();
+						let result_with_old_signals =
+							replace_without_updating_signals(child_answer.value, result);
+						let result_squared = result_with_old_signals * result_with_old_signals;
+						// if result^2 is exact and equals the original, we avoid the OP_INEXACT signal
+						if !result_squared.is_op_inexact() && result_squared == child_answer.value {
+							result = replace_without_updating_signals(child_answer.value, result);
+						}
 						Ok(Number::with_unit(result, child_answer.unit))
 					} else {
 						Err("sqrt() only accepts unitless numbers".to_string())
+					}
+				}
+				Cbrt => {
+					if child_answer.is_unitless() {
+						let mut result = child_answer.value.cbrt();
+						let result_with_old_signals =
+							replace_without_updating_signals(child_answer.value, result);
+						let result_squared = result_with_old_signals
+							* result_with_old_signals
+							* result_with_old_signals;
+						// if result^2 is exact and equals the original, we avoid the OP_INEXACT signal
+						if !result_squared.is_op_inexact() && result_squared == child_answer.value {
+							result = replace_without_updating_signals(child_answer.value, result);
+						}
+						Ok(Number::with_unit(result, child_answer.unit))
+					} else {
+						Err("cbrt() only accepts unitless numbers".to_string())
 					}
 				}
 				Log => {
@@ -116,14 +129,17 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 						.value
 						.with_rounding_mode(RoundingMode::HalfUp)
 						.round(0);
+					let result = replace_without_updating_signals(child_answer.value, result);
 					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Ceil => {
 					let result = child_answer.value.ceil();
+					let result = replace_without_updating_signals(child_answer.value, result);
 					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Floor => {
 					let result = child_answer.value.floor();
+					let result = replace_without_updating_signals(child_answer.value, result);
 					Ok(Number::with_unit(result, child_answer.unit))
 				}
 				Abs => {
@@ -273,10 +289,10 @@ mod tests {
 		);
 		assert_eq!(eval_num("2*-3*0.5"), "-3");
 		assert_eq!(eval_num("-3^2"), "-9");
-		assert_eq!(eval_num("e^2"), "7.3890560989306502272304274605750078132");
+		assert_eq!(eval_num("e^2"), "≈ 7.3890560989306502272304274605750078132");
 		assert_eq!(
 			eval_num("e^2.5"),
-			"12.1824939607034734380701759511679661832"
+			"≈ 12.1824939607034734380701759511679661832"
 		);
 		assert_eq!(eval_num("-1+2"), "1");
 	}
@@ -286,32 +302,32 @@ mod tests {
 		assert_eq!(eval_num("cbrt(125)"), "5");
 		assert_eq!(
 			eval_num("cbrt(2)"),
-			"1.25992104989487316476721060727822835057"
+			"≈ 1.25992104989487316476721060727822835057"
 		);
 
 		assert_eq!(eval_num("sqrt(25)"), "5");
 		assert_eq!(
 			eval_num("sqrt(2)"),
-			"1.41421356237309504880168872420969807857"
+			"≈ 1.41421356237309504880168872420969807857"
 		);
 
 		assert_eq!(eval_num("log(100)"), "2");
 		assert_eq!(
 			eval_num("log(2)"),
-			"0.301029995663981195213738894724493026768"
+			"≈ 0.301029995663981195213738894724493026768"
 		);
 
 		assert_eq!(eval_num("ln(1)"), "0");
 		assert_eq!(
 			eval_num("ln(2)"),
-			"0.69314718055994530941723212145817656808"
+			"≈ 0.69314718055994530941723212145817656808"
 		);
-		assert_eq!(eval_num("ln(e)"), "1");
-		assert_eq!(eval_num("ln(e^2)"), "2");
+		assert_eq!(eval_num("ln(e)"), "≈ 1");
+		assert_eq!(eval_num("ln(e^2)"), "≈ 2");
 
 		assert_eq!(
 			eval_num("exp(1)"),
-			"2.71828182845904523536028747135266249776"
+			"≈ 2.71828182845904523536028747135266249776"
 		);
 
 		assert_eq!(eval_num("round(1.4)"), "1");
@@ -329,24 +345,24 @@ mod tests {
 
 		assert_eq!(
 			eval_num("sin(2)"),
-			"0.9092974268256816953960198659117448427"
+			"≈ 0.9092974268256816953960198659117448427"
 		);
 		assert_eq!(
 			eval_num("sin(-2)"),
-			"-0.9092974268256816953960198659117448427"
+			"≈ -0.9092974268256816953960198659117448427"
 		);
 
 		assert_eq!(
 			eval_num("cos(2)"),
-			"-0.41614683654714238699756822950076218977"
+			"≈ -0.41614683654714238699756822950076218977"
 		);
 		assert_eq!(
 			eval_num("cos(-2)"),
-			"-0.41614683654714238699756822950076218977"
+			"≈ -0.41614683654714238699756822950076218977"
 		);
 		assert_eq!(
 			eval_num("tan(2)"),
-			"-2.18503986326151899164330610231368254343"
+			"≈ -2.18503986326151899164330610231368254343"
 		);
 	}
 }

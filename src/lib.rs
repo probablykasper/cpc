@@ -135,9 +135,13 @@ impl Display for Number {
 			true => self.singular(),
 			false => self.plural(),
 		};
+		let approx_str = match value.is_op_inexact() {
+			true => "≈ ",
+			false => "",
+		};
 		let output = match word.as_str() {
-			"" => format!("{value}"),
-			_ => format!("{value} {word}"),
+			"" => format!("{approx_str}{value}"),
+			_ => format!("{approx_str}{value} {word}"),
 		};
 		write!(f, "{output}")
 	}
