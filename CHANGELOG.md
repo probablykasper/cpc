@@ -6,6 +6,7 @@
 - Add generic unit combinations, such as `1kg/m`, `1km per year` and `m+km`
 - Add generic unit simplification. For example, `1kg*1sqm/1s/1s/1s/1a` now becomes `1 volt`
 - Add `≈` indicator when a result is approximate
+- Add case-sensitive `Bps` units for bytes per second
 - Use max precision for inexact unit conversions
 - Fix `^` allowing numbers to be raised to the power of units
 

@@ -161,7 +161,6 @@ match string {
 ```
 
 ### Potential Improvements
-- Support for conversion between Power, Current, Resistance and Voltage. Multiplication and division is currently supported, but not conversions using sqrt or pow.
 - Fractional numbers (to make 1/3*2*3 accurate)
 - E notation, like 2E+10
 - Unit types
@@ -172,7 +171,6 @@ match string {
   - Timezones
   - Binary/octal/decimal/hexadecimal/base32/base64
   - Fuel consumption
-  - Data transfer rate
   - Color codes
   - Force
   - Roman numerals

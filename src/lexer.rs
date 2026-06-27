@@ -98,7 +98,7 @@ fn lex_token(lexer: &mut Lexer) -> Result<(), String> {
 		Some(c) => *c,
 		None => return Ok(()),
 	};
-	let token = match first_grapheme {
+	let token = match first_grapheme.to_ascii_lowercase().as_str() {
 		grapheme if grapheme.trim_start().is_empty() => {
 			lexer.graphemes.next();
 			return Ok(());
@@ -163,7 +163,7 @@ fn lex_word_if_non_empty(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 }
 
 fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
-	let token = match word {
+	let token = match word.to_ascii_lowercase().as_str() {
 		"to" => Token::TextOperator(To),
 		"of" => Token::TextOperator(Of),
 
@@ -451,6 +451,16 @@ fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"zib" | "zebibyte" | "zebibytes" => Token::unit(Zebibyte),
 		"yib" | "yobibyte" | "yobibytes" => Token::unit(Yobibyte),
 
+		"bps" if word.as_bytes()[0] == b'B' => Token::unit(BytesPerSecond),
+		"kbps" if word.as_bytes()[1] == b'B' => Token::unit(KilobytesPerSecond),
+		"mbps" if word.as_bytes()[1] == b'B' => Token::unit(MegabytesPerSecond),
+		"gbps" if word.as_bytes()[1] == b'B' => Token::unit(GigabytesPerSecond),
+		"tbps" if word.as_bytes()[1] == b'B' => Token::unit(TerabytesPerSecond),
+		"pbps" if word.as_bytes()[1] == b'B' => Token::unit(PetabytesPerSecond),
+		"ebps" if word.as_bytes()[1] == b'B' => Token::unit(ExabytesPerSecond),
+		"zbps" if word.as_bytes()[1] == b'B' => Token::unit(ZettabytesPerSecond),
+		"ybps" if word.as_bytes()[1] == b'B' => Token::unit(YottabytesPerSecond),
+
 		"bps" => Token::unit(BitsPerSecond),
 		"kbps" => Token::unit(KilobitsPerSecond),
 		"mbps" => Token::unit(MegabitsPerSecond),
@@ -655,7 +665,7 @@ impl<'a> Lexer<'a> {
 
 /// Lex an input string and returns [`Token`]s
 pub fn lex(input: &str, remove_trailing_operator: bool) -> Result<Vec<Token>, String> {
-	let mut input = input.replace(',', "").to_ascii_lowercase();
+	let mut input = input.replace(',', "");
 
 	if remove_trailing_operator {
 		match &input.chars().last().unwrap_or('x') {
@@ -959,6 +969,11 @@ mod tests {
 		run_datarate_lex("0.73 exbibytes", vec![numtok!(0.73), Token::unit(Exbibyte)]);
 		run_datarate_lex("0.49 zebibytes", vec![numtok!(0.49), Token::unit(Zebibyte)]);
 		run_datarate_lex("0.23 yobibytes", vec![numtok!(0.23), Token::unit(Yobibyte)]);
+		run_lex("432 Bps", vec![numtok!(432), Token::unit(BytesPerSecond)]);
+		run_lex(
+			"56 kBps",
+			vec![numtok!(56), Token::unit(KilobytesPerSecond)],
+		);
 		run_lex("432 bps", vec![numtok!(432), Token::unit(BitsPerSecond)]);
 		run_lex("56 kbps", vec![numtok!(56), Token::unit(KilobitsPerSecond)]);
 		run_lex("12 mbps", vec![numtok!(12), Token::unit(MegabitsPerSecond)]);
