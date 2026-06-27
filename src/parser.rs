@@ -4,22 +4,36 @@ use crate::Token;
 use crate::UnaryOperator::*;
 use crate::units::Unit;
 use crate::units::Unit::{Foot, Inch};
+use core::fmt;
 
-#[derive(Debug)]
 /// A struct with a [`Token`](AstNode::token) and [`AstNode`] [`children`](AstNode::children)
+#[derive(Clone)]
 pub struct AstNode {
 	/// The children of the [`AstNode`]
 	pub children: Vec<AstNode>,
 	/// The token of the [`AstNode`]
 	pub token: Token,
 }
-
 impl AstNode {
 	pub const fn new(token: Token) -> AstNode {
 		AstNode {
 			children: Vec::new(),
 			token,
 		}
+	}
+}
+impl fmt::Debug for AstNode {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		let mut d = f.debug_struct("AstNode");
+		d.field("token", &self.token);
+		if self.children.is_empty() {
+			d.field("children", &self.children);
+		} else {
+			for (i, child) in self.children.iter().enumerate() {
+				d.field(&i.to_string(), child);
+			}
+		}
+		d.finish()
 	}
 }
 
@@ -140,7 +154,7 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 		}
 	}
 
-	let (mut node, mut pos) = parse_caret(tokens, pos)?;
+	let (mut node, mut pos) = parse_implicit_unit_mult(tokens, pos)?;
 
 	loop {
 		let token = tokens.get(pos);
@@ -149,7 +163,7 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 			| Some(&Token::Operator(Divide))
 			| Some(&Token::TextOperator(Per))
 			| Some(&Token::Operator(Modulo)) => {
-				let (right_node, next_pos) = parse_caret(tokens, pos + 1)?;
+				let (right_node, next_pos) = parse_implicit_unit_mult(tokens, pos + 1)?;
 				let mut new_node = AstNode::new(token.unwrap().clone());
 				new_node.children.push(node);
 				new_node.children.push(right_node);
@@ -169,7 +183,7 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 				let last_token = tokens.get(pos - 1);
 				match last_token {
 					Some(&Token::Constant(_)) | Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_caret(tokens, pos)?;
+						let (right_node, next_pos) = parse_implicit_unit_mult(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -186,7 +200,7 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 				let last_token = tokens.get(pos - 1);
 				match last_token {
 					Some(&Token::Number(_)) | Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_caret(tokens, pos)?;
+						let (right_node, next_pos) = parse_implicit_unit_mult(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -203,7 +217,7 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 				let last_token = tokens.get(pos - 1);
 				match last_token {
 					Some(&Token::Number(_)) | Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_caret(tokens, pos)?;
+						let (right_node, next_pos) = parse_implicit_unit_mult(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -222,7 +236,7 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 					Some(&Token::Number(_))
 					| Some(&Token::Constant(_))
 					| Some(&Token::Operator(RightParen)) => {
-						let (right_node, next_pos) = parse_caret(tokens, pos)?;
+						let (right_node, next_pos) = parse_implicit_unit_mult(tokens, pos)?;
 						let mut new_node = AstNode::new(Token::Operator(Multiply));
 						new_node.children.push(node);
 						new_node.children.push(right_node);
@@ -241,7 +255,58 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 	}
 }
 
-/// Parse [`^`](crate::Operator::Caret)
+/// Parse numbers with units (for example `2km`)
+pub fn parse_implicit_unit_mult(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+	let (mut node, mut pos) = parse_unit_mult_level(tokens, pos)?;
+	loop {
+		let token = tokens.get(pos);
+		match token {
+			// maybe this can be in parse_mult_level instead?
+			Some(&Token::Unit(_)) => {
+				// implicit unit multiplication, e.g. `ft s`
+				let (right_node, next_pos) = parse_unit_mult_level(tokens, pos)?;
+				let mut new_node = AstNode::new(Token::Operator(Multiply));
+				new_node.children.push(node);
+				new_node.children.push(right_node);
+				node = new_node;
+				pos = next_pos;
+			}
+			_ => {
+				return Ok((node, pos));
+			}
+		}
+	}
+}
+
+/// Parse multiplication and division with units (for example `km/h` or `km*km`)
+pub fn parse_unit_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
+	let (mut node, mut pos) = parse_caret(tokens, pos)?;
+	loop {
+		let token = tokens.get(pos);
+		match token {
+			Some(&Token::Operator(Multiply))
+			| Some(&Token::Operator(Divide))
+			| Some(&Token::TextOperator(Per)) => {
+				// only consume if the right side is a unit
+				if let Some(&Token::Unit(_)) = tokens.get(pos + 1) {
+					let (right_node, next_pos) = parse_caret(tokens, pos + 1)?;
+					let mut new_node = AstNode::new(token.unwrap().clone());
+					new_node.children.push(node);
+					new_node.children.push(right_node);
+					node = new_node;
+					pos = next_pos;
+				} else {
+					return Ok((node, pos));
+				}
+			}
+			_ => {
+				return Ok((node, pos));
+			}
+		}
+	}
+}
+
+/// Parse [`^`](crate::Operator::Caret), unit suffix (for example `2km` or `2km^2`)
 pub fn parse_caret(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
 	let (mut node, mut pos) = parse_unary_high(tokens, pos)?;
 	loop {
@@ -292,12 +357,6 @@ pub fn parse_suffix(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), St
 				new_node.children.push(node);
 				node = new_node;
 				pos += 1;
-			}
-			Some(Token::Unit(_unit)) => {
-				// We won't allow units to repeat, like "1min min", so we end the loop if it's found.
-				let mut new_node = AstNode::new(token.unwrap().clone());
-				new_node.children.push(node);
-				return Ok((new_node, pos + 1));
 			}
 			_ => {
 				// let's say we parse 1+2. parse_level_7 then returns 1, and token

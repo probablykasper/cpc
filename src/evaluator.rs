@@ -6,6 +6,8 @@ use crate::UnaryOperator::*;
 use crate::lookup::{lookup_factorial, lookup_named_number};
 use crate::parser::AstNode;
 use crate::units::Unit;
+use crate::units::multiply_any;
+use crate::units::to_ideal_unit;
 use crate::units::{add, convert, divide, modulo, multiply, pow, subtract};
 use crate::{Number, Token};
 use fastnum::decimal::Context;
@@ -259,9 +261,9 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 					}
 				}
 				Per => {
-					let left = evaluate_node(left_child)?;
-					let right = evaluate_node(right_child)?;
-					Ok(divide(left, right)?)
+					let mut node = AstNode::new(Token::Operator(Divide));
+					node.children = children.to_vec();
+					Ok(evaluate_node(&node)?)
 				}
 			}
 		}
@@ -273,12 +275,35 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 				.get(1)
 				.ok_or(format!("Token {:?} has no child[1]", token))?;
 			let left = evaluate_node(left_child)?;
+			if matches!(operator, Multiply | Divide)
+				&& let Ok(right) = evaluate_unit(right_child)
+			{
+				// multiply/divide by unit, for example `2km`, `2ft/s`, `2*m`
+				let raw_result = match operator {
+					Multiply => multiply_any(left, Number::with_unit(d!(1), right))?,
+					Divide => divide(left, Number::with_unit(d!(1), right))?,
+					_ => panic!(),
+				};
+				let ideal_result = to_ideal_unit(raw_result.clone());
+				// If the ideal unit has a different category/exponent, then we use it.
+				// For example, we want to keep `v*a` -> `watt`, but not `ft/s` -> `cm/s`.
+				if raw_result.unit.len() != ideal_result.unit.len() {
+					return Ok(ideal_result);
+				}
+				for (ideal, raw) in ideal_result.unit.iter().zip(raw_result.unit.iter()) {
+					if ideal.0.category() != raw.0.category() || ideal.1 != raw.1 {
+						return Ok(ideal_result);
+					}
+				}
+				return Ok(raw_result);
+			}
+
 			let right = evaluate_node(right_child)?;
 			match operator {
 				Plus => Ok(add(left, right)?),
 				Minus => Ok(subtract(left, right)?),
-				Multiply => Ok(multiply(left, right)?),
-				Divide => Ok(divide(left, right)?),
+				Multiply => Ok(to_ideal_unit(multiply(left, right)?)),
+				Divide => Ok(to_ideal_unit(divide(left, right)?)),
 				Modulo => Ok(modulo(left, right)?),
 				Caret => Ok(pow(left, right)?),
 				_ => Err(format!("Unexpected operator {:?}", operator)),

@@ -703,18 +703,21 @@ pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
 	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
 		Err(format!("Cannot multiply {} and {}", left, right))
 	} else {
-		let mut new_number = left;
-		new_number.value *= right.value;
-		for (r_unit, r_exp) in right.unit {
-			let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
-			match existing {
-				Some(existing) => existing.1 += r_exp,
-				None => new_number.unit.push((r_unit, r_exp)),
-			}
-		}
-		let new_number = to_ideal_unit(new_number);
-		Ok(new_number)
+		multiply_any(left, right)
 	}
+}
+
+pub(crate) fn multiply_any(left: Number, right: Number) -> Result<Number, String> {
+	let mut new_number = left;
+	new_number.value *= right.value;
+	for (r_unit, r_exp) in right.unit {
+		let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
+		match existing {
+			Some(existing) => existing.1 += r_exp,
+			None => new_number.unit.push((r_unit, r_exp)),
+		}
+	}
+	Ok(new_number)
 }
 
 /// Divide a [`Number`] by another [`Number`].
@@ -726,18 +729,21 @@ pub fn divide(left: Number, right: Number) -> Result<Number, String> {
 	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
 		Err(format!("Cannot divide {} by {}", left, right))
 	} else {
-		let mut new_number = left;
-		new_number.value = new_number.value / right.value;
-		for (r_unit, r_exp) in right.unit {
-			let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
-			match existing {
-				Some(existing) => existing.1 -= r_exp,
-				None => new_number.unit.push((r_unit, -r_exp)),
-			}
-		}
-		let new_number = to_ideal_unit(new_number);
-		Ok(new_number)
+		divide_any(left, right)
 	}
+}
+
+pub fn divide_any(left: Number, right: Number) -> Result<Number, String> {
+	let mut new_number = left;
+	new_number.value = new_number.value / right.value;
+	for (r_unit, r_exp) in right.unit {
+		let existing = new_number.unit.iter_mut().find(|(u, _)| u == &r_unit);
+		match existing {
+			Some(existing) => existing.1 -= r_exp,
+			None => new_number.unit.push((r_unit, -r_exp)),
+		}
+	}
+	Ok(new_number)
 }
 
 /// Modulo a [`Number`] by another [`Number`].
@@ -1199,6 +1205,7 @@ mod tests {
 
 	#[test]
 	fn test_unit_evals() {
+		eval_test("100kg*sqm / 2s^2", "50j");
 		eval_test("3.6km/1h", "3.6 kph");
 		eval_test("0.3048 m/s to ft/s", "1 ft/s");
 		eval_test("1.609344 km/1h to mph", "1 mph");

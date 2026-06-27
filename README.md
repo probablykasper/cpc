@@ -2,9 +2,9 @@
 
 calculation + conversion
 
-cpc parses and evaluates strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
+cpc calculates complex strings of math, with support for units and conversion. 128-bit decimal floating points are used for high accuracy.
 
-It also lets you mix units, so for example `1 km - 1m` results in `999 Meter`.
+For example `1tonne * 1sqm / 2second^3 / 5ampere` results in `100 volts`.
 
 [![Crates.io](https://img.shields.io/crates/v/cpc.svg)](https://crates.io/crates/cpc)
 [![Documentation](https://docs.rs/cpc/badge.svg)](https://docs.rs/cpc)
@@ -32,15 +32,17 @@ cpc '2h/3 to min'
 ```
 3 + 4 * 2
 
-8 % 3
+6'3" to cm
 
-(4 + 1)km to light years
+1tonne * 1sqm / 2s^3 / 5a
+
+(7 % 4)km to light years
 
 10m/2s * 5 trillion s
 
 1 lightyear * 0.001mm in km2
 
-1m/s + 1mi/h in kilometers per h
+1m/s + 1mi/5h in kilometers per h
 
 round(sqrt(2)^4)! liters
 
