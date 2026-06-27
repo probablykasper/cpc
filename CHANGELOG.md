@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 4.0.0 - 2026 Jun 27
 - Rewrite units to be exponent-based, making things like `km^5` and `sqkm^-1` possible
 - Add generic unit multiplication and division, such as `1kg/1m` and `1m*1kg`
 - Add generic unit combinations, such as `1kg/m`, `1km per year` and `m+km`
@@ -10,7 +10,7 @@
 - Use max precision for inexact unit conversions
 - Fix `^` allowing numbers to be raised to the power of units
 
-## 3.1.0 - 2025 Jun 20
+## 3.1.0 - 2026 Jun 20
 - Add FLOP and FLOPS units
 - Update `fastnum` dependency
 - Fix conversion of `torr`, `btu/s` and `btu/h`
