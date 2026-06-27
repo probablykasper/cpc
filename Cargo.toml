@@ -39,3 +39,9 @@ comparison_chain = "allow"
 if_same_then_else = "allow"
 match_like_matches_macro = "allow"
 get_first = "allow"
+
+[profile.release]
+lto = true
+opt-level = "z" # small code size
+codegen-units = 1
+# stripping symbols causes wasm build to fail
