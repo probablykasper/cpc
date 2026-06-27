@@ -1,8 +1,9 @@
-use crate::units::Unit::{Foot, Inch};
-use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
-use crate::TextOperator::{Of, To};
+use crate::Operator::*;
+use crate::TextOperator::*;
 use crate::Token;
-use crate::UnaryOperator::{Factorial, Percent};
+use crate::UnaryOperator::*;
+use crate::units::Unit;
+use crate::units::Unit::{Foot, Inch};
 
 #[derive(Debug)]
 /// A struct with a [`Token`](AstNode::token) and [`AstNode`] [`children`](AstNode::children)
@@ -99,26 +100,36 @@ pub fn parse_unary(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), Str
 	}
 }
 
+pub fn is_basic_unit(value: Option<&Token>, u: Unit) -> bool {
+	match value {
+		Some(Token::Unit(unit)) => match unit.as_slice() {
+			[(unit, 1)] => *unit == u,
+			_ => false,
+		},
+		_ => false,
+	}
+}
+
 /// Parse [`*`](crate::Operator::Multiply), [`/`](crate::Operator::Divide), [`Modulo`](crate::Operator::Modulo), implicative multiplication (for example`2pi`), foot-inch syntax (for example `6'4"`)
 pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), String> {
 	// parse foot-inch syntax 6'4"
 	let token0 = tokens.get(pos);
-	if let Some(Token::Number(_number)) = token0 {
+	if let Some(Token::Number(num0)) = token0 {
 		let token1 = tokens.get(pos + 1);
-		if let Some(Token::Unit(Foot)) = token1 {
+		if is_basic_unit(token1, Foot) {
 			let token2 = tokens.get(pos + 2);
-			if let Some(Token::Number(_number)) = token2 {
+			if let Some(Token::Number(num1)) = token2 {
 				let token3 = tokens.get(pos + 3);
-				if let Some(Token::Unit(Inch)) = token3 {
+				if is_basic_unit(token3, Inch) {
 					let new_node = AstNode {
 						children: vec![
 							AstNode {
-								children: vec![AstNode::new(token0.unwrap().clone())],
-								token: Token::Unit(Foot),
+								children: vec![AstNode::new(Token::Number(*num0))],
+								token: Token::unit(Foot),
 							},
 							AstNode {
-								children: vec![AstNode::new(token2.unwrap().clone())],
-								token: Token::Unit(Inch),
+								children: vec![AstNode::new(Token::Number(*num1))],
+								token: Token::unit(Inch),
 							},
 						],
 						token: Token::Operator(Plus),
@@ -136,6 +147,7 @@ pub fn parse_mult_level(tokens: &[Token], pos: usize) -> Result<(AstNode, usize)
 		match token {
 			Some(&Token::Operator(Multiply))
 			| Some(&Token::Operator(Divide))
+			| Some(&Token::TextOperator(Per))
 			| Some(&Token::Operator(Modulo)) => {
 				let (right_node, next_pos) = parse_caret(tokens, pos + 1)?;
 				let mut new_node = AstNode::new(token.unwrap().clone());
@@ -270,9 +282,9 @@ pub fn parse_suffix(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), St
 	loop {
 		let token = tokens.get(pos);
 		match token {
-			Some(&Token::UnaryOperator(Factorial))
-			| Some(&Token::UnaryOperator(Percent))
-			| Some(&Token::NamedNumber(_)) => {
+			Some(Token::UnaryOperator(Factorial))
+			| Some(Token::UnaryOperator(Percent))
+			| Some(Token::NamedNumber(_)) => {
 				// Here we are handling unary operators, aka stuff written as
 				// "Number Operator" (3!) instead of "Number Operator Number" (3+3).
 				// Therefore, if we find a match, we don't parse what comes after it.
@@ -281,7 +293,7 @@ pub fn parse_suffix(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), St
 				node = new_node;
 				pos += 1;
 			}
-			Some(&Token::Unit(_unit)) => {
+			Some(Token::Unit(_unit)) => {
 				// We won't allow units to repeat, like "1min min", so we end the loop if it's found.
 				let mut new_node = AstNode::new(token.unwrap().clone());
 				new_node.children.push(node);
@@ -303,11 +315,11 @@ pub fn parse_highest(tokens: &[Token], pos: usize) -> Result<(AstNode, usize), S
 		.get(pos)
 		.ok_or(format!("Unexpected end of input at {}", pos))?;
 	match token {
-		&Token::Number(_number) => {
+		Token::Number(_number) => {
 			let node = AstNode::new(token.clone());
 			Ok((node, pos + 1))
 		}
-		&Token::Unit(_unit) => {
+		Token::Unit(_unit) => {
 			let node = AstNode::new(token.clone());
 			Ok((node, pos + 1))
 		}

@@ -1,10 +1,11 @@
-use crate::Constant::{E, Pi};
+use crate::Constant::*;
 use crate::FunctionIdentifier::*;
-use crate::Operator::{Caret, Divide, Minus, Modulo, Multiply, Plus};
-use crate::TextOperator::{Of, To};
-use crate::UnaryOperator::{Factorial, Percent};
+use crate::Operator::*;
+use crate::TextOperator::*;
+use crate::UnaryOperator::*;
 use crate::lookup::{lookup_factorial, lookup_named_number};
 use crate::parser::AstNode;
+use crate::units::Unit;
 use crate::units::{add, convert, divide, modulo, multiply, pow, subtract};
 use crate::{Number, Token};
 use fastnum::decimal::Context;
@@ -53,6 +54,26 @@ fn replace_without_updating_signals(old: D128, new: D128) -> D128 {
 	old - old + new_without_signal
 }
 
+fn evaluate_unit(ast: &AstNode) -> Result<Vec<(Unit, isize)>, String> {
+	match &ast.token {
+		Token::Unit(unit) => Ok(unit.to_vec()),
+		Token::Operator(Divide) | Token::TextOperator(Per) => {
+			let left = evaluate_unit(&ast.children[0])?;
+			let mut right = evaluate_unit(&ast.children[1])?;
+			for (_, exponent) in right.iter_mut() {
+				*exponent = -*exponent;
+			}
+			Ok([left.as_slice(), right.as_slice()].concat())
+		}
+		Token::Operator(Multiply) => {
+			let left = evaluate_unit(&ast.children[0])?;
+			let right = evaluate_unit(&ast.children[1])?;
+			Ok([left.as_slice(), right.as_slice()].concat())
+		}
+		_ => Err("Expected unit expression".to_string()),
+	}
+}
+
 /// Evaluate an [`AstNode`] into a [`Number`]
 fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 	let token = &ast_node.token;
@@ -64,7 +85,7 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			E => Ok(Number::new_unitless(D128::E)),
 		},
 		Token::FunctionIdentifier(function) => {
-			let child_node = children.get(0).ok_or("Paren has no child[0]")?;
+			let child_node = children.get(0).ok_or("Function has no child[0]")?;
 			let child_answer = evaluate_node(child_node)?;
 			match function {
 				Sqrt => {
@@ -161,9 +182,11 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 			}
 		}
 		Token::Unit(unit) => {
-			let child_node = children.get(0).ok_or("Unit has no child[0]")?;
-			let child_answer = evaluate_node(child_node)?;
-			Ok(Number::with_basic_unit(child_answer.value, *unit))
+			let child_answer = match children.get(0) {
+				Some(node) => evaluate_node(node)?,
+				None => Number::new_unitless(d!(1)),
+			};
+			Ok(Number::with_unit(child_answer.value, unit.clone()))
 		}
 		Token::Negative => {
 			let child_node = children.get(0).ok_or("Negative has no child[0]")?;
@@ -220,13 +243,11 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 
 			match operator {
 				To => {
-					if let Token::Unit(right_unit) = right_child.token {
-						let left = evaluate_node(left_child)?;
-						let result = convert(left, vec![(right_unit, 1)])?;
-						Ok(result)
-					} else {
-						Err("Right side of To operator needs to be a unit".to_string())
-					}
+					let left = evaluate_node(left_child)?;
+					let right = evaluate_unit(right_child)
+						.map_err(|_| "Right side of To operator needs to be a unit".to_string())?;
+					let result = convert(left, right)?;
+					Ok(result)
 				}
 				Of => {
 					let left = evaluate_node(left_child)?;
@@ -236,6 +257,11 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 					} else {
 						Err("Left side of the Of operator must be NoUnit".to_string())
 					}
+				}
+				Per => {
+					let left = evaluate_node(left_child)?;
+					let right = evaluate_node(right_child)?;
+					Ok(divide(left, right)?)
 				}
 			}
 		}

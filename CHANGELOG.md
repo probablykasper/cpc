@@ -1,8 +1,9 @@
 # Changelog
 
 ## Next
-- Rewrite units to be exponent-based, making units much more powerful
-- Add generic unit multiplication/division, such as `1kg/1m` or `1m*1kg`.
+- Rewrite units to be exponent-based, making things like `km^5` and `sqkm^-1` possible
+- Add generic unit multiplication and division, such as `1kg/1m` and `1m*1kg`
+- Add generic unit combinations, such as `1kg/m`, `1km per year` and `m+km`
 - Add generic unit simplification. For example, `1kg*1sqm/1s/1s/1s/1a` now becomes `1 volt`
 - Add `≈` indicator when a result is approximate
 - Use max precision for inexact unit conversions

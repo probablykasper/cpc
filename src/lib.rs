@@ -192,6 +192,7 @@ pub enum UnaryOperator {
 pub enum TextOperator {
 	To,
 	Of,
+	Per,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -259,7 +260,6 @@ pub enum FunctionIdentifier {
 /// dependingon them, turns it into a [`Percent`](UnaryOperator::Percent) or
 /// [`Modulo`](Operator::Modulo) [`Token`].
 pub enum LexerKeyword {
-	Per,
 	PercentChar,
 	In,
 	DoubleQuotes,
@@ -283,14 +283,17 @@ pub enum Token {
 	/// Used by the parser only
 	Paren,
 	/// Used by the lexer only
-	Per,
-	/// Used by the parser only
 	LexerKeyword(LexerKeyword),
 	TextOperator(TextOperator),
 	NamedNumber(NamedNumber),
 	/// The `-` symbol, specifically when used as `-5` and not `5-5`. Used by the parser only
 	Negative,
-	Unit(units::Unit),
+	Unit(Vec<(Unit, isize)>),
+}
+impl Token {
+	fn unit(u: Unit) -> Token {
+		Token::Unit(vec![(u, 1)])
+	}
 }
 impl fmt::Debug for Token {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -301,7 +304,6 @@ impl fmt::Debug for Token {
 			Token::FunctionIdentifier(id) => write!(f, "FunctionIdentifier({:?})", id),
 			Token::Constant(c) => write!(f, "Constant({:?})", c),
 			Token::Paren => write!(f, "Paren"),
-			Token::Per => write!(f, "Per"),
 			Token::LexerKeyword(op) => write!(f, "LexerKeyword({:?})", op),
 			Token::TextOperator(op) => write!(f, "TextOperator({:?})", op),
 			Token::NamedNumber(num) => write!(f, "NamedNumber({:?})", num),

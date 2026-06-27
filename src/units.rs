@@ -87,7 +87,7 @@ pub fn sort_units(primitives: &mut Vec<(Unit, isize)>) {
 	});
 }
 
-pub fn primitive_unit(unit: &Vec<(Unit, isize)>) -> Vec<(Unit, isize)> {
+pub fn primitive_unit(unit: &[(Unit, isize)]) -> Vec<(Unit, isize)> {
 	let mut primitives: Vec<(Unit, isize)> = Vec::new();
 	for (unit, exponent) in unit {
 		for (primitive, primitive_exponent) in unit.category().primitive() {

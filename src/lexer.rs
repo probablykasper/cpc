@@ -1,13 +1,11 @@
-use crate::Constant::{E, Pi};
-use crate::FunctionIdentifier::{Abs, Cbrt, Ceil, Cos, Exp, Floor, Ln, Log, Round, Sin, Sqrt, Tan};
-use crate::LexerKeyword::{
-	DoubleQuotes, Force, Hg, In, Mercury, Per, PercentChar, PoundForce, Revolution,
-};
+use crate::Constant::*;
+use crate::FunctionIdentifier::*;
+use crate::LexerKeyword::*;
 use crate::NamedNumber::*;
-use crate::Operator::{Caret, Divide, LeftParen, Minus, Modulo, Multiply, Plus, RightParen};
-use crate::TextOperator::{Of, To};
+use crate::Operator::*;
+use crate::TextOperator::*;
 use crate::Token;
-use crate::UnaryOperator::{Factorial, Percent};
+use crate::UnaryOperator::*;
 use crate::units::Unit::*;
 use fastnum::D128;
 use fastnum::decimal::Context;
@@ -146,7 +144,7 @@ fn lex_token(lexer: &mut Lexer) -> Result<(), String> {
 			Token::Operator(RightParen)
 		}
 		"π" => Token::Constant(Pi),
-		"'" => Token::Unit(Foot),
+		"'" => Token::unit(Foot),
 		"\"" | "“" | "”" | "″" => Token::LexerKeyword(DoubleQuotes),
 		grapheme => {
 			return Err(format!("Invalid character: {}", grapheme));
@@ -226,407 +224,407 @@ fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"cos" => Token::FunctionIdentifier(Cos),
 		"tan" => Token::FunctionIdentifier(Tan),
 
-		"per" => Token::LexerKeyword(Per),
+		"per" => Token::TextOperator(Per),
 		"hg" => Token::LexerKeyword(Hg), // can be hectogram or mercury
 
-		"ns" | "nanosec" | "nanosecs" | "nanosecond" | "nanoseconds" => Token::Unit(Nanosecond),
+		"ns" | "nanosec" | "nanosecs" | "nanosecond" | "nanoseconds" => Token::unit(Nanosecond),
 		// µ and μ are two different characters
 		"µs" | "μs" | "microsec" | "microsecs" | "microsecond" | "microseconds" => {
-			Token::Unit(Microsecond)
+			Token::unit(Microsecond)
 		}
 		"ms" | "millisec" | "millisecs" | "millisecond" | "milliseconds" => {
-			Token::Unit(Millisecond)
+			Token::unit(Millisecond)
 		}
-		"s" | "sec" | "secs" | "second" | "seconds" => Token::Unit(Second),
-		"min" | "mins" | "minute" | "minutes" => Token::Unit(Minute),
-		"h" | "hr" | "hrs" | "hour" | "hours" => Token::Unit(Hour),
-		"day" | "days" => Token::Unit(Day),
-		"wk" | "wks" | "week" | "weeks" => Token::Unit(Week),
-		"mo" | "mos" | "month" | "months" => Token::Unit(Month),
-		"q" | "quarter" | "quarters" => Token::Unit(Quarter),
-		"yr" | "yrs" | "year" | "years" => Token::Unit(Year),
-		"decade" | "decades" => Token::Unit(Decade),
-		"century" | "centuries" => Token::Unit(Century),
-		"millenium" | "millenia" | "milleniums" => Token::Unit(Millennium),
+		"s" | "sec" | "secs" | "second" | "seconds" => Token::unit(Second),
+		"min" | "mins" | "minute" | "minutes" => Token::unit(Minute),
+		"h" | "hr" | "hrs" | "hour" | "hours" => Token::unit(Hour),
+		"day" | "days" => Token::unit(Day),
+		"wk" | "wks" | "week" | "weeks" => Token::unit(Week),
+		"mo" | "mos" | "month" | "months" => Token::unit(Month),
+		"q" | "quarter" | "quarters" => Token::unit(Quarter),
+		"yr" | "yrs" | "year" | "years" => Token::unit(Year),
+		"decade" | "decades" => Token::unit(Decade),
+		"century" | "centuries" => Token::unit(Century),
+		"millenium" | "millenia" | "milleniums" => Token::unit(Millennium),
 
 		"mm" | "millimeter" | "millimeters" | "millimetre" | "millimetres" => {
-			Token::Unit(Millimeter)
+			Token::unit(Millimeter)
 		}
 		"cm" | "centimeter" | "centimeters" | "centimetre" | "centimetres" => {
-			Token::Unit(Centimeter)
+			Token::unit(Centimeter)
 		}
-		"dm" | "decimeter" | "decimeters" | "decimetre" | "decimetres" => Token::Unit(Decimeter),
-		"m" | "meter" | "meters" | "metre" | "metres" => Token::Unit(Meter),
-		"km" | "kilometer" | "kilometers" | "kilometre" | "kilometres" => Token::Unit(Kilometer),
+		"dm" | "decimeter" | "decimeters" | "decimetre" | "decimetres" => Token::unit(Decimeter),
+		"m" | "meter" | "meters" | "metre" | "metres" => Token::unit(Meter),
+		"km" | "kilometer" | "kilometers" | "kilometre" | "kilometres" => Token::unit(Kilometer),
 		"in" => Token::LexerKeyword(In),
-		"inch" | "inches" => Token::Unit(Inch),
-		"ft" | "foot" | "feet" => Token::Unit(Foot),
-		"yd" | "yard" | "yards" => Token::Unit(Yard),
-		"mi" | "mile" | "miles" => Token::Unit(Mile),
-		"marathon" | "marathons" => Token::Unit(Marathon),
-		"nmi" => Token::Unit(NauticalMile),
+		"inch" | "inches" => Token::unit(Inch),
+		"ft" | "foot" | "feet" => Token::unit(Foot),
+		"yd" | "yard" | "yards" => Token::unit(Yard),
+		"mi" | "mile" | "miles" => Token::unit(Mile),
+		"marathon" | "marathons" => Token::unit(Marathon),
+		"nmi" => Token::unit(NauticalMile),
 		"nautical" => match read_word(lexer).as_str() {
-			"mile" | "miles" => Token::Unit(NauticalMile),
+			"mile" | "miles" => Token::unit(NauticalMile),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
-		"ly" | "lightyear" | "lightyears" => Token::Unit(LightYear),
-		"lightsec" | "lightsecs" | "lightsecond" | "lightseconds" => Token::Unit(LightSecond),
+		"ly" | "lightyear" | "lightyears" => Token::unit(LightYear),
+		"lightsec" | "lightsecs" | "lightsecond" | "lightseconds" => Token::unit(LightSecond),
 		"light" => match read_word(lexer).as_str() {
-			"yr" | "yrs" | "year" | "years" => Token::Unit(LightYear),
-			"sec" | "secs" | "second" | "seconds" => Token::Unit(LightSecond),
+			"yr" | "yrs" | "year" | "years" => Token::unit(LightYear),
+			"sec" | "secs" | "second" | "seconds" => Token::unit(LightSecond),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
 
 		"sqmm" | "mm2" | "millimeter2" | "millimeters2" | "millimetre2" | "millimetres2" => {
-			Token::Unit(SquareMillimeter)
+			Token::unit(SquareMillimeter)
 		}
 		"sqcm" | "cm2" | "centimeter2" | "centimeters2" | "centimetre2" | "centimetres2" => {
-			Token::Unit(SquareCentimeter)
+			Token::unit(SquareCentimeter)
 		}
 		"sqdm" | "dm2" | "decimeter2" | "decimeters2" | "decimetre2" | "decimetres2" => {
-			Token::Unit(SquareDecimeter)
+			Token::unit(SquareDecimeter)
 		}
-		"sqm" | "m2" | "meter2" | "meters2" | "metre2" | "metres2" => Token::Unit(SquareMeter),
+		"sqm" | "m2" | "meter2" | "meters2" | "metre2" | "metres2" => Token::unit(SquareMeter),
 		"sqkm" | "km2" | "kilometer2" | "kilometers2" | "kilometre2" | "kilometres2" => {
-			Token::Unit(SquareKilometer)
+			Token::unit(SquareKilometer)
 		}
-		"sqin" | "in2" | "inch2" | "inches2" => Token::Unit(SquareInch),
-		"sqft" | "ft2" | "foot2" | "feet2" => Token::Unit(SquareFoot),
-		"sqyd" | "yd2" | "yard2" | "yards2" => Token::Unit(SquareYard),
-		"sqmi" | "mi2" | "mile2" | "miles2" => Token::Unit(SquareMile),
+		"sqin" | "in2" | "inch2" | "inches2" => Token::unit(SquareInch),
+		"sqft" | "ft2" | "foot2" | "feet2" => Token::unit(SquareFoot),
+		"sqyd" | "yd2" | "yard2" | "yards2" => Token::unit(SquareYard),
+		"sqmi" | "mi2" | "mile2" | "miles2" => Token::unit(SquareMile),
 		"sq" | "square" => match read_word(lexer).as_str() {
 			"mm" | "millimeter" | "millimeters" | "millimetre" | "millimetres" => {
-				Token::Unit(SquareMillimeter)
+				Token::unit(SquareMillimeter)
 			}
 			"cm" | "centimeter" | "centimeters" | "centimetre" | "centimetres" => {
-				Token::Unit(SquareCentimeter)
+				Token::unit(SquareCentimeter)
 			}
 			"dm" | "decimeter" | "decimeters" | "decimetre" | "decimetres" => {
-				Token::Unit(SquareDecimeter)
+				Token::unit(SquareDecimeter)
 			}
-			"m" | "meter" | "meters" | "metre" | "metres" => Token::Unit(SquareMeter),
+			"m" | "meter" | "meters" | "metre" | "metres" => Token::unit(SquareMeter),
 			"km" | "kilometer" | "kilometers" | "kilometre" | "kilometres" => {
-				Token::Unit(SquareKilometer)
+				Token::unit(SquareKilometer)
 			}
-			"in" | "inch" | "inches" => Token::Unit(SquareInch),
-			"ft" | "foot" | "feet" => Token::Unit(SquareFoot),
-			"yd" | "yard" | "yards" => Token::Unit(SquareYard),
-			"mi" | "mile" | "miles" => Token::Unit(SquareMile),
+			"in" | "inch" | "inches" => Token::unit(SquareInch),
+			"ft" | "foot" | "feet" => Token::unit(SquareFoot),
+			"yd" | "yard" | "yards" => Token::unit(SquareYard),
+			"mi" | "mile" | "miles" => Token::unit(SquareMile),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
-		"are" | "ares" => Token::Unit(Are),
-		"decare" | "decares" => Token::Unit(Decare),
-		"ha" | "hectare" | "hectares" => Token::Unit(Hectare),
-		"acre" | "acres" => Token::Unit(Acre),
+		"are" | "ares" => Token::unit(Are),
+		"decare" | "decares" => Token::unit(Decare),
+		"ha" | "hectare" | "hectares" => Token::unit(Hectare),
+		"acre" | "acres" => Token::unit(Acre),
 
 		"mm3" | "millimeter3" | "millimeters3" | "millimetre3" | "millimetres3" => {
-			Token::Unit(CubicMillimeter)
+			Token::unit(CubicMillimeter)
 		}
 		"cm3" | "centimeter3" | "centimeters3" | "centimetre3" | "centimetres3" => {
-			Token::Unit(CubicCentimeter)
+			Token::unit(CubicCentimeter)
 		}
 		"dm3" | "decimeter3" | "decimeters3" | "decimetre3" | "decimetres3" => {
-			Token::Unit(CubicDecimeter)
+			Token::unit(CubicDecimeter)
 		}
-		"m3" | "meter3" | "meters3" | "metre3" | "metres3" => Token::Unit(CubicMeter),
+		"m3" | "meter3" | "meters3" | "metre3" | "metres3" => Token::unit(CubicMeter),
 		"km3" | "kilometer3" | "kilometers3" | "kilometre3" | "kilometres3" => {
-			Token::Unit(CubicKilometer)
+			Token::unit(CubicKilometer)
 		}
-		"inc3" | "inch3" | "inches3" => Token::Unit(CubicInch),
-		"ft3" | "foot3" | "feet3" => Token::Unit(CubicFoot),
-		"yd3" | "yard3" | "yards3" => Token::Unit(CubicYard),
-		"mi3" | "mile3" | "miles3" => Token::Unit(CubicMile),
+		"inc3" | "inch3" | "inches3" => Token::unit(CubicInch),
+		"ft3" | "foot3" | "feet3" => Token::unit(CubicFoot),
+		"yd3" | "yard3" | "yards3" => Token::unit(CubicYard),
+		"mi3" | "mile3" | "miles3" => Token::unit(CubicMile),
 		"cubic" => match read_word(lexer).as_str() {
 			"mm" | "millimeter" | "millimeters" | "millimetre" | "millimetres" => {
-				Token::Unit(CubicMillimeter)
+				Token::unit(CubicMillimeter)
 			}
 			"cm" | "centimeter" | "centimeters" | "centimetre" | "centimetres" => {
-				Token::Unit(CubicCentimeter)
+				Token::unit(CubicCentimeter)
 			}
 			"dm" | "decimeter" | "decimeters" | "decimetre" | "decimetres" => {
-				Token::Unit(CubicDecimeter)
+				Token::unit(CubicDecimeter)
 			}
-			"m" | "meter" | "meters" | "metre" | "metres" => Token::Unit(CubicMeter),
+			"m" | "meter" | "meters" | "metre" | "metres" => Token::unit(CubicMeter),
 			"km" | "kilometer" | "kilometers" | "kilometre" | "kilometres" => {
-				Token::Unit(CubicKilometer)
+				Token::unit(CubicKilometer)
 			}
-			"in" | "inch" | "inches" => Token::Unit(CubicInch),
-			"ft" | "foot" | "feet" => Token::Unit(CubicFoot),
-			"yd" | "yard" | "yards" => Token::Unit(CubicYard),
-			"mi" | "mile" | "miles" => Token::Unit(CubicMile),
+			"in" | "inch" | "inches" => Token::unit(CubicInch),
+			"ft" | "foot" | "feet" => Token::unit(CubicFoot),
+			"yd" | "yard" | "yards" => Token::unit(CubicYard),
+			"mi" | "mile" | "miles" => Token::unit(CubicMile),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
 		"ml" | "milliliter" | "milliliters" | "millilitre" | "millilitres" => {
-			Token::Unit(Milliliter)
+			Token::unit(Milliliter)
 		}
 		"cl" | "centiliter" | "centiliters" | "centilitre" | "centilitres" => {
-			Token::Unit(Centiliter)
+			Token::unit(Centiliter)
 		}
-		"dl" | "deciliter" | "deciliters" | "decilitre" | "decilitres" => Token::Unit(Deciliter),
-		"l" | "liter" | "liters" | "litre" | "litres" => Token::Unit(Liter),
-		"ts" | "tsp" | "tspn" | "tspns" | "teaspoon" | "teaspoons" => Token::Unit(Teaspoon),
-		"tbs" | "tbsp" | "tablespoon" | "tablespoons" => Token::Unit(Tablespoon),
-		"floz" => Token::Unit(FluidOunce),
+		"dl" | "deciliter" | "deciliters" | "decilitre" | "decilitres" => Token::unit(Deciliter),
+		"l" | "liter" | "liters" | "litre" | "litres" => Token::unit(Liter),
+		"ts" | "tsp" | "tspn" | "tspns" | "teaspoon" | "teaspoons" => Token::unit(Teaspoon),
+		"tbs" | "tbsp" | "tablespoon" | "tablespoons" => Token::unit(Tablespoon),
+		"floz" => Token::unit(FluidOunce),
 		"fl" | "fluid" => match read_word(lexer).as_str() {
-			"oz" | "ounce" | "ounces" => Token::Unit(FluidOunce),
+			"oz" | "ounce" | "ounces" => Token::unit(FluidOunce),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
-		"cup" | "cups" => Token::Unit(Cup),
-		"pt" | "pint" | "pints" => Token::Unit(Pint),
-		"qt" | "quart" | "quarts" => Token::Unit(Quart),
-		"gal" | "gallon" | "gallons" => Token::Unit(Gallon),
-		"bbl" => Token::Unit(OilBarrel),
+		"cup" | "cups" => Token::unit(Cup),
+		"pt" | "pint" | "pints" => Token::unit(Pint),
+		"qt" | "quart" | "quarts" => Token::unit(Quart),
+		"gal" | "gallon" | "gallons" => Token::unit(Gallon),
+		"bbl" => Token::unit(OilBarrel),
 		"oil" => match read_word(lexer).as_str() {
-			"barrel" | "barrels" => Token::Unit(OilBarrel),
+			"barrel" | "barrels" => Token::unit(OilBarrel),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
 
 		"metric" => match read_word(lexer).as_str() {
-			"ton" | "tons" | "tonne" | "tonnes" => Token::Unit(MetricTon),
-			"hp" | "hps" | "horsepower" | "horsepowers" => Token::Unit(MetricHorsepower),
+			"ton" | "tons" | "tonne" | "tonnes" => Token::unit(MetricTon),
+			"hp" | "hps" | "horsepower" | "horsepowers" => Token::unit(MetricHorsepower),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
 
-		"mg" | "milligram" | "milligrams" => Token::Unit(Milligram),
-		"g" | "gram" | "grams" => Token::Unit(Gram),
-		"hectogram" | "hectograms" => Token::Unit(Hectogram),
-		"kg" | "kilo" | "kilos" | "kilogram" | "kilograms" => Token::Unit(Kilogram),
-		"t" | "tonne" | "tonnes" => Token::Unit(MetricTon),
-		"oz" | "ounces" => Token::Unit(Ounce),
-		"lb" | "lbs" => Token::Unit(Pound),
+		"mg" | "milligram" | "milligrams" => Token::unit(Milligram),
+		"g" | "gram" | "grams" => Token::unit(Gram),
+		"hectogram" | "hectograms" => Token::unit(Hectogram),
+		"kg" | "kilo" | "kilos" | "kilogram" | "kilograms" => Token::unit(Kilogram),
+		"t" | "tonne" | "tonnes" => Token::unit(MetricTon),
+		"oz" | "ounces" => Token::unit(Ounce),
+		"lb" | "lbs" => Token::unit(Pound),
 		"pound" | "pounds" => match read_immediate_grapheme("-", lexer) {
 			true => match lexer.read_immediate_word().as_str() {
 				"force" => Token::LexerKeyword(PoundForce),
 				other => {
-					lexer.tokens.push(Token::Unit(Pound));
+					lexer.tokens.push(Token::unit(Pound));
 					lexer.tokens.push(Token::Operator(Minus));
 					lex_word_if_non_empty(other, lexer)?;
 					return Ok(());
 				}
 			},
-			false => Token::Unit(Pound),
+			false => Token::unit(Pound),
 		},
-		"stone" | "stones" => Token::Unit(Stone),
-		"st" | "ton" | "tons" => Token::Unit(ShortTon),
+		"stone" | "stones" => Token::unit(Stone),
+		"st" | "ton" | "tons" => Token::unit(ShortTon),
 		"short" => match read_word(lexer).as_str() {
-			"ton" | "tons" | "tonne" | "tonnes" => Token::Unit(ShortTon),
+			"ton" | "tons" | "tonne" | "tonnes" => Token::unit(ShortTon),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
-		"lt" => Token::Unit(LongTon),
+		"lt" => Token::unit(LongTon),
 		"long" => match read_word(lexer).as_str() {
-			"ton" | "tons" | "tonne" | "tonnes" => Token::Unit(LongTon),
+			"ton" | "tons" | "tonne" | "tonnes" => Token::unit(LongTon),
 			string => return Err(format!("Invalid string: {}", string)),
 		},
 
-		"bit" | "bits" => Token::Unit(Bit),
-		"kbit" | "kilobit" | "kilobits" => Token::Unit(Kilobit),
-		"mbit" | "megabit" | "megabits" => Token::Unit(Megabit),
-		"gbit" | "gigabit" | "gigabits" => Token::Unit(Gigabit),
-		"tbit" | "terabit" | "terabits" => Token::Unit(Terabit),
-		"pbit" | "petabit" | "petabits" => Token::Unit(Petabit),
-		"ebit" | "exabit" | "exabits" => Token::Unit(Exabit),
-		"zbit" | "zettabit" | "zettabits" => Token::Unit(Zettabit),
-		"ybit" | "yottabit" | "yottabits" => Token::Unit(Yottabit),
-		"kibit" | "kibibit" | "kibibits" => Token::Unit(Kibibit),
-		"mibit" | "mebibit" | "mebibits" => Token::Unit(Mebibit),
-		"gibit" | "gibibit" | "gibibits" => Token::Unit(Gibibit),
-		"tibit" | "tebibit" | "tebibits" => Token::Unit(Tebibit),
-		"pibit" | "pebibit" | "pebibits" => Token::Unit(Pebibit),
-		"eibit" | "exbibit" | "exbibits" => Token::Unit(Exbibit),
-		"zibit" | "zebibit" | "zebibits" => Token::Unit(Zebibit),
-		"yibit" | "yobibit" | "yobibits" => Token::Unit(Yobibit),
-		"byte" | "bytes" => Token::Unit(Byte),
-		"kb" | "kilobyte" | "kilobytes" => Token::Unit(Kilobyte),
-		"mb" | "megabyte" | "megabytes" => Token::Unit(Megabyte),
-		"gb" | "gigabyte" | "gigabytes" => Token::Unit(Gigabyte),
-		"tb" | "terabyte" | "terabytes" => Token::Unit(Terabyte),
-		"pb" | "petabyte" | "petabytes" => Token::Unit(Petabyte),
-		"eb" | "exabyte" | "exabytes" => Token::Unit(Exabyte),
-		"zb" | "zettabyte" | "zettabytes" => Token::Unit(Zettabyte),
-		"yb" | "yottabyte" | "yottabytes" => Token::Unit(Yottabyte),
-		"kib" | "kibibyte" | "kibibytes" => Token::Unit(Kibibyte),
-		"mib" | "mebibyte" | "mebibytes" => Token::Unit(Mebibyte),
-		"gib" | "gibibyte" | "gibibytes" => Token::Unit(Gibibyte),
-		"tib" | "tebibyte" | "tebibytes" => Token::Unit(Tebibyte),
-		"pib" | "pebibyte" | "pebibytes" => Token::Unit(Pebibyte),
-		"eib" | "exbibyte" | "exbibytes" => Token::Unit(Exbibyte),
-		"zib" | "zebibyte" | "zebibytes" => Token::Unit(Zebibyte),
-		"yib" | "yobibyte" | "yobibytes" => Token::Unit(Yobibyte),
+		"bit" | "bits" => Token::unit(Bit),
+		"kbit" | "kilobit" | "kilobits" => Token::unit(Kilobit),
+		"mbit" | "megabit" | "megabits" => Token::unit(Megabit),
+		"gbit" | "gigabit" | "gigabits" => Token::unit(Gigabit),
+		"tbit" | "terabit" | "terabits" => Token::unit(Terabit),
+		"pbit" | "petabit" | "petabits" => Token::unit(Petabit),
+		"ebit" | "exabit" | "exabits" => Token::unit(Exabit),
+		"zbit" | "zettabit" | "zettabits" => Token::unit(Zettabit),
+		"ybit" | "yottabit" | "yottabits" => Token::unit(Yottabit),
+		"kibit" | "kibibit" | "kibibits" => Token::unit(Kibibit),
+		"mibit" | "mebibit" | "mebibits" => Token::unit(Mebibit),
+		"gibit" | "gibibit" | "gibibits" => Token::unit(Gibibit),
+		"tibit" | "tebibit" | "tebibits" => Token::unit(Tebibit),
+		"pibit" | "pebibit" | "pebibits" => Token::unit(Pebibit),
+		"eibit" | "exbibit" | "exbibits" => Token::unit(Exbibit),
+		"zibit" | "zebibit" | "zebibits" => Token::unit(Zebibit),
+		"yibit" | "yobibit" | "yobibits" => Token::unit(Yobibit),
+		"byte" | "bytes" => Token::unit(Byte),
+		"kb" | "kilobyte" | "kilobytes" => Token::unit(Kilobyte),
+		"mb" | "megabyte" | "megabytes" => Token::unit(Megabyte),
+		"gb" | "gigabyte" | "gigabytes" => Token::unit(Gigabyte),
+		"tb" | "terabyte" | "terabytes" => Token::unit(Terabyte),
+		"pb" | "petabyte" | "petabytes" => Token::unit(Petabyte),
+		"eb" | "exabyte" | "exabytes" => Token::unit(Exabyte),
+		"zb" | "zettabyte" | "zettabytes" => Token::unit(Zettabyte),
+		"yb" | "yottabyte" | "yottabytes" => Token::unit(Yottabyte),
+		"kib" | "kibibyte" | "kibibytes" => Token::unit(Kibibyte),
+		"mib" | "mebibyte" | "mebibytes" => Token::unit(Mebibyte),
+		"gib" | "gibibyte" | "gibibytes" => Token::unit(Gibibyte),
+		"tib" | "tebibyte" | "tebibytes" => Token::unit(Tebibyte),
+		"pib" | "pebibyte" | "pebibytes" => Token::unit(Pebibyte),
+		"eib" | "exbibyte" | "exbibytes" => Token::unit(Exbibyte),
+		"zib" | "zebibyte" | "zebibytes" => Token::unit(Zebibyte),
+		"yib" | "yobibyte" | "yobibytes" => Token::unit(Yobibyte),
 
-		"bps" => Token::Unit(BitsPerSecond),
-		"kbps" => Token::Unit(KilobitsPerSecond),
-		"mbps" => Token::Unit(MegabitsPerSecond),
-		"gbps" => Token::Unit(GigabitsPerSecond),
-		"tbps" => Token::Unit(TerabitsPerSecond),
-		"pbps" => Token::Unit(PetabitsPerSecond),
-		"ebps" => Token::Unit(ExabitsPerSecond),
-		"zbps" => Token::Unit(ZettabitsPerSecond),
-		"ybps" => Token::Unit(YottabitsPerSecond),
+		"bps" => Token::unit(BitsPerSecond),
+		"kbps" => Token::unit(KilobitsPerSecond),
+		"mbps" => Token::unit(MegabitsPerSecond),
+		"gbps" => Token::unit(GigabitsPerSecond),
+		"tbps" => Token::unit(TerabitsPerSecond),
+		"pbps" => Token::unit(PetabitsPerSecond),
+		"ebps" => Token::unit(ExabitsPerSecond),
+		"zbps" => Token::unit(ZettabitsPerSecond),
+		"ybps" => Token::unit(YottabitsPerSecond),
 
-		"flop" => Token::Unit(Flop),
-		"kflop" | "kiloflop" => Token::Unit(KiloFlop),
-		"mflop" | "megaflop" => Token::Unit(MegaFlop),
-		"gflop" | "gigaflop" => Token::Unit(GigaFlop),
-		"tflop" | "teraflop" => Token::Unit(TeraFlop),
-		"pflop" | "petaflop" => Token::Unit(PetaFlop),
-		"eflop" | "exaflop" => Token::Unit(ExaFlop),
-		"zflop" | "zettaflop" => Token::Unit(ZettaFlop),
-		"yflop" | "yottaflop" => Token::Unit(YottaFlop),
-		"rflop" | "ronnaflop" => Token::Unit(RonnaFlop),
-		"qflop" | "quettaflop" => Token::Unit(QuettaFlop),
+		"flop" => Token::unit(Flop),
+		"kflop" | "kiloflop" => Token::unit(KiloFlop),
+		"mflop" | "megaflop" => Token::unit(MegaFlop),
+		"gflop" | "gigaflop" => Token::unit(GigaFlop),
+		"tflop" | "teraflop" => Token::unit(TeraFlop),
+		"pflop" | "petaflop" => Token::unit(PetaFlop),
+		"eflop" | "exaflop" => Token::unit(ExaFlop),
+		"zflop" | "zettaflop" => Token::unit(ZettaFlop),
+		"yflop" | "yottaflop" => Token::unit(YottaFlop),
+		"rflop" | "ronnaflop" => Token::unit(RonnaFlop),
+		"qflop" | "quettaflop" => Token::unit(QuettaFlop),
 
-		"flops" => Token::Unit(FlopPerSecond),
-		"kflops" | "kiloflops" => Token::Unit(KiloFlopPerSecond),
-		"mflops" | "megaflops" => Token::Unit(MegaFlopPerSecond),
-		"gflops" | "gigaflops" => Token::Unit(GigaFlopPerSecond),
-		"tflops" | "teraflops" => Token::Unit(TeraFlopPerSecond),
-		"pflops" | "petaflops" => Token::Unit(PetaFlopPerSecond),
-		"eflops" | "exaflops" => Token::Unit(ExaFlopPerSecond),
-		"zflops" | "zettaflops" => Token::Unit(ZettaFlopPerSecond),
-		"yflops" | "yottaflops" => Token::Unit(YottaFlopPerSecond),
-		"rflops" | "ronnaflops" => Token::Unit(RonnaFlopPerSecond),
-		"qflops" | "quettaflops" => Token::Unit(QuettaFlopPerSecond),
+		"flops" => Token::unit(FlopPerSecond),
+		"kflops" | "kiloflops" => Token::unit(KiloFlopPerSecond),
+		"mflops" | "megaflops" => Token::unit(MegaFlopPerSecond),
+		"gflops" | "gigaflops" => Token::unit(GigaFlopPerSecond),
+		"tflops" | "teraflops" => Token::unit(TeraFlopPerSecond),
+		"pflops" | "petaflops" => Token::unit(PetaFlopPerSecond),
+		"eflops" | "exaflops" => Token::unit(ExaFlopPerSecond),
+		"zflops" | "zettaflops" => Token::unit(ZettaFlopPerSecond),
+		"yflops" | "yottaflops" => Token::unit(YottaFlopPerSecond),
+		"rflops" | "ronnaflops" => Token::unit(RonnaFlopPerSecond),
+		"qflops" | "quettaflops" => Token::unit(QuettaFlopPerSecond),
 
-		"millijoule" | "millijoules" => Token::Unit(Millijoule),
-		"j" | "joule" | "joules" => Token::Unit(Joule),
-		"nm" => Token::Unit(NewtonMeter),
+		"millijoule" | "millijoules" => Token::unit(Millijoule),
+		"j" | "joule" | "joules" => Token::unit(Joule),
+		"nm" => Token::unit(NewtonMeter),
 		"newton" => match read_immediate_grapheme("-", lexer) {
 			true => match lexer.read_immediate_word().as_str() {
-				"meter" | "meters" | "metre" | "metres" => Token::Unit(NewtonMeter),
+				"meter" | "meters" | "metre" | "metres" => Token::unit(NewtonMeter),
 				string => return Err(format!("Invalid string: {}", string)),
 			},
 			false => match lexer.read_word().as_str() {
-				"meter" | "meters" | "metre" | "metres" => Token::Unit(NewtonMeter),
+				"meter" | "meters" | "metre" | "metres" => Token::unit(NewtonMeter),
 				string => return Err(format!("Invalid string: {}", string)),
 			},
 		},
-		"kj" | "kilojoule" | "kilojoules" => Token::Unit(Kilojoule),
-		"mj" | "megajoule" | "megajoules" => Token::Unit(Megajoule),
-		"gj" | "gigajoule" | "gigajoules" => Token::Unit(Gigajoule),
-		"tj" | "terajoule" | "terajoules" => Token::Unit(Terajoule),
-		"cal" | "calorie" | "calories" => Token::Unit(Calorie),
-		"kcal" | "kilocalorie" | "kilocalories" => Token::Unit(KiloCalorie),
-		"btu" => Token::Unit(BritishThermalUnit),
+		"kj" | "kilojoule" | "kilojoules" => Token::unit(Kilojoule),
+		"mj" | "megajoule" | "megajoules" => Token::unit(Megajoule),
+		"gj" | "gigajoule" | "gigajoules" => Token::unit(Gigajoule),
+		"tj" | "terajoule" | "terajoules" => Token::unit(Terajoule),
+		"cal" | "calorie" | "calories" => Token::unit(Calorie),
+		"kcal" | "kilocalorie" | "kilocalories" => Token::unit(KiloCalorie),
+		"btu" => Token::unit(BritishThermalUnit),
 		"british" => match read_word(lexer).as_str() {
 			"thermal" => match read_word(lexer).as_str() {
-				"unit" | "units" => Token::Unit(BritishThermalUnit),
+				"unit" | "units" => Token::unit(BritishThermalUnit),
 				string => return Err(format!("Invalid string: {}", string)),
 			},
 			string => return Err(format!("Invalid string: {}", string)),
 		},
-		"wh" => Token::Unit(WattHour),
-		"kwh" => Token::Unit(KilowattHour),
-		"mwh" => Token::Unit(MegawattHour),
-		"gwh" => Token::Unit(GigawattHour),
-		"twh" => Token::Unit(TerawattHour),
-		"pwh" => Token::Unit(PetawattHour),
+		"wh" => Token::unit(WattHour),
+		"kwh" => Token::unit(KilowattHour),
+		"mwh" => Token::unit(MegawattHour),
+		"gwh" => Token::unit(GigawattHour),
+		"twh" => Token::unit(TerawattHour),
+		"pwh" => Token::unit(PetawattHour),
 
-		"milliwatt" | "milliwatts" => Token::Unit(Milliwatt),
-		"w" | "watts" => Token::Unit(Watt),
-		"kw" | "kilowatts" => Token::Unit(Kilowatt),
-		"mw" | "megawatts" => Token::Unit(Megawatt),
-		"gw" | "gigawatts" => Token::Unit(Gigawatt),
-		"tw" | "terawatts" => Token::Unit(Terawatt),
-		"pw" | "petawatts" => Token::Unit(Petawatt),
-		"hp" | "hps" | "horsepower" | "horsepowers" => Token::Unit(Horsepower),
-		"mhp" | "hpm" => Token::Unit(MetricHorsepower),
+		"milliwatt" | "milliwatts" => Token::unit(Milliwatt),
+		"w" | "watts" => Token::unit(Watt),
+		"kw" | "kilowatts" => Token::unit(Kilowatt),
+		"mw" | "megawatts" => Token::unit(Megawatt),
+		"gw" | "gigawatts" => Token::unit(Gigawatt),
+		"tw" | "terawatts" => Token::unit(Terawatt),
+		"pw" | "petawatts" => Token::unit(Petawatt),
+		"hp" | "hps" | "horsepower" | "horsepowers" => Token::unit(Horsepower),
+		"mhp" | "hpm" => Token::unit(MetricHorsepower),
 
 		"watt" => match read_word(lexer).as_str() {
-			"hr" | "hrs" | "hour" | "hours" => Token::Unit(WattHour),
+			"hr" | "hrs" | "hour" | "hours" => Token::unit(WattHour),
 			other => {
-				lexer.tokens.push(Token::Unit(Watt));
+				lexer.tokens.push(Token::unit(Watt));
 				lex_word_if_non_empty(other, lexer)?;
 				return Ok(());
 			}
 		},
 		"kilowatt" => match read_word(lexer).as_str() {
-			"hr" | "hrs" | "hour" | "hours" => Token::Unit(KilowattHour),
+			"hr" | "hrs" | "hour" | "hours" => Token::unit(KilowattHour),
 			other => {
-				lexer.tokens.push(Token::Unit(Kilowatt));
+				lexer.tokens.push(Token::unit(Kilowatt));
 				lex_word_if_non_empty(other, lexer)?;
 				return Ok(());
 			}
 		},
 		"megawatt" => match read_word(lexer).as_str() {
-			"hr" | "hrs" | "hour" | "hours" => Token::Unit(MegawattHour),
+			"hr" | "hrs" | "hour" | "hours" => Token::unit(MegawattHour),
 			other => {
-				lexer.tokens.push(Token::Unit(Megawatt));
+				lexer.tokens.push(Token::unit(Megawatt));
 				lex_word_if_non_empty(other, lexer)?;
 				return Ok(());
 			}
 		},
 		"gigawatt" => match read_word(lexer).as_str() {
-			"hr" | "hrs" | "hour" | "hours" => Token::Unit(GigawattHour),
+			"hr" | "hrs" | "hour" | "hours" => Token::unit(GigawattHour),
 			other => {
-				lexer.tokens.push(Token::Unit(Gigawatt));
+				lexer.tokens.push(Token::unit(Gigawatt));
 				lex_word_if_non_empty(other, lexer)?;
 				return Ok(());
 			}
 		},
 		"terawatt" => match read_word(lexer).as_str() {
-			"hr" | "hrs" | "hour" | "hours" => Token::Unit(TerawattHour),
+			"hr" | "hrs" | "hour" | "hours" => Token::unit(TerawattHour),
 			other => {
-				lexer.tokens.push(Token::Unit(Terawatt));
+				lexer.tokens.push(Token::unit(Terawatt));
 				lex_word_if_non_empty(other, lexer)?;
 				return Ok(());
 			}
 		},
 		"petawatt" => match &*read_word(lexer) {
-			"hr" | "hrs" | "hour" | "hours" => Token::Unit(PetawattHour),
+			"hr" | "hrs" | "hour" | "hours" => Token::unit(PetawattHour),
 			other => {
-				lexer.tokens.push(Token::Unit(Petawatt));
+				lexer.tokens.push(Token::unit(Petawatt));
 				lex_word_if_non_empty(other, lexer)?;
 				return Ok(());
 			}
 		},
 
 		"ma" | "milliamp" | "milliamps" | "milliampere" | "milliamperes" => {
-			Token::Unit(Milliampere)
+			Token::unit(Milliampere)
 		}
-		"a" | "amp" | "amps" | "ampere" | "amperes" => Token::Unit(Ampere),
-		"ka" | "kiloamp" | "kiloamps" | "kiloampere" | "kiloamperes" => Token::Unit(Kiloampere),
-		"bi" | "biot" | "biots" | "aba" | "abampere" | "abamperes" => Token::Unit(Abampere),
+		"a" | "amp" | "amps" | "ampere" | "amperes" => Token::unit(Ampere),
+		"ka" | "kiloamp" | "kiloamps" | "kiloampere" | "kiloamperes" => Token::unit(Kiloampere),
+		"bi" | "biot" | "biots" | "aba" | "abampere" | "abamperes" => Token::unit(Abampere),
 
-		"mΩ" | "mΩ" | "milliohm" | "milliohms" => Token::Unit(Milliohm),
-		"Ω" | "Ω" | "ohm" | "ohms" => Token::Unit(Ohm),
-		"kΩ" | "kΩ" | "kiloohm" | "kiloohms" => Token::Unit(Kiloohm),
+		"mΩ" | "mΩ" | "milliohm" | "milliohms" => Token::unit(Milliohm),
+		"Ω" | "Ω" | "ohm" | "ohms" => Token::unit(Ohm),
+		"kΩ" | "kΩ" | "kiloohm" | "kiloohms" => Token::unit(Kiloohm),
 
-		"mv" | "millivolt" | "millivolts" => Token::Unit(Millivolt),
-		"v" | "volt" | "volts" => Token::Unit(Volt),
-		"kv" | "kilovolt" | "kilovolts" => Token::Unit(Kilovolt),
+		"mv" | "millivolt" | "millivolts" => Token::unit(Millivolt),
+		"v" | "volt" | "volts" => Token::unit(Volt),
+		"kv" | "kilovolt" | "kilovolts" => Token::unit(Kilovolt),
 
 		// for pound-force per square inch
 		"lbf" => Token::LexerKeyword(PoundForce),
 		"force" => Token::LexerKeyword(Force),
 
-		"pa" | "pascal" | "pascals" => Token::Unit(Pascal),
-		"kpa" | "kilopascal" | "kilopascals" => Token::Unit(Kilopascal),
-		"atm" | "atms" | "atmosphere" | "atmospheres" => Token::Unit(Atmosphere),
-		"mbar" | "mbars" | "millibar" | "millibars" => Token::Unit(Millibar),
-		"bar" | "bars" => Token::Unit(Bar),
-		"inhg" => Token::Unit(InchOfMercury),
+		"pa" | "pascal" | "pascals" => Token::unit(Pascal),
+		"kpa" | "kilopascal" | "kilopascals" => Token::unit(Kilopascal),
+		"atm" | "atms" | "atmosphere" | "atmospheres" => Token::unit(Atmosphere),
+		"mbar" | "mbars" | "millibar" | "millibars" => Token::unit(Millibar),
+		"bar" | "bars" => Token::unit(Bar),
+		"inhg" => Token::unit(InchOfMercury),
 		"mercury" => Token::LexerKeyword(Mercury),
-		"psi" => Token::Unit(PoundsPerSquareInch),
-		"torr" | "torrs" => Token::Unit(Torr),
+		"psi" => Token::unit(PoundsPerSquareInch),
+		"torr" | "torrs" => Token::unit(Torr),
 
-		"hz" | "hertz" => Token::Unit(Hertz),
-		"khz" | "kilohertz" => Token::Unit(Kilohertz),
-		"mhz" | "megahertz" => Token::Unit(Megahertz),
-		"ghz" | "gigahertz" => Token::Unit(Gigahertz),
-		"thz" | "terahertz" => Token::Unit(Terahertz),
-		"phz" | "petahertz" => Token::Unit(Petahertz),
-		"rpm" => Token::Unit(RevolutionsPerMinute),
+		"hz" | "hertz" => Token::unit(Hertz),
+		"khz" | "kilohertz" => Token::unit(Kilohertz),
+		"mhz" | "megahertz" => Token::unit(Megahertz),
+		"ghz" | "gigahertz" => Token::unit(Gigahertz),
+		"thz" | "terahertz" => Token::unit(Terahertz),
+		"phz" | "petahertz" => Token::unit(Petahertz),
+		"rpm" => Token::unit(RevolutionsPerMinute),
 		"r" | "rev" | "revolution" | "revolutions" => Token::LexerKeyword(Revolution),
 
-		"kph" | "kmh" => Token::Unit(KilometersPerHour),
-		"mps" => Token::Unit(MetersPerSecond),
-		"mph" => Token::Unit(MilesPerHour),
-		"fps" => Token::Unit(FeetPerSecond),
-		"kn" | "kt" | "knot" | "knots" => Token::Unit(Knot),
+		"kph" | "kmh" => Token::unit(KilometersPerHour),
+		"mps" => Token::unit(MetersPerSecond),
+		"mph" => Token::unit(MilesPerHour),
+		"fps" => Token::unit(FeetPerSecond),
+		"kn" | "kt" | "knot" | "knots" => Token::unit(Knot),
 
-		"k" | "kelvin" | "kelvins" => Token::Unit(Kelvin),
-		"c" | "celsius" => Token::Unit(Celsius),
-		"f" | "fahrenheit" | "fahrenheits" => Token::Unit(Fahrenheit),
+		"k" | "kelvin" | "kelvins" => Token::unit(Kelvin),
+		"c" | "celsius" => Token::unit(Celsius),
+		"f" | "fahrenheit" | "fahrenheits" => Token::unit(Fahrenheit),
 
 		string => {
 			return Err(format!("Invalid string: {}", string));
@@ -743,18 +741,18 @@ pub fn lex(input: &str, remove_trailing_operator: bool) -> Result<Vec<Token>, St
 				match tokens.get(token_index + 1) {
 					Some(Token::LexerKeyword(Hg)) => {
 						// "hg should be inch of mercury
-						tokens[token_index] = Token::Unit(InchOfMercury);
+						tokens[token_index] = Token::unit(InchOfMercury);
 						tokens.remove(token_index + 1);
 					}
 					_ => {
 						// otherwise, Inch
-						tokens[token_index] = Token::Unit(Inch);
+						tokens[token_index] = Token::unit(Inch);
 					}
 				}
 			}
 			// if hg wasn't already turned into inch of mercury, it's hectogram
 			Token::LexerKeyword(Hg) => {
-				tokens[token_index] = Token::Unit(Hectogram);
+				tokens[token_index] = Token::unit(Hectogram);
 			}
 			// decide if "in" is Inch or To
 			Token::LexerKeyword(In) => {
@@ -765,260 +763,11 @@ pub fn lex(input: &str, remove_trailing_operator: bool) -> Result<Vec<Token>, St
 					}
 					_ => {
 						// otherwise, Inch
-						tokens[token_index] = Token::Unit(Inch);
+						tokens[token_index] = Token::unit(Inch);
 					}
 				}
 			}
 			_ => {}
-		}
-		// parse units like km/h, lbf per square inch
-		if token_index >= 2 {
-			let token1 = &tokens[token_index - 2];
-			let token2 = match &tokens[token_index - 1] {
-				// treat km/h the same as km per h
-				Token::Operator(Divide) => &Token::LexerKeyword(Per),
-				_ => &tokens[token_index - 1],
-			};
-			let token3 = &tokens[token_index];
-			let mut replaced = true;
-			match (token1, token2, token3) {
-				// km/h
-				(Token::Unit(Kilometer), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
-					tokens[token_index - 2] = Token::Unit(KilometersPerHour);
-				}
-				// mi/h
-				(Token::Unit(Mile), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
-					tokens[token_index - 2] = Token::Unit(MilesPerHour);
-				}
-				// m/s
-				(Token::Unit(Meter), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(MetersPerSecond);
-				}
-				// ft/s
-				(Token::Unit(Foot), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(FeetPerSecond);
-				}
-				// bits per second
-				(Token::Unit(Bit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(BitsPerSecond);
-				}
-				// kilobits per second
-				(Token::Unit(Kilobit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(KilobitsPerSecond);
-				}
-				// megabits per second
-				(Token::Unit(Megabit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(MegabitsPerSecond);
-				}
-				// gigabits per second
-				(Token::Unit(Gigabit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(GigabitsPerSecond);
-				}
-				// terabits per second
-				(Token::Unit(Terabit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(TerabitsPerSecond);
-				}
-				// petabits per second
-				(Token::Unit(Petabit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(PetabitsPerSecond);
-				}
-				// exabits per second
-				(Token::Unit(Exabit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ExabitsPerSecond);
-				}
-				// zettabits per second
-				(Token::Unit(Zettabit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ZettabitsPerSecond);
-				}
-				// yottabits per second
-				(Token::Unit(Yottabit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(YottabitsPerSecond);
-				}
-				// kibibits per second
-				(Token::Unit(Kibibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(KibibitsPerSecond);
-				}
-				// mebibits per second
-				(Token::Unit(Mebibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(MebibitsPerSecond);
-				}
-				// gibibits per second
-				(Token::Unit(Gibibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(GibibitsPerSecond);
-				}
-				// tebibits per second
-				(Token::Unit(Tebibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(TebibitsPerSecond);
-				}
-				// pebibits per second
-				(Token::Unit(Pebibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(PebibitsPerSecond);
-				}
-				// exbibits per second
-				(Token::Unit(Exbibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ExbibitsPerSecond);
-				}
-				// zebibits per second
-				(Token::Unit(Zebibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ZebibitsPerSecond);
-				}
-				// yobibits per second
-				(Token::Unit(Yobibit), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(YobibitsPerSecond);
-				}
-				// bytes per second
-				(Token::Unit(Byte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(BytesPerSecond);
-				}
-				// kilobytes per second
-				(Token::Unit(Kilobyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(KilobytesPerSecond);
-				}
-				// megabytes per second
-				(Token::Unit(Megabyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(MegabytesPerSecond);
-				}
-				// gigabytes per second
-				(Token::Unit(Gigabyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(GigabytesPerSecond);
-				}
-				// terabytes per second
-				(Token::Unit(Terabyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(TerabytesPerSecond);
-				}
-				// petabytes per second
-				(Token::Unit(Petabyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(PetabytesPerSecond);
-				}
-				// exabytes per second
-				(Token::Unit(Exabyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ExabytesPerSecond);
-				}
-				// zettabytes per second
-				(Token::Unit(Zettabyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ZettabytesPerSecond);
-				}
-				// yottabytes per second
-				(Token::Unit(Yottabyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(YottabytesPerSecond);
-				}
-				// kibibytes per second
-				(Token::Unit(Kibibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(KibibytesPerSecond);
-				}
-				// mebibytes per second
-				(Token::Unit(Mebibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(MebibytesPerSecond);
-				}
-				// gibibytes per second
-				(Token::Unit(Gibibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(GibibytesPerSecond);
-				}
-				// tebibytes per second
-				(Token::Unit(Tebibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(TebibytesPerSecond);
-				}
-				// pebibytes per second
-				(Token::Unit(Pebibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(PebibytesPerSecond);
-				}
-				// exbibytes per second
-				(Token::Unit(Exbibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ExbibytesPerSecond);
-				}
-				// zebibytes per second
-				(Token::Unit(Zebibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ZebibytesPerSecond);
-				}
-				// yobibytes per second
-				(Token::Unit(Yobibyte), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(YobibytesPerSecond);
-				}
-				// FLOP per second
-				(Token::Unit(Flop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(FlopPerSecond);
-				}
-				// kiloFLOP per second
-				(Token::Unit(KiloFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(KiloFlopPerSecond);
-				}
-				// megaFLOP per second
-				(Token::Unit(MegaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(MegaFlopPerSecond);
-				}
-				// gigaFLOP per second
-				(Token::Unit(GigaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(GigaFlopPerSecond);
-				}
-				// teraFLOP per second
-				(Token::Unit(TeraFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(TeraFlopPerSecond);
-				}
-				// petaFLOP per second
-				(Token::Unit(PetaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(PetaFlopPerSecond);
-				}
-				// exaFLOP per second
-				(Token::Unit(ExaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ExaFlopPerSecond);
-				}
-				// zettaFLOP per second
-				(Token::Unit(ZettaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(ZettaFlopPerSecond);
-				}
-				// yottaFLOP per second
-				(Token::Unit(YottaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(YottaFlopPerSecond);
-				}
-				// ronnaFLOP per second
-				(Token::Unit(RonnaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(RonnaFlopPerSecond);
-				}
-				// quettaFLOP per second
-				(Token::Unit(QuettaFlop), Token::LexerKeyword(Per), Token::Unit(Second)) => {
-					tokens[token_index - 2] = Token::Unit(QuettaFlopPerSecond);
-				}
-				// btu/min
-				(
-					Token::Unit(BritishThermalUnit),
-					Token::LexerKeyword(Per),
-					Token::Unit(Minute),
-				) => {
-					tokens[token_index - 2] = Token::Unit(BritishThermalUnitsPerMinute);
-				}
-				// btu/h
-				(Token::Unit(BritishThermalUnit), Token::LexerKeyword(Per), Token::Unit(Hour)) => {
-					tokens[token_index - 2] = Token::Unit(BritishThermalUnitsPerHour);
-				}
-				// lbs/sqin
-				(
-					Token::LexerKeyword(PoundForce),
-					Token::LexerKeyword(Per),
-					Token::Unit(SquareInch),
-				) => {
-					tokens[token_index - 2] = Token::Unit(PoundsPerSquareInch);
-				}
-				// inch of mercury
-				(Token::Unit(Inch), Token::TextOperator(Of), Token::LexerKeyword(Mercury)) => {
-					tokens[token_index - 2] = Token::Unit(InchOfMercury);
-				}
-				// revolutions per minute
-				(
-					Token::LexerKeyword(Revolution),
-					Token::LexerKeyword(Per),
-					Token::Unit(Minute),
-				) => {
-					tokens[token_index - 2] = Token::Unit(RevolutionsPerMinute);
-				}
-				_ => {
-					replaced = false;
-				}
-			}
-			if replaced {
-				tokens.remove(token_index);
-				tokens.remove(token_index - 1);
-				token_index -= 2;
-			}
 		}
 		if token_index == tokens.len() - 1 {
 			break;
@@ -1093,422 +842,708 @@ mod tests {
 			"88 kilometres * 2",
 			vec![
 				numtok!(88),
-				Token::Unit(Kilometer),
+				Token::unit(Kilometer),
 				Token::Operator(Multiply),
 				numtok!(2),
 			],
 		);
-		run_lex("0.5 marathon", vec![numtok!(0.5), Token::Unit(Marathon)]);
-		run_lex("100 nmi", vec![numtok!(100), Token::Unit(NauticalMile)]);
+		run_lex("0.5 marathon", vec![numtok!(0.5), Token::unit(Marathon)]);
+		run_lex("100 nmi", vec![numtok!(100), Token::unit(NauticalMile)]);
 		run_lex(
 			"101 nautical miles",
-			vec![numtok!(101), Token::Unit(NauticalMile)],
+			vec![numtok!(101), Token::unit(NauticalMile)],
 		);
-		run_lex("2 lightyears", vec![numtok!(2), Token::Unit(LightYear)]);
-		run_lex("1 light year", vec![numtok!(1), Token::Unit(LightYear)]);
-		run_lex("10 lightsec", vec![numtok!(10), Token::Unit(LightSecond)]);
-		run_lex("12 light secs", vec![numtok!(12), Token::Unit(LightSecond)]);
+		run_lex("2 lightyears", vec![numtok!(2), Token::unit(LightYear)]);
+		run_lex("1 light year", vec![numtok!(1), Token::unit(LightYear)]);
+		run_lex("10 lightsec", vec![numtok!(10), Token::unit(LightSecond)]);
+		run_lex("12 light secs", vec![numtok!(12), Token::unit(LightSecond)]);
 		run_lex(
 			"33.3 square meters",
-			vec![numtok!(33.3), Token::Unit(SquareMeter)],
+			vec![numtok!(33.3), Token::unit(SquareMeter)],
 		);
-		run_lex("54 m2", vec![numtok!(54), Token::Unit(SquareMeter)]);
-		run_lex("87 sq miles", vec![numtok!(87), Token::Unit(SquareMile)]);
-		run_lex("500 feet2", vec![numtok!(500), Token::Unit(SquareFoot)]);
-		run_lex("500 feet²", vec![numtok!(500), Token::Unit(SquareFoot)]);
-		run_lex("4 cubic metres", vec![numtok!(4), Token::Unit(CubicMeter)]);
+		run_lex("54 m2", vec![numtok!(54), Token::unit(SquareMeter)]);
+		run_lex("87 sq miles", vec![numtok!(87), Token::unit(SquareMile)]);
+		run_lex("500 feet2", vec![numtok!(500), Token::unit(SquareFoot)]);
+		run_lex("500 feet²", vec![numtok!(500), Token::unit(SquareFoot)]);
+		run_lex("4 cubic metres", vec![numtok!(4), Token::unit(CubicMeter)]);
 		run_lex(
 			"34 cubic feet + 23 cubic yards",
 			vec![
 				numtok!(34),
-				Token::Unit(CubicFoot),
+				Token::unit(CubicFoot),
 				Token::Operator(Plus),
 				numtok!(23),
-				Token::Unit(CubicYard),
+				Token::unit(CubicYard),
 			],
 		);
 		run_lex(
 			"66 inches3 + 65 millimetre³",
 			vec![
 				numtok!(66),
-				Token::Unit(CubicInch),
+				Token::unit(CubicInch),
 				Token::Operator(Plus),
 				numtok!(65),
-				Token::Unit(CubicMillimeter),
+				Token::unit(CubicMillimeter),
 			],
 		);
 		run_lex(
 			"66 inches³ + 65 millimetre3",
 			vec![
 				numtok!(66),
-				Token::Unit(CubicInch),
+				Token::unit(CubicInch),
 				Token::Operator(Plus),
 				numtok!(65),
-				Token::Unit(CubicMillimeter),
+				Token::unit(CubicMillimeter),
 			],
 		);
-		run_lex("42 millilitres", vec![numtok!(42), Token::Unit(Milliliter)]);
-		run_lex("3 tbs", vec![numtok!(3), Token::Unit(Tablespoon)]);
-		run_lex("6 floz", vec![numtok!(6), Token::Unit(FluidOunce)]);
-		run_lex("6 fl oz", vec![numtok!(6), Token::Unit(FluidOunce)]);
-		run_lex("6 fluid ounces", vec![numtok!(6), Token::Unit(FluidOunce)]);
-		run_lex("3 oil barrels", vec![numtok!(3), Token::Unit(OilBarrel)]);
-		run_lex("67 kg", vec![numtok!(67), Token::Unit(Kilogram)]);
-		run_lex("34 oz", vec![numtok!(34), Token::Unit(Ounce)]);
-		run_lex("34 ounces", vec![numtok!(34), Token::Unit(Ounce)]);
-		run_lex("210 lb", vec![numtok!(210), Token::Unit(Pound)]);
-		run_lex("210 lbs", vec![numtok!(210), Token::Unit(Pound)]);
-		run_lex("210 pound", vec![numtok!(210), Token::Unit(Pound)]);
-		run_lex("210 pounds", vec![numtok!(210), Token::Unit(Pound)]);
+		run_lex("42 millilitres", vec![numtok!(42), Token::unit(Milliliter)]);
+		run_lex("3 tbs", vec![numtok!(3), Token::unit(Tablespoon)]);
+		run_lex("6 floz", vec![numtok!(6), Token::unit(FluidOunce)]);
+		run_lex("6 fl oz", vec![numtok!(6), Token::unit(FluidOunce)]);
+		run_lex("6 fluid ounces", vec![numtok!(6), Token::unit(FluidOunce)]);
+		run_lex("3 oil barrels", vec![numtok!(3), Token::unit(OilBarrel)]);
+		run_lex("67 kg", vec![numtok!(67), Token::unit(Kilogram)]);
+		run_lex("34 oz", vec![numtok!(34), Token::unit(Ounce)]);
+		run_lex("34 ounces", vec![numtok!(34), Token::unit(Ounce)]);
+		run_lex("210 lb", vec![numtok!(210), Token::unit(Pound)]);
+		run_lex("210 lbs", vec![numtok!(210), Token::unit(Pound)]);
+		run_lex("210 pound", vec![numtok!(210), Token::unit(Pound)]);
+		run_lex("210 pounds", vec![numtok!(210), Token::unit(Pound)]);
 		run_lex(
 			"210 pounds-force",
 			vec![numtok!(210), Token::LexerKeyword(PoundForce)],
 		);
-		run_lex("3 ton", vec![numtok!(3), Token::Unit(ShortTon)]);
-		run_lex("3 short tons", vec![numtok!(3), Token::Unit(ShortTon)]);
-		run_lex("4 lt", vec![numtok!(4), Token::Unit(LongTon)]);
-		run_lex("4 long tonnes", vec![numtok!(4), Token::Unit(LongTon)]);
-		run_datarate_lex("1 bit", vec![numtok!(1), Token::Unit(Bit)]);
-		run_datarate_lex("8 bits", vec![numtok!(8), Token::Unit(Bit)]);
-		run_datarate_lex("63 kilobits", vec![numtok!(63), Token::Unit(Kilobit)]);
-		run_datarate_lex("32 megabits", vec![numtok!(32), Token::Unit(Megabit)]);
-		run_datarate_lex("3.5 gigabits", vec![numtok!(3.5), Token::Unit(Gigabit)]);
-		run_datarate_lex("2.1 terabits", vec![numtok!(2.1), Token::Unit(Terabit)]);
-		run_datarate_lex("1.08 petabits", vec![numtok!(1.08), Token::Unit(Petabit)]);
-		run_datarate_lex("0.73 exabits", vec![numtok!(0.73), Token::Unit(Exabit)]);
-		run_datarate_lex("0.49 zettabits", vec![numtok!(0.49), Token::Unit(Zettabit)]);
-		run_datarate_lex("0.23 yottabits", vec![numtok!(0.23), Token::Unit(Yottabit)]);
-		run_datarate_lex("63 kibibits", vec![numtok!(63), Token::Unit(Kibibit)]);
-		run_datarate_lex("32 mebibits", vec![numtok!(32), Token::Unit(Mebibit)]);
-		run_datarate_lex("3.5 gibibits", vec![numtok!(3.5), Token::Unit(Gibibit)]);
-		run_datarate_lex("2.1 tebibits", vec![numtok!(2.1), Token::Unit(Tebibit)]);
-		run_datarate_lex("1.08 pebibits", vec![numtok!(1.08), Token::Unit(Pebibit)]);
-		run_datarate_lex("0.73 exbibits", vec![numtok!(0.73), Token::Unit(Exbibit)]);
-		run_datarate_lex("0.49 zebibits", vec![numtok!(0.49), Token::Unit(Zebibit)]);
-		run_datarate_lex("0.23 yobibits", vec![numtok!(0.23), Token::Unit(Yobibit)]);
-		run_datarate_lex("1 byte", vec![numtok!(1), Token::Unit(Byte)]);
-		run_datarate_lex("3 bytes", vec![numtok!(3), Token::Unit(Byte)]);
-		run_datarate_lex("63 kilobytes", vec![numtok!(63), Token::Unit(Kilobyte)]);
-		run_datarate_lex("32 megabytes", vec![numtok!(32), Token::Unit(Megabyte)]);
-		run_datarate_lex("3.5 gigabytes", vec![numtok!(3.5), Token::Unit(Gigabyte)]);
-		run_datarate_lex("2.1 terabytes", vec![numtok!(2.1), Token::Unit(Terabyte)]);
-		run_datarate_lex("1.08 petabytes", vec![numtok!(1.08), Token::Unit(Petabyte)]);
-		run_datarate_lex("0.73 exabytes", vec![numtok!(0.73), Token::Unit(Exabyte)]);
+		run_lex("3 ton", vec![numtok!(3), Token::unit(ShortTon)]);
+		run_lex("3 short tons", vec![numtok!(3), Token::unit(ShortTon)]);
+		run_lex("4 lt", vec![numtok!(4), Token::unit(LongTon)]);
+		run_lex("4 long tonnes", vec![numtok!(4), Token::unit(LongTon)]);
+		run_datarate_lex("1 bit", vec![numtok!(1), Token::unit(Bit)]);
+		run_datarate_lex("8 bits", vec![numtok!(8), Token::unit(Bit)]);
+		run_datarate_lex("63 kilobits", vec![numtok!(63), Token::unit(Kilobit)]);
+		run_datarate_lex("32 megabits", vec![numtok!(32), Token::unit(Megabit)]);
+		run_datarate_lex("3.5 gigabits", vec![numtok!(3.5), Token::unit(Gigabit)]);
+		run_datarate_lex("2.1 terabits", vec![numtok!(2.1), Token::unit(Terabit)]);
+		run_datarate_lex("1.08 petabits", vec![numtok!(1.08), Token::unit(Petabit)]);
+		run_datarate_lex("0.73 exabits", vec![numtok!(0.73), Token::unit(Exabit)]);
+		run_datarate_lex("0.49 zettabits", vec![numtok!(0.49), Token::unit(Zettabit)]);
+		run_datarate_lex("0.23 yottabits", vec![numtok!(0.23), Token::unit(Yottabit)]);
+		run_datarate_lex("63 kibibits", vec![numtok!(63), Token::unit(Kibibit)]);
+		run_datarate_lex("32 mebibits", vec![numtok!(32), Token::unit(Mebibit)]);
+		run_datarate_lex("3.5 gibibits", vec![numtok!(3.5), Token::unit(Gibibit)]);
+		run_datarate_lex("2.1 tebibits", vec![numtok!(2.1), Token::unit(Tebibit)]);
+		run_datarate_lex("1.08 pebibits", vec![numtok!(1.08), Token::unit(Pebibit)]);
+		run_datarate_lex("0.73 exbibits", vec![numtok!(0.73), Token::unit(Exbibit)]);
+		run_datarate_lex("0.49 zebibits", vec![numtok!(0.49), Token::unit(Zebibit)]);
+		run_datarate_lex("0.23 yobibits", vec![numtok!(0.23), Token::unit(Yobibit)]);
+		run_datarate_lex("1 byte", vec![numtok!(1), Token::unit(Byte)]);
+		run_datarate_lex("3 bytes", vec![numtok!(3), Token::unit(Byte)]);
+		run_datarate_lex("63 kilobytes", vec![numtok!(63), Token::unit(Kilobyte)]);
+		run_datarate_lex("32 megabytes", vec![numtok!(32), Token::unit(Megabyte)]);
+		run_datarate_lex("3.5 gigabytes", vec![numtok!(3.5), Token::unit(Gigabyte)]);
+		run_datarate_lex("2.1 terabytes", vec![numtok!(2.1), Token::unit(Terabyte)]);
+		run_datarate_lex("1.08 petabytes", vec![numtok!(1.08), Token::unit(Petabyte)]);
+		run_datarate_lex("0.73 exabytes", vec![numtok!(0.73), Token::unit(Exabyte)]);
 		run_datarate_lex(
 			"0.49 zettabytes",
-			vec![numtok!(0.49), Token::Unit(Zettabyte)],
+			vec![numtok!(0.49), Token::unit(Zettabyte)],
 		);
 		run_datarate_lex(
 			"0.23 yottabytes",
-			vec![numtok!(0.23), Token::Unit(Yottabyte)],
+			vec![numtok!(0.23), Token::unit(Yottabyte)],
 		);
-		run_datarate_lex("63 kibibytes", vec![numtok!(63), Token::Unit(Kibibyte)]);
-		run_datarate_lex("32 mebibytes", vec![numtok!(32), Token::Unit(Mebibyte)]);
-		run_datarate_lex("3.5 gibibytes", vec![numtok!(3.5), Token::Unit(Gibibyte)]);
-		run_datarate_lex("2.1 tebibytes", vec![numtok!(2.1), Token::Unit(Tebibyte)]);
-		run_datarate_lex("1.08 pebibytes", vec![numtok!(1.08), Token::Unit(Pebibyte)]);
-		run_datarate_lex("0.73 exbibytes", vec![numtok!(0.73), Token::Unit(Exbibyte)]);
-		run_datarate_lex("0.49 zebibytes", vec![numtok!(0.49), Token::Unit(Zebibyte)]);
-		run_datarate_lex("0.23 yobibytes", vec![numtok!(0.23), Token::Unit(Yobibyte)]);
-		run_lex("432 bps", vec![numtok!(432), Token::Unit(BitsPerSecond)]);
-		run_lex("56 kbps", vec![numtok!(56), Token::Unit(KilobitsPerSecond)]);
-		run_lex("12 mbps", vec![numtok!(12), Token::Unit(MegabitsPerSecond)]);
+		run_datarate_lex("63 kibibytes", vec![numtok!(63), Token::unit(Kibibyte)]);
+		run_datarate_lex("32 mebibytes", vec![numtok!(32), Token::unit(Mebibyte)]);
+		run_datarate_lex("3.5 gibibytes", vec![numtok!(3.5), Token::unit(Gibibyte)]);
+		run_datarate_lex("2.1 tebibytes", vec![numtok!(2.1), Token::unit(Tebibyte)]);
+		run_datarate_lex("1.08 pebibytes", vec![numtok!(1.08), Token::unit(Pebibyte)]);
+		run_datarate_lex("0.73 exbibytes", vec![numtok!(0.73), Token::unit(Exbibyte)]);
+		run_datarate_lex("0.49 zebibytes", vec![numtok!(0.49), Token::unit(Zebibyte)]);
+		run_datarate_lex("0.23 yobibytes", vec![numtok!(0.23), Token::unit(Yobibyte)]);
+		run_lex("432 bps", vec![numtok!(432), Token::unit(BitsPerSecond)]);
+		run_lex("56 kbps", vec![numtok!(56), Token::unit(KilobitsPerSecond)]);
+		run_lex("12 mbps", vec![numtok!(12), Token::unit(MegabitsPerSecond)]);
 		run_lex(
 			"4.2 gbps",
-			vec![numtok!(4.2), Token::Unit(GigabitsPerSecond)],
+			vec![numtok!(4.2), Token::unit(GigabitsPerSecond)],
 		);
 		run_lex(
 			"2.2 tbps",
-			vec![numtok!(2.2), Token::Unit(TerabitsPerSecond)],
+			vec![numtok!(2.2), Token::unit(TerabitsPerSecond)],
 		);
 		run_lex(
 			"1.7 pbps",
-			vec![numtok!(1.7), Token::Unit(PetabitsPerSecond)],
+			vec![numtok!(1.7), Token::unit(PetabitsPerSecond)],
 		);
 		run_lex(
 			"0.99 ebps",
-			vec![numtok!(0.99), Token::Unit(ExabitsPerSecond)],
+			vec![numtok!(0.99), Token::unit(ExabitsPerSecond)],
 		);
 		run_lex(
 			"0.64 zbps",
-			vec![numtok!(0.64), Token::Unit(ZettabitsPerSecond)],
+			vec![numtok!(0.64), Token::unit(ZettabitsPerSecond)],
 		);
 		run_lex(
 			"0.278 ybps",
-			vec![numtok!(0.278), Token::Unit(YottabitsPerSecond)],
+			vec![numtok!(0.278), Token::unit(YottabitsPerSecond)],
 		);
 		run_datarate_lex(
 			"4 bits per second",
-			vec![numtok!(4), Token::Unit(BitsPerSecond)],
+			vec![
+				numtok!(4),
+				Token::unit(Bit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"5 kilobits per second",
-			vec![numtok!(5), Token::Unit(KilobitsPerSecond)],
+			vec![
+				numtok!(5),
+				Token::unit(Kilobit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"6 megabits per second",
-			vec![numtok!(6), Token::Unit(MegabitsPerSecond)],
+			vec![
+				numtok!(6),
+				Token::unit(Megabit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"7 gigabits per second",
-			vec![numtok!(7), Token::Unit(GigabitsPerSecond)],
+			vec![
+				numtok!(7),
+				Token::unit(Gigabit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"8 terabits per second",
-			vec![numtok!(8), Token::Unit(TerabitsPerSecond)],
+			vec![
+				numtok!(8),
+				Token::unit(Terabit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"9 petabits per second",
-			vec![numtok!(9), Token::Unit(PetabitsPerSecond)],
+			vec![
+				numtok!(9),
+				Token::unit(Petabit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"10 exabits per second",
-			vec![numtok!(10), Token::Unit(ExabitsPerSecond)],
+			vec![
+				numtok!(10),
+				Token::unit(Exabit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"11 zettabits per second",
-			vec![numtok!(11), Token::Unit(ZettabitsPerSecond)],
+			vec![
+				numtok!(11),
+				Token::unit(Zettabit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"12 yottabits per second",
-			vec![numtok!(12), Token::Unit(YottabitsPerSecond)],
+			vec![
+				numtok!(12),
+				Token::unit(Yottabit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"13 kibibits per second",
-			vec![numtok!(13), Token::Unit(KibibitsPerSecond)],
+			vec![
+				numtok!(13),
+				Token::unit(Kibibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"14 mebibits per second",
-			vec![numtok!(14), Token::Unit(MebibitsPerSecond)],
+			vec![
+				numtok!(14),
+				Token::unit(Mebibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"15 gibibits per second",
-			vec![numtok!(15), Token::Unit(GibibitsPerSecond)],
+			vec![
+				numtok!(15),
+				Token::unit(Gibibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"16 tebibits per second",
-			vec![numtok!(16), Token::Unit(TebibitsPerSecond)],
+			vec![
+				numtok!(16),
+				Token::unit(Tebibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"17 pebibits per second",
-			vec![numtok!(17), Token::Unit(PebibitsPerSecond)],
+			vec![
+				numtok!(17),
+				Token::unit(Pebibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"18 exbibits per second",
-			vec![numtok!(18), Token::Unit(ExbibitsPerSecond)],
+			vec![
+				numtok!(18),
+				Token::unit(Exbibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"19 zebibits per second",
-			vec![numtok!(19), Token::Unit(ZebibitsPerSecond)],
+			vec![
+				numtok!(19),
+				Token::unit(Zebibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"20 yobibits per second",
-			vec![numtok!(20), Token::Unit(YobibitsPerSecond)],
+			vec![
+				numtok!(20),
+				Token::unit(Yobibit),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"4 bytes per second",
-			vec![numtok!(4), Token::Unit(BytesPerSecond)],
+			vec![
+				numtok!(4),
+				Token::unit(Byte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"5 kilobytes per second",
-			vec![numtok!(5), Token::Unit(KilobytesPerSecond)],
+			vec![
+				numtok!(5),
+				Token::unit(Kilobyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"6 megabytes per second",
-			vec![numtok!(6), Token::Unit(MegabytesPerSecond)],
+			vec![
+				numtok!(6),
+				Token::unit(Megabyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"7 gigabytes per second",
-			vec![numtok!(7), Token::Unit(GigabytesPerSecond)],
+			vec![
+				numtok!(7),
+				Token::unit(Gigabyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"8 terabytes per second",
-			vec![numtok!(8), Token::Unit(TerabytesPerSecond)],
+			vec![
+				numtok!(8),
+				Token::unit(Terabyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"9 petabytes per second",
-			vec![numtok!(9), Token::Unit(PetabytesPerSecond)],
+			vec![
+				numtok!(9),
+				Token::unit(Petabyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"10 exabytes per second",
-			vec![numtok!(10), Token::Unit(ExabytesPerSecond)],
+			vec![
+				numtok!(10),
+				Token::unit(Exabyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"11 zettabytes per second",
-			vec![numtok!(11), Token::Unit(ZettabytesPerSecond)],
+			vec![
+				numtok!(11),
+				Token::unit(Zettabyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"12 yottabytes per second",
-			vec![numtok!(12), Token::Unit(YottabytesPerSecond)],
+			vec![
+				numtok!(12),
+				Token::unit(Yottabyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"13 kibibytes per second",
-			vec![numtok!(13), Token::Unit(KibibytesPerSecond)],
+			vec![
+				numtok!(13),
+				Token::unit(Kibibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"14 mebibytes per second",
-			vec![numtok!(14), Token::Unit(MebibytesPerSecond)],
+			vec![
+				numtok!(14),
+				Token::unit(Mebibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"15 gibibytes per second",
-			vec![numtok!(15), Token::Unit(GibibytesPerSecond)],
+			vec![
+				numtok!(15),
+				Token::unit(Gibibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"16 tebibytes per second",
-			vec![numtok!(16), Token::Unit(TebibytesPerSecond)],
+			vec![
+				numtok!(16),
+				Token::unit(Tebibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"17 pebibytes per second",
-			vec![numtok!(17), Token::Unit(PebibytesPerSecond)],
+			vec![
+				numtok!(17),
+				Token::unit(Pebibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"18 exbibytes per second",
-			vec![numtok!(18), Token::Unit(ExbibytesPerSecond)],
+			vec![
+				numtok!(18),
+				Token::unit(Exbibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"19 zebibytes per second",
-			vec![numtok!(19), Token::Unit(ZebibytesPerSecond)],
+			vec![
+				numtok!(19),
+				Token::unit(Zebibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_datarate_lex(
 			"20 yobibytes per second",
-			vec![numtok!(20), Token::Unit(YobibytesPerSecond)],
+			vec![
+				numtok!(20),
+				Token::unit(Yobibyte),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
-		run_lex("1 flop", vec![numtok!(1), Token::Unit(Flop)]);
-		run_lex("2 kflop", vec![numtok!(2), Token::Unit(KiloFlop)]);
-		run_lex("3 mflop", vec![numtok!(3), Token::Unit(MegaFlop)]);
-		run_lex("4 gflop", vec![numtok!(4), Token::Unit(GigaFlop)]);
-		run_lex("5 tflop", vec![numtok!(5), Token::Unit(TeraFlop)]);
-		run_lex("6 pflop", vec![numtok!(6), Token::Unit(PetaFlop)]);
-		run_lex("7 eflop", vec![numtok!(7), Token::Unit(ExaFlop)]);
-		run_lex("8 zflop", vec![numtok!(8), Token::Unit(ZettaFlop)]);
-		run_lex("9 yflop", vec![numtok!(9), Token::Unit(YottaFlop)]);
-		run_lex("10 rflop", vec![numtok!(10), Token::Unit(RonnaFlop)]);
-		run_lex("11 qflop", vec![numtok!(11), Token::Unit(QuettaFlop)]);
-		run_lex("1 flop/s", vec![numtok!(1), Token::Unit(FlopPerSecond)]);
+		run_lex("1 flop", vec![numtok!(1), Token::unit(Flop)]);
+		run_lex("2 kflop", vec![numtok!(2), Token::unit(KiloFlop)]);
+		run_lex("3 mflop", vec![numtok!(3), Token::unit(MegaFlop)]);
+		run_lex("4 gflop", vec![numtok!(4), Token::unit(GigaFlop)]);
+		run_lex("5 tflop", vec![numtok!(5), Token::unit(TeraFlop)]);
+		run_lex("6 pflop", vec![numtok!(6), Token::unit(PetaFlop)]);
+		run_lex("7 eflop", vec![numtok!(7), Token::unit(ExaFlop)]);
+		run_lex("8 zflop", vec![numtok!(8), Token::unit(ZettaFlop)]);
+		run_lex("9 yflop", vec![numtok!(9), Token::unit(YottaFlop)]);
+		run_lex("10 rflop", vec![numtok!(10), Token::unit(RonnaFlop)]);
+		run_lex("11 qflop", vec![numtok!(11), Token::unit(QuettaFlop)]);
+		run_lex(
+			"1 flop/s",
+			vec![
+				numtok!(1),
+				Token::unit(Flop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
+		);
 		run_lex(
 			"2 kflop/s",
-			vec![numtok!(2), Token::Unit(KiloFlopPerSecond)],
+			vec![
+				numtok!(2),
+				Token::unit(KiloFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"3 mflop/s",
-			vec![numtok!(3), Token::Unit(MegaFlopPerSecond)],
+			vec![
+				numtok!(3),
+				Token::unit(MegaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"4 gflop/s",
-			vec![numtok!(4), Token::Unit(GigaFlopPerSecond)],
+			vec![
+				numtok!(4),
+				Token::unit(GigaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"5 tflop/s",
-			vec![numtok!(5), Token::Unit(TeraFlopPerSecond)],
+			vec![
+				numtok!(5),
+				Token::unit(TeraFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"6 pflop/s",
-			vec![numtok!(6), Token::Unit(PetaFlopPerSecond)],
+			vec![
+				numtok!(6),
+				Token::unit(PetaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
-		run_lex("7 eflop/s", vec![numtok!(7), Token::Unit(ExaFlopPerSecond)]);
+		run_lex(
+			"7 eflop/s",
+			vec![
+				numtok!(7),
+				Token::unit(ExaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
+		);
 		run_lex(
 			"8 zflop/s",
-			vec![numtok!(8), Token::Unit(ZettaFlopPerSecond)],
+			vec![
+				numtok!(8),
+				Token::unit(ZettaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"9 yflop/s",
-			vec![numtok!(9), Token::Unit(YottaFlopPerSecond)],
+			vec![
+				numtok!(9),
+				Token::unit(YottaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"10 rflop/s",
-			vec![numtok!(10), Token::Unit(RonnaFlopPerSecond)],
+			vec![
+				numtok!(10),
+				Token::unit(RonnaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"11 qflop/s",
-			vec![numtok!(11), Token::Unit(QuettaFlopPerSecond)],
+			vec![
+				numtok!(11),
+				Token::unit(QuettaFlop),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"1 flop per second",
-			vec![numtok!(1), Token::Unit(FlopPerSecond)],
+			vec![
+				numtok!(1),
+				Token::unit(Flop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"2 kflop per second",
-			vec![numtok!(2), Token::Unit(KiloFlopPerSecond)],
+			vec![
+				numtok!(2),
+				Token::unit(KiloFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"3 mflop per second",
-			vec![numtok!(3), Token::Unit(MegaFlopPerSecond)],
+			vec![
+				numtok!(3),
+				Token::unit(MegaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"4 gflop per second",
-			vec![numtok!(4), Token::Unit(GigaFlopPerSecond)],
+			vec![
+				numtok!(4),
+				Token::unit(GigaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"5 tflop per second",
-			vec![numtok!(5), Token::Unit(TeraFlopPerSecond)],
+			vec![
+				numtok!(5),
+				Token::unit(TeraFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"6 pflop per second",
-			vec![numtok!(6), Token::Unit(PetaFlopPerSecond)],
+			vec![
+				numtok!(6),
+				Token::unit(PetaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"7 eflop per second",
-			vec![numtok!(7), Token::Unit(ExaFlopPerSecond)],
+			vec![
+				numtok!(7),
+				Token::unit(ExaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"8 zflop per second",
-			vec![numtok!(8), Token::Unit(ZettaFlopPerSecond)],
+			vec![
+				numtok!(8),
+				Token::unit(ZettaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"9 yflop per second",
-			vec![numtok!(9), Token::Unit(YottaFlopPerSecond)],
+			vec![
+				numtok!(9),
+				Token::unit(YottaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"10 rflop per second",
-			vec![numtok!(10), Token::Unit(RonnaFlopPerSecond)],
+			vec![
+				numtok!(10),
+				Token::unit(RonnaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"11 qflop per second",
-			vec![numtok!(11), Token::Unit(QuettaFlopPerSecond)],
+			vec![
+				numtok!(11),
+				Token::unit(QuettaFlop),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
-		run_lex("1 flops", vec![numtok!(1), Token::Unit(FlopPerSecond)]);
-		run_lex("2 kflops", vec![numtok!(2), Token::Unit(KiloFlopPerSecond)]);
-		run_lex("3 mflops", vec![numtok!(3), Token::Unit(MegaFlopPerSecond)]);
-		run_lex("4 gflops", vec![numtok!(4), Token::Unit(GigaFlopPerSecond)]);
-		run_lex("5 tflops", vec![numtok!(5), Token::Unit(TeraFlopPerSecond)]);
-		run_lex("6 pflops", vec![numtok!(6), Token::Unit(PetaFlopPerSecond)]);
-		run_lex("7 eflops", vec![numtok!(7), Token::Unit(ExaFlopPerSecond)]);
+		run_lex("1 flops", vec![numtok!(1), Token::unit(FlopPerSecond)]);
+		run_lex("2 kflops", vec![numtok!(2), Token::unit(KiloFlopPerSecond)]);
+		run_lex("3 mflops", vec![numtok!(3), Token::unit(MegaFlopPerSecond)]);
+		run_lex("4 gflops", vec![numtok!(4), Token::unit(GigaFlopPerSecond)]);
+		run_lex("5 tflops", vec![numtok!(5), Token::unit(TeraFlopPerSecond)]);
+		run_lex("6 pflops", vec![numtok!(6), Token::unit(PetaFlopPerSecond)]);
+		run_lex("7 eflops", vec![numtok!(7), Token::unit(ExaFlopPerSecond)]);
 		run_lex(
 			"8 zflops",
-			vec![numtok!(8), Token::Unit(ZettaFlopPerSecond)],
+			vec![numtok!(8), Token::unit(ZettaFlopPerSecond)],
 		);
 		run_lex(
 			"9 yflops",
-			vec![numtok!(9), Token::Unit(YottaFlopPerSecond)],
+			vec![numtok!(9), Token::unit(YottaFlopPerSecond)],
 		);
 		run_lex(
 			"10 rflops",
-			vec![numtok!(10), Token::Unit(RonnaFlopPerSecond)],
+			vec![numtok!(10), Token::unit(RonnaFlopPerSecond)],
 		);
 		run_lex(
 			"11 qflops",
-			vec![numtok!(11), Token::Unit(QuettaFlopPerSecond)],
+			vec![numtok!(11), Token::unit(QuettaFlopPerSecond)],
 		);
-		run_lex("234 wh", vec![numtok!(234), Token::Unit(WattHour)]);
-		run_lex("1 w", vec![numtok!(1), Token::Unit(Watt)]);
-		run_lex("1 watt", vec![numtok!(1), Token::Unit(Watt)]);
-		run_lex("1 watts", vec![numtok!(1), Token::Unit(Watt)]);
-		run_lex("1 watt hour", vec![numtok!(1), Token::Unit(WattHour)]);
+		run_lex("234 wh", vec![numtok!(234), Token::unit(WattHour)]);
+		run_lex("1 w", vec![numtok!(1), Token::unit(Watt)]);
+		run_lex("1 watt", vec![numtok!(1), Token::unit(Watt)]);
+		run_lex("1 watts", vec![numtok!(1), Token::unit(Watt)]);
+		run_lex("1 watt hour", vec![numtok!(1), Token::unit(WattHour)]);
 		run_lex(
 			"0 watt + 1 watts",
 			vec![
 				numtok!(0),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(1),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"0 watt * 1",
 			vec![
 				numtok!(0),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Multiply),
 				numtok!(1),
 			],
@@ -1517,17 +1552,17 @@ mod tests {
 			"2 watts + 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 watts * 3",
 			vec![
 				numtok!(2),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
@@ -1536,17 +1571,17 @@ mod tests {
 			"4 watt plus 5 watts",
 			vec![
 				numtok!(4),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(5),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"4 watt times 5",
 			vec![
 				numtok!(4),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Multiply),
 				numtok!(5),
 			],
@@ -1555,44 +1590,44 @@ mod tests {
 			"6 watts plus 7 watts",
 			vec![
 				numtok!(6),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(7),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"6 watts times 7",
 			vec![
 				numtok!(6),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Multiply),
 				numtok!(7),
 			],
 		);
-		run_lex("2.3 kwh", vec![numtok!(2.3), Token::Unit(KilowattHour)]);
-		run_lex("1 kw", vec![numtok!(1), Token::Unit(Kilowatt)]);
-		run_lex("1 kilowatt", vec![numtok!(1), Token::Unit(Kilowatt)]);
-		run_lex("1 kilowatts", vec![numtok!(1), Token::Unit(Kilowatt)]);
+		run_lex("2.3 kwh", vec![numtok!(2.3), Token::unit(KilowattHour)]);
+		run_lex("1 kw", vec![numtok!(1), Token::unit(Kilowatt)]);
+		run_lex("1 kilowatt", vec![numtok!(1), Token::unit(Kilowatt)]);
+		run_lex("1 kilowatts", vec![numtok!(1), Token::unit(Kilowatt)]);
 		run_lex(
 			"1 kilowatt hour",
-			vec![numtok!(1), Token::Unit(KilowattHour)],
+			vec![numtok!(1), Token::unit(KilowattHour)],
 		);
 		run_lex(
 			"2 kilowatt + 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 kilowatt * 4",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Multiply),
 				numtok!(4),
 			],
@@ -1601,7 +1636,7 @@ mod tests {
 			"2 kilowatt times 4",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Multiply),
 				numtok!(4),
 			],
@@ -1610,114 +1645,114 @@ mod tests {
 			"2 kilowatt + 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 kilowatts + 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 kilowatts + 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 kilowatt plus 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 kilowatt plus 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 kilowatts plus 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 kilowatts plus 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"6.6 watts + 4 kilowatts",
 			vec![
 				numtok!(6.6),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(4),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 			],
 		);
 		run_lex(
 			"6.6 watts plus 4 kilowatts",
 			vec![
 				numtok!(6.6),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(4),
-				Token::Unit(Kilowatt),
+				Token::unit(Kilowatt),
 			],
 		);
-		run_lex("2.3 mwh", vec![numtok!(2.3), Token::Unit(MegawattHour)]);
-		run_lex("1 mw", vec![numtok!(1), Token::Unit(Megawatt)]);
-		run_lex("1 megawatt", vec![numtok!(1), Token::Unit(Megawatt)]);
+		run_lex("2.3 mwh", vec![numtok!(2.3), Token::unit(MegawattHour)]);
+		run_lex("1 mw", vec![numtok!(1), Token::unit(Megawatt)]);
+		run_lex("1 megawatt", vec![numtok!(1), Token::unit(Megawatt)]);
 		run_lex(
 			"1 megawatt hour",
-			vec![numtok!(1), Token::Unit(MegawattHour)],
+			vec![numtok!(1), Token::unit(MegawattHour)],
 		);
 		run_lex(
 			"2 megawatt + 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 megawatt * 6",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Multiply),
 				numtok!(6),
 			],
@@ -1726,7 +1761,7 @@ mod tests {
 			"2 megawatt times 6",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Multiply),
 				numtok!(6),
 			],
@@ -1735,115 +1770,115 @@ mod tests {
 			"2 megawatt + 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 megawatts + 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 megawatts + 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 megawatt plus 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 megawatt plus 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 megawatts plus 3 watt",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"2 megawatts plus 3 watts",
 			vec![
 				numtok!(2),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"6.6 watts + 4 megawatts",
 			vec![
 				numtok!(6.6),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(4),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 			],
 		);
 		run_lex(
 			"6.6 watts plus 4 megawatts",
 			vec![
 				numtok!(6.6),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 				Token::Operator(Plus),
 				numtok!(4),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 			],
 		);
-		run_lex("234 gwh", vec![numtok!(234), Token::Unit(GigawattHour)]);
-		run_lex("1 gw", vec![numtok!(1), Token::Unit(Gigawatt)]);
-		run_lex("1 gigawatt", vec![numtok!(1), Token::Unit(Gigawatt)]);
-		run_lex("1 gigawatts", vec![numtok!(1), Token::Unit(Gigawatt)]);
+		run_lex("234 gwh", vec![numtok!(234), Token::unit(GigawattHour)]);
+		run_lex("1 gw", vec![numtok!(1), Token::unit(Gigawatt)]);
+		run_lex("1 gigawatt", vec![numtok!(1), Token::unit(Gigawatt)]);
+		run_lex("1 gigawatts", vec![numtok!(1), Token::unit(Gigawatt)]);
 		run_lex(
 			"1 gigawatt hour",
-			vec![numtok!(1), Token::Unit(GigawattHour)],
+			vec![numtok!(1), Token::unit(GigawattHour)],
 		);
 		run_lex(
 			"0 gigawatt + 1 gigawatts",
 			vec![
 				numtok!(0),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(1),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 			],
 		);
 		run_lex(
 			"0 gigawatt * 1",
 			vec![
 				numtok!(0),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Multiply),
 				numtok!(1),
 			],
@@ -1852,17 +1887,17 @@ mod tests {
 			"2 gigawatts + 3 gigawatts",
 			vec![
 				numtok!(2),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(3),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 			],
 		);
 		run_lex(
 			"2 gigawatts * 3",
 			vec![
 				numtok!(2),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
@@ -1871,67 +1906,67 @@ mod tests {
 			"4 gigawatt plus 5 watt",
 			vec![
 				numtok!(4),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(5),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"4 gigawatt plus 5 megawatt",
 			vec![
 				numtok!(4),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(5),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 			],
 		);
 		run_lex(
 			"4 gigawatt plus 5 gigawatt",
 			vec![
 				numtok!(4),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(5),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 			],
 		);
 		run_lex(
 			"4 gigawatt plus 5 watts",
 			vec![
 				numtok!(4),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(5),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"4 gigawatt plus 5 megawatts",
 			vec![
 				numtok!(4),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(5),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 			],
 		);
 		run_lex(
 			"4 gigawatt plus 5 gigawatts",
 			vec![
 				numtok!(4),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(5),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 			],
 		);
 		run_lex(
 			"4 gigawatt times 5",
 			vec![
 				numtok!(4),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Multiply),
 				numtok!(5),
 			],
@@ -1940,67 +1975,67 @@ mod tests {
 			"6 gigawatts plus 7 watt",
 			vec![
 				numtok!(6),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(7),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"6 gigawatts plus 7 megawatt",
 			vec![
 				numtok!(6),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(7),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 			],
 		);
 		run_lex(
 			"6 gigawatts plus 7 gigawatt",
 			vec![
 				numtok!(6),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(7),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 			],
 		);
 		run_lex(
 			"6 gigawatts plus 7 watts",
 			vec![
 				numtok!(6),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(7),
-				Token::Unit(Watt),
+				Token::unit(Watt),
 			],
 		);
 		run_lex(
 			"6 gigawatts plus 7 megawatts",
 			vec![
 				numtok!(6),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(7),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 			],
 		);
 		run_lex(
 			"6 gigawatts plus 7 gigawatts",
 			vec![
 				numtok!(6),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Plus),
 				numtok!(7),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 			],
 		);
 		run_lex(
 			"6 gigawatts times 7",
 			vec![
 				numtok!(6),
-				Token::Unit(Gigawatt),
+				Token::unit(Gigawatt),
 				Token::Operator(Multiply),
 				numtok!(7),
 			],
@@ -2009,7 +2044,7 @@ mod tests {
 			"88 mw * 3",
 			vec![
 				numtok!(88),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
@@ -2018,173 +2053,284 @@ mod tests {
 			"88 mw times 3",
 			vec![
 				numtok!(88),
-				Token::Unit(Megawatt),
+				Token::unit(Megawatt),
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
 		);
-		run_lex("999 kb", vec![numtok!(999), Token::Unit(Kilobyte)]);
+		run_lex("999 kb", vec![numtok!(999), Token::unit(Kilobyte)]);
 		run_lex(
 			"200 gb - 100 mb",
 			vec![
 				numtok!(200),
-				Token::Unit(Gigabyte),
+				Token::unit(Gigabyte),
 				Token::Operator(Minus),
 				numtok!(100),
-				Token::Unit(Megabyte),
+				Token::unit(Megabyte),
 			],
 		);
-		run_lex("999 kib", vec![numtok!(999), Token::Unit(Kibibyte)]);
+		run_lex("999 kib", vec![numtok!(999), Token::unit(Kibibyte)]);
 		run_lex(
 			"200 gib - 100 mib",
 			vec![
 				numtok!(200),
-				Token::Unit(Gibibyte),
+				Token::unit(Gibibyte),
 				Token::Operator(Minus),
 				numtok!(100),
-				Token::Unit(Mebibyte),
+				Token::unit(Mebibyte),
 			],
 		);
-		run_lex("45 btu", vec![numtok!(45), Token::Unit(BritishThermalUnit)]);
+		run_lex("45 btu", vec![numtok!(45), Token::unit(BritishThermalUnit)]);
 		run_lex(
 			"45.5 british thermal unit",
-			vec![numtok!(45.5), Token::Unit(BritishThermalUnit)],
+			vec![numtok!(45.5), Token::unit(BritishThermalUnit)],
 		);
 		run_lex(
 			"46 british thermal units",
-			vec![numtok!(46), Token::Unit(BritishThermalUnit)],
+			vec![numtok!(46), Token::unit(BritishThermalUnit)],
 		);
 		run_lex(
 			"5432 newton metres",
-			vec![numtok!(5432), Token::Unit(NewtonMeter)],
+			vec![numtok!(5432), Token::unit(NewtonMeter)],
 		);
 		run_lex(
 			"2345 newton-meters",
-			vec![numtok!(2345), Token::Unit(NewtonMeter)],
+			vec![numtok!(2345), Token::unit(NewtonMeter)],
 		);
 		run_lex("20 lbf", vec![numtok!(20), Token::LexerKeyword(PoundForce)]);
-		run_lex("60 hz", vec![numtok!(60), Token::Unit(Hertz)]);
+		run_lex("60 hz", vec![numtok!(60), Token::unit(Hertz)]);
 		run_lex(
 			"1100 rpm",
-			vec![numtok!(1100), Token::Unit(RevolutionsPerMinute)],
+			vec![numtok!(1100), Token::unit(RevolutionsPerMinute)],
 		);
 		run_lex(
 			"1150 revolutions per minute",
-			vec![numtok!(1150), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1150),
+				Token::LexerKeyword(Revolution),
+				Token::TextOperator(Per),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"1 revolution per min",
-			vec![numtok!(1), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1),
+				Token::LexerKeyword(Revolution),
+				Token::TextOperator(Per),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"4 revolution / mins",
-			vec![numtok!(4), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(4),
+				Token::LexerKeyword(Revolution),
+				Token::Operator(Divide),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"1250 r / min",
-			vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1250),
+				Token::LexerKeyword(Revolution),
+				Token::Operator(Divide),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"1300 rev / min",
-			vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1300),
+				Token::LexerKeyword(Revolution),
+				Token::Operator(Divide),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"1350 rev / minute",
-			vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1350),
+				Token::LexerKeyword(Revolution),
+				Token::Operator(Divide),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"1250 r per min",
-			vec![numtok!(1250), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1250),
+				Token::LexerKeyword(Revolution),
+				Token::TextOperator(Per),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"1300 rev per min",
-			vec![numtok!(1300), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1300),
+				Token::LexerKeyword(Revolution),
+				Token::TextOperator(Per),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"1350 rev per minute",
-			vec![numtok!(1350), Token::Unit(RevolutionsPerMinute)],
+			vec![
+				numtok!(1350),
+				Token::LexerKeyword(Revolution),
+				Token::TextOperator(Per),
+				Token::unit(Minute),
+			],
 		);
 		run_lex(
 			"100 kph",
-			vec![numtok!(100), Token::Unit(KilometersPerHour)],
+			vec![numtok!(100), Token::unit(KilometersPerHour)],
 		);
 		run_lex(
 			"100 kmh",
-			vec![numtok!(100), Token::Unit(KilometersPerHour)],
+			vec![numtok!(100), Token::unit(KilometersPerHour)],
 		);
 		run_lex(
 			"100 kilometers per hour",
-			vec![numtok!(100), Token::Unit(KilometersPerHour)],
+			vec![
+				numtok!(100),
+				Token::unit(Kilometer),
+				Token::TextOperator(Per),
+				Token::unit(Hour),
+			],
 		);
 		run_lex(
 			"100 kilometre / hrs",
-			vec![numtok!(100), Token::Unit(KilometersPerHour)],
+			vec![
+				numtok!(100),
+				Token::unit(Kilometer),
+				Token::Operator(Divide),
+				Token::unit(Hour),
+			],
 		);
-		run_lex("3.6 mps", vec![numtok!(3.6), Token::Unit(MetersPerSecond)]);
+		run_lex("3.6 mps", vec![numtok!(3.6), Token::unit(MetersPerSecond)]);
 		run_lex(
 			"3.6 meters per second",
-			vec![numtok!(3.6), Token::Unit(MetersPerSecond)],
+			vec![
+				numtok!(3.6),
+				Token::unit(Meter),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"3.6 metre / secs",
-			vec![numtok!(3.6), Token::Unit(MetersPerSecond)],
+			vec![
+				numtok!(3.6),
+				Token::unit(Meter),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
-		run_lex("60 mph", vec![numtok!(60), Token::Unit(MilesPerHour)]);
+		run_lex("60 mph", vec![numtok!(60), Token::unit(MilesPerHour)]);
 		run_lex(
 			"60 miles per hour",
-			vec![numtok!(60), Token::Unit(MilesPerHour)],
+			vec![
+				numtok!(60),
+				Token::unit(Mile),
+				Token::TextOperator(Per),
+				Token::unit(Hour),
+			],
 		);
-		run_lex("60 mile / hr", vec![numtok!(60), Token::Unit(MilesPerHour)]);
-		run_lex("35 fps", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
-		run_lex("35 ft / sec", vec![numtok!(35), Token::Unit(FeetPerSecond)]);
+		run_lex(
+			"60 mile / hr",
+			vec![
+				numtok!(60),
+				Token::unit(Mile),
+				Token::Operator(Divide),
+				Token::unit(Hour),
+			],
+		);
+		run_lex("35 fps", vec![numtok!(35), Token::unit(FeetPerSecond)]);
+		run_lex(
+			"35 ft / sec",
+			vec![
+				numtok!(35),
+				Token::unit(Foot),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
+		);
 		run_lex(
 			"35 ft per seconds",
-			vec![numtok!(35), Token::Unit(FeetPerSecond)],
+			vec![
+				numtok!(35),
+				Token::unit(Foot),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"35 foot / secs",
-			vec![numtok!(35), Token::Unit(FeetPerSecond)],
+			vec![
+				numtok!(35),
+				Token::unit(Foot),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"35 foot per seconds",
-			vec![numtok!(35), Token::Unit(FeetPerSecond)],
+			vec![
+				numtok!(35),
+				Token::unit(Foot),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"35 feet / sec",
-			vec![numtok!(35), Token::Unit(FeetPerSecond)],
+			vec![
+				numtok!(35),
+				Token::unit(Foot),
+				Token::Operator(Divide),
+				Token::unit(Second),
+			],
 		);
 		run_lex(
 			"35 feet per second",
-			vec![numtok!(35), Token::Unit(FeetPerSecond)],
+			vec![
+				numtok!(35),
+				Token::unit(Foot),
+				Token::TextOperator(Per),
+				Token::unit(Second),
+			],
 		);
-		run_lex("30 pa", vec![numtok!(30), Token::Unit(Pascal)]);
+		run_lex("30 pa", vec![numtok!(30), Token::unit(Pascal)]);
 		run_lex(
 			"23 celsius + 4 celsius",
 			vec![
 				numtok!(23),
-				Token::Unit(Celsius),
+				Token::unit(Celsius),
 				Token::Operator(Plus),
 				numtok!(4),
-				Token::Unit(Celsius),
+				Token::unit(Celsius),
 			],
 		);
 		run_lex(
 			"54 f - 1.5 fahrenheit",
 			vec![
 				numtok!(54),
-				Token::Unit(Fahrenheit),
+				Token::unit(Fahrenheit),
 				Token::Operator(Minus),
 				numtok!(1.5),
-				Token::Unit(Fahrenheit),
+				Token::unit(Fahrenheit),
 			],
 		);
 		run_lex(
 			"50 metric tonnes",
-			vec![numtok!(50), Token::Unit(MetricTon)],
+			vec![numtok!(50), Token::unit(MetricTon)],
 		);
 		run_lex(
 			"77 metric hps",
-			vec![numtok!(77), Token::Unit(MetricHorsepower)],
+			vec![numtok!(77), Token::unit(MetricHorsepower)],
 		);
 
 		run_lex(
@@ -2252,34 +2398,34 @@ mod tests {
 			"52 weeks * (12 hrs + 12 hours)",
 			vec![
 				numtok!(52),
-				Token::Unit(Week),
+				Token::unit(Week),
 				Token::Operator(Multiply),
 				Token::Operator(LeftParen),
 				numtok!(12),
-				Token::Unit(Hour),
+				Token::unit(Hour),
 				Token::Operator(Plus),
 				numtok!(12),
-				Token::Unit(Hour),
+				Token::unit(Hour),
 				Token::Operator(RightParen),
 			],
 		);
 		run_lex(
 			"12 pound+",
-			vec![numtok!(12), Token::Unit(Pound), Token::Operator(Plus)],
+			vec![numtok!(12), Token::unit(Pound), Token::Operator(Plus)],
 		);
 
 		run_lex(
 			"5 π m",
-			vec![numtok!(5), Token::Constant(Pi), Token::Unit(Meter)],
+			vec![numtok!(5), Token::Constant(Pi), Token::unit(Meter)],
 		);
 		run_lex(
 			"5 Ω + 2 mΩ",
 			vec![
 				numtok!(5),
-				Token::Unit(Ohm),
+				Token::unit(Ohm),
 				Token::Operator(Plus),
 				numtok!(2),
-				Token::Unit(Milliohm),
+				Token::unit(Milliohm),
 			],
 		);
 	}
