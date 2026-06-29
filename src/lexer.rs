@@ -6,6 +6,7 @@ use crate::Operator::*;
 use crate::TextOperator::*;
 use crate::Token;
 use crate::UnaryOperator::*;
+use crate::currency::currency_code_to_unit;
 use crate::units::Unit::*;
 use fastnum::D128;
 use fastnum::decimal::Context;
@@ -637,17 +638,12 @@ fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"f" | "fahrenheit" | "fahrenheits" => Token::unit(Fahrenheit),
 
 		// Currency units
-		"€" | "eur" | "euro" | "euros" => Token::unit(EUR),
-		"$" | "usd" => Token::unit(USD),
-		"£" | "gbp" => Token::unit(GBP),
-		"¥" | "jpy" => Token::unit(JPY),
-		"cad" => Token::unit(CAD),
-		"aud" => Token::unit(AUD),
-		"chf" => Token::unit(CHF),
-		"cny" => Token::unit(CNY),
-		"sek" => Token::unit(SEK),
-		"nzd" => Token::unit(NZD),
+		"€" | "euro" | "euros" => Token::unit(EUR),
+		"$" => Token::unit(USD),
+		"£" => Token::unit(GBP),
+		"¥" => Token::unit(JPY),
 
+		string if let Ok(unit) = currency_code_to_unit(string) => Token::unit(unit),
 		string => {
 			return Err(format!("Invalid string: {}", string));
 		}
