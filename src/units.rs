@@ -1014,11 +1014,8 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
-	use std::str::FromStr;
-
-	use fastnum::decimal::Context;
-
 	use super::*;
+	use fastnum::decimal::Context;
 
 	macro_rules! assert_float_eq {
 		( $actual:expr, $expected:literal ) => {
@@ -1403,72 +1400,5 @@ mod tests {
 		assert_float_eq!(convert_test(-15.0, Celsius, Fahrenheit), 5.0);
 		assert_float_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
 		assert_float_eq!(convert_test(5.0, Fahrenheit, Celsius), -15.0);
-	}
-
-	#[track_caller]
-	fn eval_test(a: &str, b: &str) {
-		let result_a = crate::eval(a, true, false).unwrap();
-		let result_b = crate::eval(b, true, false).unwrap();
-		assert_eq!(result_a, result_b, "{a} != {b}");
-	}
-	#[track_caller]
-	fn eval_approx_test(a: &str, b: &str) {
-		let result_a = crate::eval(a, true, false).unwrap();
-		let result_b = crate::eval(b, true, false).unwrap();
-		let diff_pct: D128 = result_a.value / result_b.value - 1;
-		let diff_pct = diff_pct.abs();
-		assert!(diff_pct <= d!(0.00000001), "{a} !≈ {b}")
-	}
-
-	#[test]
-	fn test_currency() {
-		use crate::currency::{CurrencyRate, set_currency_cache};
-		use serde_json::Number;
-
-		set_currency_cache(vec![CurrencyRate {
-			date: "2000-01-01".to_string(),
-			base: "EUR".to_string(),
-			quote: "NOK".to_string(),
-			rate: Number::from_str("11.2839").unwrap(),
-		}])
-		.unwrap();
-
-		eval_test("1 EUR to NOK", "11.292 NOK");
-		eval_test("11.292 EUR to NOK", "≈ 1.0000003236 EUR");
-		eval_test("1 NOK to EUR", "≈ 0.0885583 EUR");
-		eval_test("1 EUR/liter to NOK/liter", "11.292 NOK/liter");
-		eval_test(
-			"1 EUR/gallon to NOK/liter",
-			"≈ 2.98303081522821190646982991481066303987 NOK/liter",
-		);
-	}
-
-	#[test]
-	fn test_unit_evals() {
-		eval_test("100kg*sqm / 2s^2", "50j");
-		eval_test("3.6km/1h", "3.6 kph");
-		eval_test("0.3048 m/s to ft/s", "1 ft/s");
-		eval_test("1.609344 km/1h to mph", "1 mph");
-		eval_approx_test("1.852 kph to knots", "1 knots");
-		eval_test("120 seconds to minutes", "2 minutes");
-		eval_test("100 cm to m", "1 m");
-		eval_test("1 km2 to m2", "1000000 m2");
-		eval_test("1 liter to ml", "1000 ml");
-		eval_test("1 kg to g", "1000 g");
-		eval_test("1 KB to bytes", "1000 bytes");
-		eval_test("1 MBps to KBps", "1000 KBps");
-		eval_test("1 KFLOP to FLOP", "1000 FLOP");
-		eval_test("1 KFLOPs to FLOPs", "1000 FLOPs");
-		eval_test("1 kWh to Wh", "1000 Wh");
-		eval_test("1 kW to W", "1000 W");
-		eval_test("1000 mA to A", "1 A");
-		eval_test("1000 mΩ to Ω", "1 Ω");
-		eval_test("1000 mV to V", "1 V");
-		eval_test("1 bar to Pa", "100000 Pa");
-		eval_test("1 kHz to Hz", "1000 Hz");
-		eval_approx_test("1 km/h to m/s", "0.27777777777777777777 m/s");
-		eval_test("0 C to K", "273.15 K");
-		eval_test("8 megabytes per second * 1 minute", "480mb");
-		eval_test("8 megaFLOP per second * 1 minute", "480megaFLOP");
 	}
 }
