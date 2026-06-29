@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 4.1.0 - 2026 Jul 29
 - Add currency units
 
 ## 4.0.0 - 2026 Jun 27
