@@ -166,7 +166,7 @@ fn lex_word_if_non_empty(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 
 fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 	let token = match word.to_ascii_lowercase().as_str() {
-		"to" => Token::TextOperator(To),
+		"to" | "as" | "into" => Token::TextOperator(To),
 		"of" => Token::TextOperator(Of),
 
 		"hundred" => Token::NamedNumber(Hundred),
