@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Add currency symbols
+
 ## 4.1.0 - 2026 Jul 29
 - Add currency units
 
