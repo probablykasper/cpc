@@ -582,6 +582,22 @@ fn integer_power(base: D128, exp: isize) -> D128 {
 	}
 }
 
+fn contains_category(unit: &[(Unit, isize)], category: UnitType) -> bool {
+	unit.iter().any(|(u, _)| u.category() == category)
+}
+
+/// Get the non-currency weight of a unit vector
+fn non_currency_weight(unit: &[(Unit, isize)]) -> D128 {
+	use UnitType::*;
+	unit.iter().fold(D128::from(1), |acc, (u, exp)| {
+		if u.category() == Currency {
+			acc
+		} else {
+			acc * integer_power(u.weight(), *exp)
+		}
+	})
+}
+
 /// Convert a [`Number`] to a specified [`Unit`].
 pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, String> {
 	if number.primitive_unit() != primitive_unit(&to_unit) {
@@ -621,29 +637,35 @@ pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, St
 				Number::with_unit(d!(0), to_unit).plural()
 			)),
 		}
-	} else if number.primitive_unit() == Currency.primitive() {
-		let from_currency = number.unit[0].0;
-		let to_currency = to_unit[0].0;
+	} else if number.contains_category(Currency) && contains_category(&to_unit, Currency) {
+		// Handle compound units with currency, like "EUR/liter"
+		// Find the currency in both units
+		let from_currency = number
+			.unit
+			.iter()
+			.find(|(u, _)| u.category() == Currency)
+			.map(|(u, _)| *u);
+		let to_currency = to_unit
+			.iter()
+			.find(|(u, _)| u.category() == Currency)
+			.map(|(u, _)| *u);
 
-		// Get the exchange rate from the currency module
-		let rate = currency::get_exchange_rate(from_currency, to_currency)?;
+		if let (Some(from_curr), Some(to_curr)) = (from_currency, to_currency) {
+			let rate = currency::get_exchange_rate(from_curr, to_curr)?;
 
-		let value = number.value * rate;
+			// Calculate the ratio of non-currency parts
+			let source_non_currency = non_currency_weight(&number.unit);
+			let target_non_currency = non_currency_weight(&to_unit);
 
-		// For currency conversions, limit precision to match source data
-		// This preserves small amounts while avoiding excessive decimals for normal amounts
-		let value = if number.value.abs() >= d!(1) {
-			// For input amounts >= 1, round result to 6 decimal places
-			(value * d!(1000000)).round(0) / d!(1000000)
+			let value = number.value * rate * source_non_currency / target_non_currency;
+
+			Ok(Number {
+				value,
+				unit: to_unit.to_vec(),
+			})
 		} else {
-			// For input amounts < 1, keep full precision to handle very small amounts
-			value
-		};
-
-		Ok(Number {
-			value: value,
-			unit: to_unit.to_vec(),
-		})
+			Err("Currency conversion requires both units to have currency".to_string())
+		}
 	} else {
 		let source_weight = combined_weight(&number.unit);
 		let target_weight = combined_weight(&to_unit);
@@ -675,7 +697,7 @@ pub fn add(left: Number, right: Number) -> Result<Number, String> {
 	if left.unit == right.unit {
 		Ok(Number::with_unit(left.value + right.value, left.unit))
 	} else if left.primitive_unit() == right.primitive_unit()
-		&& !left.contains_primitive(Temperature)
+		&& !left.contains_category(Temperature)
 	{
 		let (left, right) = convert_to_lowest(left, right)?;
 		Ok(Number::with_unit(left.value + right.value, left.unit))
@@ -689,7 +711,7 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 	if left.unit == right.unit {
 		Ok(Number::with_unit(left.value - right.value, left.unit))
 	} else if left.primitive_unit() == right.primitive_unit()
-		&& !left.contains_primitive(Temperature)
+		&& !left.contains_category(Temperature)
 	{
 		let (left, right) = convert_to_lowest(left, right)?;
 		Ok(Number::with_unit(left.value - right.value, left.unit))
@@ -893,7 +915,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 ///
 /// Temperatures don't work
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
-	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+	if left.contains_category(Temperature) || right.contains_category(Temperature) {
 		Err(format!("Cannot multiply {} and {}", left, right))
 	} else {
 		multiply_any(left, right)
@@ -919,7 +941,7 @@ pub(crate) fn multiply_any(left: Number, right: Number) -> Result<Number, String
 ///
 /// Temperatures don't work.
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
-	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+	if left.contains_category(Temperature) || right.contains_category(Temperature) {
 		Err(format!("Cannot divide {} by {}", left, right))
 	} else {
 		divide_any(left, right)
@@ -945,7 +967,7 @@ pub fn divide_any(left: Number, right: Number) -> Result<Number, String> {
 ///
 /// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
-	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+	if left.contains_category(Temperature) || right.contains_category(Temperature) {
 		Err(format!("Cannot modulo {} by {}", left, right))
 	} else if left.primitive_unit() == right.primitive_unit() {
 		// 5 km % 3 m
@@ -964,7 +986,7 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 /// - etc.
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 	// I tried converting `right` to use powi, but somehow that was slower
-	if left.contains_primitive(Temperature) || right.has_unit() {
+	if left.contains_category(Temperature) || right.has_unit() {
 		Err(format!("Cannot raise {} to the power of {}", left, right))
 	} else if left.is_unitless() {
 		let result = left.value.pow(right.value);

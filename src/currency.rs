@@ -58,6 +58,17 @@ pub fn initialize_currency_cache() -> Result<(), String> {
 	Ok(())
 }
 
+/// Limit the sig figs (precision) of the number
+fn round_to_sig_figs(x: D128, sig_figs: i32) -> D128 {
+	if x.is_zero() {
+		return x;
+	}
+	let mag: i32 = x.log10().floor().try_into().unwrap();
+	let shift = sig_figs - 1 - mag;
+	let factor = D128::TEN.powi(shift);
+	(x * factor).round(0) / factor
+}
+
 /// Get the exchange rate from one currency to another
 /// Both currencies must be currency units
 pub fn get_exchange_rate(from: Unit, to: Unit) -> Result<D128, String> {
@@ -80,9 +91,9 @@ pub fn get_exchange_rate(from: Unit, to: Unit) -> Result<D128, String> {
 		.get(&to)
 		.ok_or_else(|| format!("No exchange rate found for {:?}", to))?;
 
-	// Convert from -> EUR -> to
-	// rate = (to / EUR) / (from / EUR) = to / from
-	Ok(*to_rate / *from_rate)
+	let rate = *to_rate / *from_rate;
+	let rounded_rate = round_to_sig_figs(rate, 6);
+	Ok(rounded_rate)
 }
 
 /// Fetch currency rates from the Frankfurter API (native version)
