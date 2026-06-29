@@ -2,6 +2,8 @@
 
 use crate::units::Unit;
 use fastnum::D128;
+use fastnum::decimal::Context;
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::RwLock;
 
@@ -15,24 +17,44 @@ static CURRENCY_CACHE: RwLock<Option<HashMap<Unit, D128>>> = RwLock::new(None);
 /// The base currency for all exchange rates (EUR)
 pub const BASE_CURRENCY: Unit = Unit::EUR;
 
-/// Initialize the currency cache by fetching rates from the API
+#[derive(Deserialize, Debug)]
+struct CurrencyRate {
+	#[allow(dead_code)]
+	date: String,
+	base: String,
+	quote: String,
+	rate: serde_json::Number,
+}
+
+fn set_currency_cache(rates: Vec<CurrencyRate>) -> Result<(), String> {
+	let mut cache = HashMap::with_capacity(rates.len() + 1);
+
+	// Add EUR as base
+	cache.insert(BASE_CURRENCY, D128::from(1));
+
+	for entry in rates {
+		if entry.base != "EUR" {
+			return Err("Exchange rate base currency must be EUR".to_string());
+		}
+		if let Ok(quote_unit) = currency_code_to_unit(&entry.quote) {
+			let rate_str = entry.rate.to_string();
+			let rate = D128::parse_str(&rate_str, Context::default());
+			cache.insert(quote_unit, rate);
+		}
+	}
+
+	*CURRENCY_CACHE.write().unwrap() = Some(cache);
+	Ok(())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub fn initialize_currency_cache() -> Result<(), String> {
 	if CURRENCY_CACHE.read().unwrap().is_some() {
 		return Ok(()); // Already initialized
 	}
 
 	let rates = fetch_currency_rates()?;
-	let mut cache = HashMap::new();
-
-	// Store rates relative to EUR (base currency)
-	// EUR to EUR is 1
-	cache.insert(BASE_CURRENCY, D128::from(1));
-
-	for (quote_currency, rate) in rates {
-		cache.insert(quote_currency, rate);
-	}
-
-	*CURRENCY_CACHE.write().unwrap() = Some(cache);
+	set_currency_cache(rates)?;
 	Ok(())
 }
 
@@ -44,6 +66,7 @@ pub fn get_exchange_rate(from: Unit, to: Unit) -> Result<D128, String> {
 	}
 
 	// Ensure cache is initialized
+	#[cfg(not(target_arch = "wasm32"))]
 	initialize_currency_cache()?;
 
 	let cache = CURRENCY_CACHE.read().unwrap();
@@ -64,48 +87,17 @@ pub fn get_exchange_rate(from: Unit, to: Unit) -> Result<D128, String> {
 
 /// Fetch currency rates from the Frankfurter API (native version)
 #[cfg(not(target_arch = "wasm32"))]
-fn fetch_currency_rates() -> Result<Vec<(Unit, D128)>, String> {
+fn fetch_currency_rates() -> Result<Vec<CurrencyRate>, String> {
 	use reqwest::blocking::get;
-	use serde::Deserialize;
-
-	#[derive(Deserialize)]
-	struct RateEntry {
-		#[allow(dead_code)]
-		date: String,
-		base: String,
-		quote: String,
-		rate: f64,
-	}
 
 	let url = "https://api.frankfurter.dev/v2/rates?base=EUR";
 	let response = get(url).map_err(|e| format!("Failed to fetch currency rates: {}", e))?;
 
-	let rates: Vec<RateEntry> = response
+	let rates: Vec<CurrencyRate> = response
 		.json()
-		.map_err(|e| format!("Failed to parse currency rates: {}", e))?;
+		.map_err(|e| format!("Failed to parse currency rates: {:?}", e))?;
 
-	let mut result = Vec::new();
-	for entry in rates {
-		if entry.base == "EUR" {
-			// Only process currencies that we support
-			if let Ok(quote_unit) = currency_code_to_unit(&entry.quote) {
-				let rate = D128::from_f64(entry.rate);
-				result.push((quote_unit, rate));
-			}
-		}
-	}
-
-	Ok(result)
-}
-
-/// Fetch currency rates for WASM target
-/// Returns empty - the web app should fetch real rates
-/// and call init_currency_cache_with_json
-#[cfg(target_arch = "wasm32")]
-fn fetch_currency_rates() -> Result<Vec<(Unit, D128)>, String> {
-	// Return empty for WASM - the web app must call init_currency_cache_with_json
-	// with rates fetched via JavaScript
-	Ok(Vec::new())
+	Ok(rates)
 }
 
 /// Convert currency code to Unit enum
@@ -131,35 +123,11 @@ fn currency_code_to_unit(code: &str) -> Result<Unit, String> {
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn init_currency_cache_with_json(rates_json: &str) -> Result<(), JsValue> {
-	use serde::Deserialize;
-
-	#[derive(Deserialize)]
-	struct RateEntry {
-		#[allow(dead_code)]
-		date: Option<String>,
-		base: String,
-		quote: String,
-		rate: f64,
-	}
-
-	// Parse the JSON array of rate entries
-	let rates: Vec<RateEntry> = serde_json::from_str(rates_json)
+	let rates: Vec<CurrencyRate> = serde_json::from_str(rates_json)
 		.map_err(|e| JsValue::from_str(&format!("Failed to parse JSON: {}", e)))?;
 
-	let mut cache = HashMap::new();
+	set_currency_cache(rates)
+		.map_err(|e| JsValue::from_str(&format!("Failed to parse JSON: {}", e)))?;
 
-	// Add EUR as base
-	cache.insert(BASE_CURRENCY, D128::from(1));
-
-	// Parse individual rates - only accept entries where base is EUR
-	for entry in rates {
-		if entry.base == "EUR" {
-			if let Ok(unit) = currency_code_to_unit(&entry.quote) {
-				cache.insert(unit, D128::from_f64(entry.rate));
-			}
-		}
-	}
-
-	*CURRENCY_CACHE.write().unwrap() = Some(cache);
 	Ok(())
 }
