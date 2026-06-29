@@ -8,8 +8,21 @@
 	// https://github.com/sveltejs/svelte/issues/13155
 	const cpc_promise = import("cpc");
 	let cpc: typeof import("cpc") | undefined;
-	cpc_promise.then((mod) => {
+
+	// Initialize currency cache when cpc module is loaded
+	cpc_promise.then(async (mod) => {
 		cpc = mod;
+
+		// Fetch exchange rates and initialize currency cache
+		try {
+			const response = await fetch("https://api.frankfurter.dev/v2/rates?base=EUR");
+			const ratesJson = await response.text();
+			if (mod.init_currency_cache_with_json) {
+				mod.init_currency_cache_with_json(ratesJson);
+			}
+		} catch (e) {
+			console.error("Failed to fetch currency rates:", e);
+		}
 	});
 
 	function wasm_eval(input: string) {
