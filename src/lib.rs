@@ -27,6 +27,8 @@ use fastnum::{D128, dec128 as d};
 use std::fmt::{self, Debug, Display};
 use web_time::Instant;
 
+/// Currency exchange rates
+pub mod currency;
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
 /// Turns a string into [`Token`]s

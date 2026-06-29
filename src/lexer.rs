@@ -636,6 +636,18 @@ fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"c" | "celsius" => Token::unit(Celsius),
 		"f" | "fahrenheit" | "fahrenheits" => Token::unit(Fahrenheit),
 
+		// Currency units
+		"€" | "eur" | "euro" | "euros" => Token::unit(EUR),
+		"$" | "usd" => Token::unit(USD),
+		"£" | "gbp" => Token::unit(GBP),
+		"¥" | "jpy" => Token::unit(JPY),
+		"cad" => Token::unit(CAD),
+		"aud" => Token::unit(AUD),
+		"chf" => Token::unit(CHF),
+		"cny" => Token::unit(CNY),
+		"sek" => Token::unit(SEK),
+		"nzd" => Token::unit(NZD),
+
 		string => {
 			return Err(format!("Invalid string: {}", string));
 		}

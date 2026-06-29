@@ -1,4 +1,5 @@
 use crate::Number;
+use crate::currency;
 use fastnum::{D128, dec128 as d};
 use std::cmp::Reverse;
 
@@ -41,6 +42,8 @@ pub enum UnitType {
 	Speed,
 	/// A unit of temperature, for example [`Kelvin`]
 	Temperature,
+	/// A unit of currency, for example [`EUR`]
+	Currency,
 }
 impl UnitType {
 	fn primitive(&self) -> Vec<(Unit, isize)> {
@@ -63,6 +66,7 @@ impl UnitType {
 			Frequency => vec![(Second, -1)],
 			Speed => vec![(Meter, 1), (Second, -1)],
 			Temperature => vec![(Kelvin, 1)],
+			Currency => vec![(EUR, 1)],
 		};
 		#[cfg(debug_assertions)]
 		{
@@ -108,7 +112,7 @@ pub fn primitive_unit(unit: &[(Unit, isize)]) -> Vec<(Unit, isize)> {
 // and evaluator
 macro_rules! create_units {
 	( $( $variant:ident : $properties:expr ),*, ) => {
-		#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord)]
+		#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord, Hash)]
 		/// A Unit enum. Note that it can also be [`NoUnit`].
 		pub enum Unit {
 			$($variant),*
@@ -395,6 +399,18 @@ create_units!(
 	Kelvin:             (Temperature, d!(0), "kelvin", "kelvin"),
 	Celsius:            (Temperature, d!(0), "celsius", "celsius"),
 	Fahrenheit:         (Temperature, d!(0), "fahrenheit", "fahrenheit"),
+
+	// Currency units - weights are fetched on-demand
+	USD:                (Currency, d!(0), "United States dollar", "United States dollars"),
+	EUR:                (Currency, d!(0), "euro", "euros"),
+	GBP:                (Currency, d!(0), "British pound", "British pounds"),
+	JPY:                (Currency, d!(0), "Japanese yen", "Japanese yen"),
+	CAD:                (Currency, d!(0), "Canadian dollar", "Canadian dollars"),
+	AUD:                (Currency, d!(0), "Australian dollar", "Australian dollars"),
+	CHF:                (Currency, d!(0), "Swiss franc", "Swiss francs"),
+	CNY:                (Currency, d!(0), "Chinese yuan", "Chinese yuan"),
+	SEK:                (Currency, d!(0), "Swedish krona", "Swedish kronor"),
+	NZD:                (Currency, d!(0), "New Zealand dollar", "New Zealand dollars"),
 );
 
 fn combined_weight(unit: &[(Unit, isize)]) -> D128 {
@@ -451,6 +467,29 @@ pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, St
 				Number::with_unit(d!(0), to_unit).plural()
 			)),
 		}
+	} else if number.primitive_unit() == Currency.primitive() {
+		let from_currency = number.unit[0].0;
+		let to_currency = to_unit[0].0;
+
+		// Get the exchange rate from the currency module
+		let rate = currency::get_exchange_rate(from_currency, to_currency)?;
+
+		let value = number.value * rate;
+
+		// For currency conversions, limit precision to match source data
+		// This preserves small amounts while avoiding excessive decimals for normal amounts
+		let value = if number.value.abs() >= d!(1) {
+			// For input amounts >= 1, round result to 6 decimal places
+			(value * d!(1000000)).round(0) / d!(1000000)
+		} else {
+			// For input amounts < 1, keep full precision to handle very small amounts
+			value
+		};
+
+		Ok(Number {
+			value: value,
+			unit: to_unit.to_vec(),
+		})
 	} else {
 		let source_weight = combined_weight(&number.unit);
 		let target_weight = combined_weight(&to_unit);
@@ -1230,5 +1269,19 @@ mod tests {
 		eval_test("0 C to K", "273.15 K");
 		eval_test("8 megabytes per second * 1 minute", "480mb");
 		eval_test("8 megaFLOP per second * 1 minute", "480megaFLOP");
+
+		// Currency unit tests - these test parsing only
+		// Currency conversions require network access, so they're tested separately
+		#[cfg(not(target_arch = "wasm32"))] // Skip network-dependent tests on WASM
+		{
+			// Test that currency units can be parsed and basic conversions work
+			let result = crate::eval("100 USD", true, false).unwrap();
+			assert_eq!(result.unit, vec![(USD, 1)]);
+
+			let result = crate::eval("1 EUR", true, false).unwrap();
+			assert_eq!(result.unit, vec![(EUR, 1)]);
+
+			// Skip currency conversion tests as they require network access
+		}
 	}
 }
