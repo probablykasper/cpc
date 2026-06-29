@@ -18,15 +18,15 @@ static CURRENCY_CACHE: RwLock<Option<HashMap<Unit, D128>>> = RwLock::new(None);
 pub const BASE_CURRENCY: Unit = Unit::EUR;
 
 #[derive(Deserialize, Debug)]
-struct CurrencyRate {
+pub struct CurrencyRate {
 	#[allow(dead_code)]
-	date: String,
-	base: String,
-	quote: String,
-	rate: serde_json::Number,
+	pub date: String,
+	pub base: String,
+	pub quote: String,
+	pub rate: serde_json::Number,
 }
 
-fn set_currency_cache(rates: Vec<CurrencyRate>) -> Result<(), String> {
+pub fn set_currency_cache(rates: Vec<CurrencyRate>) -> Result<(), String> {
 	let mut cache = HashMap::with_capacity(rates.len() + 1);
 
 	// Add EUR as base

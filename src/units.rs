@@ -1014,6 +1014,8 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
+	use std::str::FromStr;
+
 	use fastnum::decimal::Context;
 
 	use super::*;
@@ -1419,6 +1421,29 @@ mod tests {
 	}
 
 	#[test]
+	fn test_currency() {
+		use crate::currency::{CurrencyRate, set_currency_cache};
+		use serde_json::Number;
+
+		set_currency_cache(vec![CurrencyRate {
+			date: "2000-01-01".to_string(),
+			base: "EUR".to_string(),
+			quote: "NOK".to_string(),
+			rate: Number::from_str("11.2839").unwrap(),
+		}])
+		.unwrap();
+
+		eval_test("1 EUR to NOK", "11.292 NOK");
+		eval_test("11.292 EUR to NOK", "≈ 1.0000003236 EUR");
+		eval_test("1 NOK to EUR", "≈ 0.0885583 EUR");
+		eval_test("1 EUR/liter to NOK/liter", "11.292 NOK/liter");
+		eval_test(
+			"1 EUR/gallon to NOK/liter",
+			"≈ 2.98303081522821190646982991481066303987 NOK/liter",
+		);
+	}
+
+	#[test]
 	fn test_unit_evals() {
 		eval_test("100kg*sqm / 2s^2", "50j");
 		eval_test("3.6km/1h", "3.6 kph");
@@ -1445,19 +1470,5 @@ mod tests {
 		eval_test("0 C to K", "273.15 K");
 		eval_test("8 megabytes per second * 1 minute", "480mb");
 		eval_test("8 megaFLOP per second * 1 minute", "480megaFLOP");
-
-		// Currency unit tests - these test parsing only
-		// Currency conversions require network access, so they're tested separately
-		#[cfg(not(target_arch = "wasm32"))] // Skip network-dependent tests on WASM
-		{
-			// Test that currency units can be parsed and basic conversions work
-			let result = crate::eval("100 USD", true, false).unwrap();
-			assert_eq!(result.unit, vec![(USD, 1)]);
-
-			let result = crate::eval("1 EUR", true, false).unwrap();
-			assert_eq!(result.unit, vec![(EUR, 1)]);
-
-			// Skip currency conversion tests as they require network access
-		}
 	}
 }
