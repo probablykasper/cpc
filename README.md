@@ -52,6 +52,7 @@ round(sqrt(2)^4)! liters
 ## Supported unit types
 - Normal numbers
 - Area
+- Currency
 - Digital storage (bytes etc)
 - Electric current
 - Energy
@@ -166,10 +167,6 @@ match string {
 - Fractional numbers (to make 1/3*2*3 accurate)
 - E notation, like 2E+10
 - Unit types
-  - Currency: How to go about dynamically updating the weights?
-    - https://api.exchangerate-api.com/v4/latest/USD
-    - https://www.coingecko.com/en/api
-    - https://developers.coinbase.com/api/v2
   - Timezones
   - Binary/octal/decimal/hexadecimal/base32/base64
   - Fuel consumption

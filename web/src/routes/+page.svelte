@@ -8,12 +8,27 @@
 	// https://github.com/sveltejs/svelte/issues/13155
 	const cpc_promise = import("cpc");
 	let cpc: typeof import("cpc") | undefined;
-	cpc_promise.then((mod) => {
+
+	// Initialize currency cache when cpc module is loaded
+	cpc_promise.then(async (mod) => {
 		cpc = mod;
+
+		// Fetch exchange rates and initialize currency cache
+		try {
+			const response = await fetch("https://api.frankfurter.dev/v2/rates?base=EUR");
+			const ratesJson = await response.text();
+			if (typeof mod.init_currency_cache_with_json !== 'function') {
+				output = 'Error: Missing currency init function'
+			}
+				mod.init_currency_cache_with_json(ratesJson);
+		} catch (e) {
+			console.error("Failed to fetch currency rates:", e);
+			output = "Error: Failed to fetch currency rates:", e
+		}
 	});
 
-	function wasm_eval(input: string) {
-		if (!cpc || input.trim().length === 0) {
+	function wasm_eval() {
+		if (input === '' || !cpc || input.trim().length === 0) {
 			return "";
 		}
 		try {
@@ -24,7 +39,7 @@
 	}
 
 	let input = $state("");
-	let output = $derived(wasm_eval(input));
+	let output = $derived(wasm_eval());
 	let calc_history = new PersistedState<
 		{ id: number; in: string; out: string }[]
 	>("calc_history", []);

@@ -1,4 +1,5 @@
 use crate::Number;
+use crate::currency;
 use fastnum::{D128, dec128 as d};
 use std::cmp::Reverse;
 
@@ -41,6 +42,8 @@ pub enum UnitType {
 	Speed,
 	/// A unit of temperature, for example [`Kelvin`]
 	Temperature,
+	/// A unit of currency, for example [`EUR`]
+	Currency,
 }
 impl UnitType {
 	fn primitive(&self) -> Vec<(Unit, isize)> {
@@ -63,6 +66,7 @@ impl UnitType {
 			Frequency => vec![(Second, -1)],
 			Speed => vec![(Meter, 1), (Second, -1)],
 			Temperature => vec![(Kelvin, 1)],
+			Currency => vec![(EUR, 1)],
 		};
 		#[cfg(debug_assertions)]
 		{
@@ -108,7 +112,7 @@ pub fn primitive_unit(unit: &[(Unit, isize)]) -> Vec<(Unit, isize)> {
 // and evaluator
 macro_rules! create_units {
 	( $( $variant:ident : $properties:expr ),*, ) => {
-		#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord)]
+		#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord, Hash)]
 		/// A Unit enum. Note that it can also be [`NoUnit`].
 		pub enum Unit {
 			$($variant),*
@@ -395,6 +399,172 @@ create_units!(
 	Kelvin:             (Temperature, d!(0), "kelvin", "kelvin"),
 	Celsius:            (Temperature, d!(0), "celsius", "celsius"),
 	Fahrenheit:         (Temperature, d!(0), "fahrenheit", "fahrenheit"),
+
+	// Currency weights are fetched on-demand
+	AFN: (Currency, d!(0), "AFN", "AFN"),
+	ALL: (Currency, d!(0), "ALL", "ALL"),
+	AMD: (Currency, d!(0), "AMD", "AMD"),
+	ANG: (Currency, d!(0), "ANG", "ANG"),
+	AOA: (Currency, d!(0), "AOA", "AOA"),
+	ARS: (Currency, d!(0), "ARS", "ARS"),
+	AUD: (Currency, d!(0), "AUD", "AUD"),
+	AWG: (Currency, d!(0), "AWG", "AWG"),
+	AZN: (Currency, d!(0), "AZN", "AZN"),
+	BAM: (Currency, d!(0), "BAM", "BAM"),
+	BBD: (Currency, d!(0), "BBD", "BBD"),
+	BDT: (Currency, d!(0), "BDT", "BDT"),
+	BHD: (Currency, d!(0), "BHD", "BHD"),
+	BIF: (Currency, d!(0), "BIF", "BIF"),
+	BMD: (Currency, d!(0), "BMD", "BMD"),
+	BND: (Currency, d!(0), "BND", "BND"),
+	BOB: (Currency, d!(0), "BOB", "BOB"),
+	BRL: (Currency, d!(0), "BRL", "BRL"),
+	BSD: (Currency, d!(0), "BSD", "BSD"),
+	BTN: (Currency, d!(0), "BTN", "BTN"),
+	BWP: (Currency, d!(0), "BWP", "BWP"),
+	BYN: (Currency, d!(0), "BYN", "BYN"),
+	BZD: (Currency, d!(0), "BZD", "BZD"),
+	CAD: (Currency, d!(0), "CAD", "CAD"),
+	CDF: (Currency, d!(0), "CDF", "CDF"),
+	CHF: (Currency, d!(0), "CHF", "CHF"),
+	CLP: (Currency, d!(0), "CLP", "CLP"),
+	CNH: (Currency, d!(0), "CNH", "CNH"),
+	CNY: (Currency, d!(0), "CNY", "CNY"),
+	COP: (Currency, d!(0), "COP", "COP"),
+	CRC: (Currency, d!(0), "CRC", "CRC"),
+	CUP: (Currency, d!(0), "CUP", "CUP"),
+	CVE: (Currency, d!(0), "CVE", "CVE"),
+	CZK: (Currency, d!(0), "CZK", "CZK"),
+	DJF: (Currency, d!(0), "DJF", "DJF"),
+	DKK: (Currency, d!(0), "DKK", "DKK"),
+	DOP: (Currency, d!(0), "DOP", "DOP"),
+	DZD: (Currency, d!(0), "DZD", "DZD"),
+	EGP: (Currency, d!(0), "EGP", "EGP"),
+	ERN: (Currency, d!(0), "ERN", "ERN"),
+	ETB: (Currency, d!(0), "ETB", "ETB"),
+	EUR: (Currency, d!(0), "EUR", "EUR"),
+	FJD: (Currency, d!(0), "FJD", "FJD"),
+	FKP: (Currency, d!(0), "FKP", "FKP"),
+	GBP: (Currency, d!(0), "GBP", "GBP"),
+	GEL: (Currency, d!(0), "GEL", "GEL"),
+	GGP: (Currency, d!(0), "GGP", "GGP"),
+	GHS: (Currency, d!(0), "GHS", "GHS"),
+	GIP: (Currency, d!(0), "GIP", "GIP"),
+	GMD: (Currency, d!(0), "GMD", "GMD"),
+	GNF: (Currency, d!(0), "GNF", "GNF"),
+	GTQ: (Currency, d!(0), "GTQ", "GTQ"),
+	GYD: (Currency, d!(0), "GYD", "GYD"),
+	HKD: (Currency, d!(0), "HKD", "HKD"),
+	HNL: (Currency, d!(0), "HNL", "HNL"),
+	HTG: (Currency, d!(0), "HTG", "HTG"),
+	HUF: (Currency, d!(0), "HUF", "HUF"),
+	IDR: (Currency, d!(0), "IDR", "IDR"),
+	ILS: (Currency, d!(0), "ILS", "ILS"),
+	IMP: (Currency, d!(0), "IMP", "IMP"),
+	INR: (Currency, d!(0), "INR", "INR"),
+	IQD: (Currency, d!(0), "IQD", "IQD"),
+	IRR: (Currency, d!(0), "IRR", "IRR"),
+	ISK: (Currency, d!(0), "ISK", "ISK"),
+	JEP: (Currency, d!(0), "JEP", "JEP"),
+	JMD: (Currency, d!(0), "JMD", "JMD"),
+	JOD: (Currency, d!(0), "JOD", "JOD"),
+	JPY: (Currency, d!(0), "JPY", "JPY"),
+	KES: (Currency, d!(0), "KES", "KES"),
+	KGS: (Currency, d!(0), "KGS", "KGS"),
+	KHR: (Currency, d!(0), "KHR", "KHR"),
+	KMF: (Currency, d!(0), "KMF", "KMF"),
+	KPW: (Currency, d!(0), "KPW", "KPW"),
+	KRW: (Currency, d!(0), "KRW", "KRW"),
+	KWD: (Currency, d!(0), "KWD", "KWD"),
+	KYD: (Currency, d!(0), "KYD", "KYD"),
+	KZT: (Currency, d!(0), "KZT", "KZT"),
+	LAK: (Currency, d!(0), "LAK", "LAK"),
+	LBP: (Currency, d!(0), "LBP", "LBP"),
+	LKR: (Currency, d!(0), "LKR", "LKR"),
+	LRD: (Currency, d!(0), "LRD", "LRD"),
+	LSL: (Currency, d!(0), "LSL", "LSL"),
+	LYD: (Currency, d!(0), "LYD", "LYD"),
+	MAD: (Currency, d!(0), "MAD", "MAD"),
+	MDL: (Currency, d!(0), "MDL", "MDL"),
+	MGA: (Currency, d!(0), "MGA", "MGA"),
+	MKD: (Currency, d!(0), "MKD", "MKD"),
+	MMK: (Currency, d!(0), "MMK", "MMK"),
+	MNT: (Currency, d!(0), "MNT", "MNT"),
+	MOP: (Currency, d!(0), "MOP", "MOP"),
+	MRO: (Currency, d!(0), "MRO", "MRO"),
+	MRU: (Currency, d!(0), "MRU", "MRU"),
+	MUR: (Currency, d!(0), "MUR", "MUR"),
+	MVR: (Currency, d!(0), "MVR", "MVR"),
+	MWK: (Currency, d!(0), "MWK", "MWK"),
+	MXN: (Currency, d!(0), "MXN", "MXN"),
+	MYR: (Currency, d!(0), "MYR", "MYR"),
+	MZN: (Currency, d!(0), "MZN", "MZN"),
+	NAD: (Currency, d!(0), "NAD", "NAD"),
+	NGN: (Currency, d!(0), "NGN", "NGN"),
+	NIO: (Currency, d!(0), "NIO", "NIO"),
+	NOK: (Currency, d!(0), "NOK", "NOK"),
+	NPR: (Currency, d!(0), "NPR", "NPR"),
+	NZD: (Currency, d!(0), "NZD", "NZD"),
+	OMR: (Currency, d!(0), "OMR", "OMR"),
+	PAB: (Currency, d!(0), "PAB", "PAB"),
+	PEN: (Currency, d!(0), "PEN", "PEN"),
+	PGK: (Currency, d!(0), "PGK", "PGK"),
+	PHP: (Currency, d!(0), "PHP", "PHP"),
+	PKR: (Currency, d!(0), "PKR", "PKR"),
+	PLN: (Currency, d!(0), "PLN", "PLN"),
+	PYG: (Currency, d!(0), "PYG", "PYG"),
+	QAR: (Currency, d!(0), "QAR", "QAR"),
+	RON: (Currency, d!(0), "RON", "RON"),
+	RSD: (Currency, d!(0), "RSD", "RSD"),
+	RUB: (Currency, d!(0), "RUB", "RUB"),
+	RWF: (Currency, d!(0), "RWF", "RWF"),
+	SAR: (Currency, d!(0), "SAR", "SAR"),
+	SBD: (Currency, d!(0), "SBD", "SBD"),
+	SCR: (Currency, d!(0), "SCR", "SCR"),
+	SDG: (Currency, d!(0), "SDG", "SDG"),
+	SEK: (Currency, d!(0), "SEK", "SEK"),
+	SGD: (Currency, d!(0), "SGD", "SGD"),
+	SHP: (Currency, d!(0), "SHP", "SHP"),
+	SLE: (Currency, d!(0), "SLE", "SLE"),
+	SOS: (Currency, d!(0), "SOS", "SOS"),
+	SRD: (Currency, d!(0), "SRD", "SRD"),
+	SSP: (Currency, d!(0), "SSP", "SSP"),
+	STN: (Currency, d!(0), "STN", "STN"),
+	SVC: (Currency, d!(0), "SVC", "SVC"),
+	SYP: (Currency, d!(0), "SYP", "SYP"),
+	SZL: (Currency, d!(0), "SZL", "SZL"),
+	THB: (Currency, d!(0), "THB", "THB"),
+	TJS: (Currency, d!(0), "TJS", "TJS"),
+	TMT: (Currency, d!(0), "TMT", "TMT"),
+	TND: (Currency, d!(0), "TND", "TND"),
+	TOP: (Currency, d!(0), "TOP", "TOP"),
+	TRY: (Currency, d!(0), "TRY", "TRY"),
+	TTD: (Currency, d!(0), "TTD", "TTD"),
+	TWD: (Currency, d!(0), "TWD", "TWD"),
+	TZS: (Currency, d!(0), "TZS", "TZS"),
+	UAH: (Currency, d!(0), "UAH", "UAH"),
+	UGX: (Currency, d!(0), "UGX", "UGX"),
+	USD: (Currency, d!(0), "USD", "USD"),
+	UYU: (Currency, d!(0), "UYU", "UYU"),
+	UZS: (Currency, d!(0), "UZS", "UZS"),
+	VES: (Currency, d!(0), "VES", "VES"),
+	VND: (Currency, d!(0), "VND", "VND"),
+	VUV: (Currency, d!(0), "VUV", "VUV"),
+	WST: (Currency, d!(0), "WST", "WST"),
+	XAF: (Currency, d!(0), "XAF", "XAF"),
+	XAG: (Currency, d!(0), "XAG", "XAG"),
+	XAU: (Currency, d!(0), "XAU", "XAU"),
+	XCD: (Currency, d!(0), "XCD", "XCD"),
+	XCG: (Currency, d!(0), "XCG", "XCG"),
+	XDR: (Currency, d!(0), "XDR", "XDR"),
+	XOF: (Currency, d!(0), "XOF", "XOF"),
+	XPD: (Currency, d!(0), "XPD", "XPD"),
+	XPF: (Currency, d!(0), "XPF", "XPF"),
+	XPT: (Currency, d!(0), "XPT", "XPT"),
+	YER: (Currency, d!(0), "YER", "YER"),
+	ZAR: (Currency, d!(0), "ZAR", "ZAR"),
+	ZMW: (Currency, d!(0), "ZMW", "ZMW"),
+	ZWG: (Currency, d!(0), "ZWG", "ZWG"),
 );
 
 fn combined_weight(unit: &[(Unit, isize)]) -> D128 {
@@ -410,6 +580,22 @@ fn integer_power(base: D128, exp: isize) -> D128 {
 	} else {
 		D128::from(1) / positive
 	}
+}
+
+fn contains_category(unit: &[(Unit, isize)], category: UnitType) -> bool {
+	unit.iter().any(|(u, _)| u.category() == category)
+}
+
+/// Get the non-currency weight of a unit vector
+fn non_currency_weight(unit: &[(Unit, isize)]) -> D128 {
+	use UnitType::*;
+	unit.iter().fold(D128::from(1), |acc, (u, exp)| {
+		if u.category() == Currency {
+			acc
+		} else {
+			acc * integer_power(u.weight(), *exp)
+		}
+	})
 }
 
 /// Convert a [`Number`] to a specified [`Unit`].
@@ -451,6 +637,35 @@ pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, St
 				Number::with_unit(d!(0), to_unit).plural()
 			)),
 		}
+	} else if number.contains_category(Currency) && contains_category(&to_unit, Currency) {
+		// Handle compound units with currency, like "EUR/liter"
+		// Find the currency in both units
+		let from_currency = number
+			.unit
+			.iter()
+			.find(|(u, _)| u.category() == Currency)
+			.map(|(u, _)| *u);
+		let to_currency = to_unit
+			.iter()
+			.find(|(u, _)| u.category() == Currency)
+			.map(|(u, _)| *u);
+
+		if let (Some(from_curr), Some(to_curr)) = (from_currency, to_currency) {
+			let rate = currency::get_exchange_rate(from_curr, to_curr)?;
+
+			// Calculate the ratio of non-currency parts
+			let source_non_currency = non_currency_weight(&number.unit);
+			let target_non_currency = non_currency_weight(&to_unit);
+
+			let value = number.value * rate * source_non_currency / target_non_currency;
+
+			Ok(Number {
+				value,
+				unit: to_unit.to_vec(),
+			})
+		} else {
+			Err("Currency conversion requires both units to have currency".to_string())
+		}
 	} else {
 		let source_weight = combined_weight(&number.unit);
 		let target_weight = combined_weight(&to_unit);
@@ -482,7 +697,7 @@ pub fn add(left: Number, right: Number) -> Result<Number, String> {
 	if left.unit == right.unit {
 		Ok(Number::with_unit(left.value + right.value, left.unit))
 	} else if left.primitive_unit() == right.primitive_unit()
-		&& !left.contains_primitive(Temperature)
+		&& !left.contains_category(Temperature)
 	{
 		let (left, right) = convert_to_lowest(left, right)?;
 		Ok(Number::with_unit(left.value + right.value, left.unit))
@@ -496,7 +711,7 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 	if left.unit == right.unit {
 		Ok(Number::with_unit(left.value - right.value, left.unit))
 	} else if left.primitive_unit() == right.primitive_unit()
-		&& !left.contains_primitive(Temperature)
+		&& !left.contains_category(Temperature)
 	{
 		let (left, right) = convert_to_lowest(left, right)?;
 		Ok(Number::with_unit(left.value - right.value, left.unit))
@@ -700,7 +915,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 ///
 /// Temperatures don't work
 pub fn multiply(left: Number, right: Number) -> Result<Number, String> {
-	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+	if left.contains_category(Temperature) || right.contains_category(Temperature) {
 		Err(format!("Cannot multiply {} and {}", left, right))
 	} else {
 		multiply_any(left, right)
@@ -726,7 +941,7 @@ pub(crate) fn multiply_any(left: Number, right: Number) -> Result<Number, String
 ///
 /// Temperatures don't work.
 pub fn divide(left: Number, right: Number) -> Result<Number, String> {
-	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+	if left.contains_category(Temperature) || right.contains_category(Temperature) {
 		Err(format!("Cannot divide {} by {}", left, right))
 	} else {
 		divide_any(left, right)
@@ -752,7 +967,7 @@ pub fn divide_any(left: Number, right: Number) -> Result<Number, String> {
 ///
 /// Temperatures don't work.
 pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
-	if left.contains_primitive(Temperature) || right.contains_primitive(Temperature) {
+	if left.contains_category(Temperature) || right.contains_category(Temperature) {
 		Err(format!("Cannot modulo {} by {}", left, right))
 	} else if left.primitive_unit() == right.primitive_unit() {
 		// 5 km % 3 m
@@ -771,7 +986,7 @@ pub fn modulo(left: Number, right: Number) -> Result<Number, String> {
 /// - etc.
 pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 	// I tried converting `right` to use powi, but somehow that was slower
-	if left.contains_primitive(Temperature) || right.has_unit() {
+	if left.contains_category(Temperature) || right.has_unit() {
 		Err(format!("Cannot raise {} to the power of {}", left, right))
 	} else if left.is_unitless() {
 		let result = left.value.pow(right.value);
@@ -799,9 +1014,8 @@ pub fn pow(left: Number, right: Number) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
-	use fastnum::decimal::Context;
-
 	use super::*;
+	use fastnum::decimal::Context;
 
 	macro_rules! assert_float_eq {
 		( $actual:expr, $expected:literal ) => {
@@ -1186,49 +1400,5 @@ mod tests {
 		assert_float_eq!(convert_test(-15.0, Celsius, Fahrenheit), 5.0);
 		assert_float_eq!(convert_test(80.33, Fahrenheit, Kelvin), 300.0);
 		assert_float_eq!(convert_test(5.0, Fahrenheit, Celsius), -15.0);
-	}
-
-	#[track_caller]
-	fn eval_test(a: &str, b: &str) {
-		let result_a = crate::eval(a, true, false).unwrap();
-		let result_b = crate::eval(b, true, false).unwrap();
-		assert_eq!(result_a, result_b, "{a} != {b}");
-	}
-	#[track_caller]
-	fn eval_approx_test(a: &str, b: &str) {
-		let result_a = crate::eval(a, true, false).unwrap();
-		let result_b = crate::eval(b, true, false).unwrap();
-		let diff_pct: D128 = result_a.value / result_b.value - 1;
-		let diff_pct = diff_pct.abs();
-		assert!(diff_pct <= d!(0.00000001), "{a} !≈ {b}")
-	}
-
-	#[test]
-	fn test_unit_evals() {
-		eval_test("100kg*sqm / 2s^2", "50j");
-		eval_test("3.6km/1h", "3.6 kph");
-		eval_test("0.3048 m/s to ft/s", "1 ft/s");
-		eval_test("1.609344 km/1h to mph", "1 mph");
-		eval_approx_test("1.852 kph to knots", "1 knots");
-		eval_test("120 seconds to minutes", "2 minutes");
-		eval_test("100 cm to m", "1 m");
-		eval_test("1 km2 to m2", "1000000 m2");
-		eval_test("1 liter to ml", "1000 ml");
-		eval_test("1 kg to g", "1000 g");
-		eval_test("1 KB to bytes", "1000 bytes");
-		eval_test("1 MBps to KBps", "1000 KBps");
-		eval_test("1 KFLOP to FLOP", "1000 FLOP");
-		eval_test("1 KFLOPs to FLOPs", "1000 FLOPs");
-		eval_test("1 kWh to Wh", "1000 Wh");
-		eval_test("1 kW to W", "1000 W");
-		eval_test("1000 mA to A", "1 A");
-		eval_test("1000 mΩ to Ω", "1 Ω");
-		eval_test("1000 mV to V", "1 V");
-		eval_test("1 bar to Pa", "100000 Pa");
-		eval_test("1 kHz to Hz", "1000 Hz");
-		eval_approx_test("1 km/h to m/s", "0.27777777777777777777 m/s");
-		eval_test("0 C to K", "273.15 K");
-		eval_test("8 megabytes per second * 1 minute", "480mb");
-		eval_test("8 megaFLOP per second * 1 minute", "480megaFLOP");
 	}
 }

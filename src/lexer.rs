@@ -6,6 +6,7 @@ use crate::Operator::*;
 use crate::TextOperator::*;
 use crate::Token;
 use crate::UnaryOperator::*;
+use crate::currency::currency_code_to_unit;
 use crate::units::Unit::*;
 use fastnum::D128;
 use fastnum::decimal::Context;
@@ -636,6 +637,28 @@ fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"c" | "celsius" => Token::unit(Celsius),
 		"f" | "fahrenheit" | "fahrenheits" => Token::unit(Fahrenheit),
 
+		"AU$" => Token::unit(AUD),
+		"R$" => Token::unit(BRL),
+		"CA$" | "C$" => Token::unit(CAD),
+		"€" | "euro" | "euros" => Token::unit(EUR),
+		"£" => Token::unit(GBP),
+		"HK$" => Token::unit(HKD),
+		"₹" | "Rs" => Token::unit(INR),
+		"₪" => Token::unit(ILS),
+		"¥" => Token::unit(JPY),
+		"₩" => Token::unit(KRW),
+		"MX$" => Token::unit(MXN),
+		"NZ$" => Token::unit(NZD),
+		"₱" => Token::unit(PHP),
+		"zl" | "zł" => Token::unit(PLN),
+		"S$" => Token::unit(SGD),
+		"฿" => Token::unit(THB),
+		"tl" | "₺" => Token::unit(TRY),
+		"₴" => Token::unit(UAH),
+		"$" | "US$" => Token::unit(USD),
+		"₫" => Token::unit(VND),
+
+		string if let Ok(unit) = currency_code_to_unit(string) => Token::unit(unit),
 		string => {
 			return Err(format!("Invalid string: {}", string));
 		}

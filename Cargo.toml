@@ -22,9 +22,12 @@ categories = [
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-fastnum = "0.7"
+fastnum = { version = "0.7", features = ["serde"] }
 unicode-segmentation = "1.13"
 web-time = "1.1.0"
+reqwest = { version = "0.13", features = ["blocking", "json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.7"

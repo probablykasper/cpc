@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Add currency units
+
 ## 4.0.0 - 2026 Jun 27
 - Rewrite units to be exponent-based, making things like `km^5` and `sqkm^-1` possible
 - Add generic unit multiplication and division, such as `1kg/1m` and `1m*1kg`

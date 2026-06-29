@@ -27,6 +27,8 @@ use fastnum::{D128, dec128 as d};
 use std::fmt::{self, Debug, Display};
 use web_time::Instant;
 
+/// Currency exchange rates
+pub mod currency;
 /// Turns an [`AstNode`](parser::AstNode) into a [`Number`]
 pub mod evaluator;
 /// Turns a string into [`Token`]s
@@ -82,8 +84,8 @@ impl Number {
 	pub fn primitive_unit(&self) -> Vec<(Unit, isize)> {
 		primitive_unit(&self.unit)
 	}
-	pub fn contains_primitive(&self, unit: UnitType) -> bool {
-		self.unit.iter().any(|(u, _)| u.category() == unit)
+	pub fn contains_category(&self, category: UnitType) -> bool {
+		self.unit.iter().any(|(u, _)| u.category() == category)
 	}
 	fn get_unit_string(&self, plural: bool) -> String {
 		let mut s = String::new();

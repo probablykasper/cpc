@@ -315,105 +315,132 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::{eval, units::Unit::*};
+	use std::str::FromStr;
 
-	fn eval_default<'a>(input: &'a str) -> Number {
+	use crate::eval;
+
+	#[track_caller]
+	fn eval_test(input: &str, expected: &str) {
 		let result = eval(input, true, false).unwrap();
-		result
+		assert_eq!(result.to_string(), expected);
 	}
-	fn eval_num<'a>(input: &'a str) -> String {
-		let result = eval(input, true, false).unwrap();
-		assert!(result.is_unitless());
 
-		result.to_string()
+	#[track_caller]
+	fn results_eq(a: &str, b: &str) {
+		let result_a = crate::eval(a, true, false).unwrap();
+		let result_b = crate::eval(b, true, false).unwrap();
+		assert_eq!(result_a, result_b, "{a} != {b}");
+		assert_eq!(
+			result_a.value.op_signals(),
+			result_b.value.op_signals(),
+			"{a} != {b}",
+		);
 	}
 
 	#[test]
 	fn test_evaluations() {
-		assert_eq!(eval_num("-2(-3)"), "6");
-		assert_eq!(eval_num("-2(3)"), "-6");
-		assert_eq!(eval_num("(3)-2"), "1");
-		assert_eq!(
-			eval_default("-1km to m"),
-			Number::with_basic_unit(d!(-1000), Meter)
-		);
-		assert_eq!(eval_num("2*-3*0.5"), "-3");
-		assert_eq!(eval_num("-3^2"), "-9");
-		assert_eq!(eval_num("e^2"), "≈ 7.3890560989306502272304274605750078132");
-		assert_eq!(
-			eval_num("e^2.5"),
-			"≈ 12.1824939607034734380701759511679661832"
-		);
-		assert_eq!(eval_num("-1+2"), "1");
+		eval_test("-2(-3)", "6");
+		eval_test("-2(3)", "-6");
+		eval_test("(3)-2", "1");
+		eval_test("-1km to m", "-1000 meters");
+		eval_test("2*-3*0.5", "-3");
+		eval_test("-3^2", "-9");
+		eval_test("e^2", "≈ 7.3890560989306502272304274605750078132");
+		eval_test("e^2.5", "≈ 12.1824939607034734380701759511679661832");
+		eval_test("-1+2", "1");
 	}
 
 	#[test]
 	fn test_functions() {
-		assert_eq!(eval_num("cbrt(125)"), "5");
-		assert_eq!(
-			eval_num("cbrt(2)"),
-			"≈ 1.25992104989487316476721060727822835057"
-		);
+		eval_test("cbrt(125)", "5");
+		eval_test("cbrt(2)", "≈ 1.25992104989487316476721060727822835057");
 
-		assert_eq!(eval_num("sqrt(25)"), "5");
-		assert_eq!(
-			eval_num("sqrt(2)"),
-			"≈ 1.41421356237309504880168872420969807857"
-		);
+		eval_test("sqrt(25)", "5");
+		eval_test("sqrt(2)", "≈ 1.41421356237309504880168872420969807857");
 
-		assert_eq!(eval_num("log(100)"), "2");
-		assert_eq!(
-			eval_num("log(2)"),
-			"≈ 0.301029995663981195213738894724493026768"
-		);
+		eval_test("log(100)", "2");
+		eval_test("log(2)", "≈ 0.301029995663981195213738894724493026768");
 
-		assert_eq!(eval_num("ln(1)"), "0");
-		assert_eq!(
-			eval_num("ln(2)"),
-			"≈ 0.69314718055994530941723212145817656808"
-		);
-		assert_eq!(eval_num("ln(e)"), "≈ 1");
-		assert_eq!(eval_num("ln(e^2)"), "≈ 2");
+		eval_test("ln(1)", "0");
+		eval_test("ln(2)", "≈ 0.69314718055994530941723212145817656808");
+		eval_test("ln(e)", "≈ 1");
+		eval_test("ln(e^2)", "≈ 2");
 
-		assert_eq!(
-			eval_num("exp(1)"),
-			"≈ 2.71828182845904523536028747135266249776"
-		);
+		eval_test("exp(1)", "≈ 2.71828182845904523536028747135266249776");
 
-		assert_eq!(eval_num("round(1.4)"), "1");
-		assert_eq!(eval_num("round(1.6)"), "2");
-		assert_eq!(eval_num("round(1.5)"), "2");
-		assert_eq!(eval_num("round(2.5)"), "3");
+		eval_test("round(1.4)", "1");
+		eval_test("round(1.6)", "2");
+		eval_test("round(1.5)", "2");
+		eval_test("round(2.5)", "3");
 
-		assert_eq!(eval_num("ceil(1.5)"), "2");
-		assert_eq!(eval_num("ceil(-1.5)"), "-1");
+		eval_test("ceil(1.5)", "2");
+		eval_test("ceil(-1.5)", "-1");
 
-		assert_eq!(eval_num("floor(1.5)"), "1");
-		assert_eq!(eval_num("floor(-1.5)"), "-2");
+		eval_test("floor(1.5)", "1");
+		eval_test("floor(-1.5)", "-2");
 
-		assert_eq!(eval_num("abs(-3)"), "3");
+		eval_test("abs(-3)", "3");
 
-		assert_eq!(
-			eval_num("sin(2)"),
-			"≈ 0.9092974268256816953960198659117448427"
-		);
-		assert_eq!(
-			eval_num("sin(-2)"),
-			"≈ -0.9092974268256816953960198659117448427"
-		);
+		eval_test("sin(2)", "≈ 0.9092974268256816953960198659117448427");
+		eval_test("sin(-2)", "≈ -0.9092974268256816953960198659117448427");
 
-		assert_eq!(
-			eval_num("cos(2)"),
-			"≈ -0.41614683654714238699756822950076218977"
+		eval_test("cos(2)", "≈ -0.41614683654714238699756822950076218977");
+		eval_test("cos(-2)", "≈ -0.41614683654714238699756822950076218977");
+		eval_test("tan(2)", "≈ -2.18503986326151899164330610231368254343");
+	}
+
+	#[test]
+	fn test_currency() {
+		use crate::currency::{CurrencyRate, set_currency_cache};
+		use serde_json::Number;
+
+		set_currency_cache(vec![CurrencyRate {
+			date: "2000-01-01".to_string(),
+			base: "EUR".to_string(),
+			quote: "NOK".to_string(),
+			rate: Number::from_str("11.2839").unwrap(),
+		}])
+		.unwrap();
+
+		eval_test("1 EUR to NOK", "11.2839 NOK");
+		eval_test("11.2839 NOK to EUR", "≈ 0.99999952902 EUR");
+		eval_test("1 NOK to EUR", "≈ 0.0886218 EUR");
+		eval_test("1 EUR/liter to NOK/liter", "11.2839 NOK / liter");
+		eval_test(
+			"1 EUR/gallon to NOK/liter",
+			"≈ 2.98089102160411090430525272544562882356 NOK / liter",
 		);
-		assert_eq!(
-			eval_num("cos(-2)"),
-			"≈ -0.41614683654714238699756822950076218977"
+	}
+
+	#[test]
+	fn test_unit_evals() {
+		results_eq("100kg*sqm / 2s^2", "50j");
+		results_eq("3.6km/1h", "3.6 kph");
+		results_eq("0.3048 m/s to ft/s", "1 ft/s");
+		eval_test("1.609344 km/1h to mph", "≈ 1 mile per hour");
+		eval_test("1.852 kph to knots", "≈ 1 knot");
+		results_eq("120 seconds to minutes", "2 minutes");
+		results_eq("100 cm to m", "1 m");
+		results_eq("1 km2 to m2", "1000000 m2");
+		results_eq("1 liter to ml", "1000 ml");
+		results_eq("1 kg to g", "1000 g");
+		results_eq("1 KB to bytes", "1000 bytes");
+		results_eq("1 MBps to KBps", "1000 KBps");
+		results_eq("1 KFLOP to FLOP", "1000 FLOP");
+		results_eq("1 KFLOPs to FLOPs", "1000 FLOPs");
+		results_eq("1 kWh to Wh", "1000 Wh");
+		results_eq("1 kW to W", "1000 W");
+		results_eq("1000 mA to A", "1 A");
+		results_eq("1000 mΩ to Ω", "1 Ω");
+		results_eq("1000 mV to V", "1 V");
+		results_eq("1 bar to Pa", "100000 Pa");
+		results_eq("1 kHz to Hz", "1000 Hz");
+		eval_test(
+			"1 km/h to m/s",
+			"≈ 0.277777777777777777777777777777777777778 meters / second",
 		);
-		assert_eq!(
-			eval_num("tan(2)"),
-			"≈ -2.18503986326151899164330610231368254343"
-		);
+		results_eq("0 C to K", "273.15 K");
+		results_eq("8 megabytes per second * 1 minute", "480mb");
+		results_eq("8 megaFLOP per second * 1 minute", "480megaFLOP");
 	}
 }
