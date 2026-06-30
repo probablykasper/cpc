@@ -114,7 +114,10 @@ impl Number {
 			if unit.1 >= 0 {
 				continue;
 			}
-			s.push_str(" / ");
+			match s.len() {
+				0 => s.push_str("/ "),
+				_ => s.push_str(" / "),
+			}
 			s.push_str(unit.0.singular());
 			if unit.1.abs() >= 2 {
 				s.push_str("^");
