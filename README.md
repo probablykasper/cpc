@@ -90,7 +90,7 @@ match eval("3m + 1cm", true, false) {
 ```
 
 ## Accuracy
-cpc uses 128-bit Decimal Floating Point (d128) numbers instead of Binary Coded Decimals for better accuracy. The result cpc gives will still not always be 100% accurate. I would recommend rounding the result to 20 decimals or less.
+Inexact results are always indicated with `≈`. 128-bit Decimal Floating Point (d128) numbers are used for high accuracy, and prevents most floating-point errors.
 
 ## Dev Instructions
 
@@ -120,6 +120,7 @@ cargo build
 ### Adding a unit
 
 Nice resources for adding units:
+- https://wolframalpha.com
 - https://github.com/ryantenney/gnu-units/blob/master/units.dat
 - https://support.google.com/websearch/answer/3284611 (unit list)
 - https://translatorscafe.com/unit-converter (unit conversion)
