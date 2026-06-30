@@ -107,6 +107,25 @@ pub fn primitive_unit(unit: &[(Unit, isize)]) -> Vec<(Unit, isize)> {
 	primitives
 }
 
+fn reduce_unit(number: Number) -> Number {
+	let mut new_unit: Vec<(Unit, isize)> = Vec::new();
+	for (unit, exponent) in &number.unit {
+		if unit.category() == UnitType::Temperature {
+			new_unit.push((unit.clone(), *exponent));
+			continue;
+		}
+		let existing = new_unit
+			.iter_mut()
+			.find(|(u, _)| u.category() == unit.category());
+		if let Some(existing) = existing {
+			existing.1 += exponent;
+		} else {
+			new_unit.push((unit.clone(), *exponent))
+		}
+	}
+	convert(number.clone(), new_unit).unwrap_or(number)
+}
+
 // Macro for creating units. Not possible to extend/change the default units
 // with this because the default units are imported into the lexer, parser
 // and evaluator
@@ -600,6 +619,9 @@ fn non_currency_weight(unit: &[(Unit, isize)]) -> D128 {
 
 /// Convert a [`Number`] to a specified [`Unit`].
 pub fn convert(number: Number, to_unit: Vec<(Unit, isize)>) -> Result<Number, String> {
+	if number.unit == to_unit {
+		return Ok(number);
+	}
 	if number.primitive_unit() != primitive_unit(&to_unit) {
 		return Err(format!(
 			"Cannot convert {} to {}",
@@ -728,6 +750,7 @@ pub fn subtract(left: Number, right: Number) -> Result<Number, String> {
 /// `Energy`, `Power`, `ElectricCurrent`, `Resistance`, and `Voltage`.
 /// Other units are passed through.
 pub fn to_ideal_unit(number: Number) -> Number {
+	let number = reduce_unit(number);
 	let value = number.value * combined_weight(&number.unit);
 	let primitive = number.primitive_unit();
 	if primitive == Length.primitive() {
@@ -906,6 +929,7 @@ pub fn to_ideal_unit(number: Number) -> Number {
 			.unwrap_or(candidates[0]);
 		return Number::with_basic_unit(value / unit.weight(), unit);
 	}
+
 	number
 }
 
