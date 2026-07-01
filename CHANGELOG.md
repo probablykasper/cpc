@@ -1,7 +1,7 @@
 # Changelog
 
 ## Next
-- Add currency symbols
+- Add currency symbols like `€`
 - Add `as` and `into` keywords for unit conversion
 - Fix some units not being simplified
 
