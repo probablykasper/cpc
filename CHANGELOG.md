@@ -1,13 +1,13 @@
 # Changelog
 
-## Next
+## 4.2.0 - 2026 Jul 1
 - Add ambiguous unit resolution depending on context and user locale.
 - Add ambiguous units like `pound`, `deg`, `$` and `kr`
 - Add currency symbols like `€` and `kr`
 - Add `as` and `into` keywords for unit conversion
 - Fix some units not being simplified
 
-## 4.1.0 - 2026 Jul 29
+## 4.1.0 - 2026 Jun 29
 - Add currency units
 
 ## 4.0.0 - 2026 Jun 27
