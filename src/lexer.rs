@@ -22,7 +22,7 @@ fn is_word_char_str(input: &str) -> bool {
 		"a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o"
 		| "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" => true,
 		"Ω" | "Ω" | "µ" | "μ" | "ł" | "$" | "€" | "£" | "₹" | "₪" | "¥" | "₩" | "₱" | "฿" | "₺"
-		| "₴" | "₫" | "đ" | "Đ" | "č" => true,
+		| "₴" | "₫" | "đ" | "Đ" | "č" | "°" => true,
 		_ => false,
 	}
 }
@@ -643,9 +643,27 @@ fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 		"fps" => Token::unit(FeetPerSecond),
 		"kn" | "kt" | "knot" | "knots" => Token::unit(Knot),
 
-		"k" | "kelvin" | "kelvins" => Token::unit(Kelvin),
-		"c" | "celsius" => Token::unit(Celsius),
-		"f" | "fahrenheit" | "fahrenheits" => Token::unit(Fahrenheit),
+		"°" | "deg" | "degs" | "degree" | "degrees" => match read_word(lexer).as_str() {
+			"k" | "kelvin" | "kelvins" => Token::unit(Kelvin),
+			"c" | "celsius" | "celcius" => Token::unit(Celsius),
+			"f" | "fahrenheit" | "fahrenheits" | "farenheit" | "farenheits" => {
+				Token::unit(Fahrenheit)
+			}
+			other => {
+				let token = match get_region().as_str() {
+					"BS" | "BZ" | "KY" | "PR" | "PW" | "US" => Fahrenheit,
+					_ => Celsius,
+				};
+				lexer.tokens.push(Token::unit(token));
+				lex_word_if_non_empty(other, lexer)?;
+				return Ok(());
+			}
+		},
+		"k" | "°k" | "kelvin" | "kelvins" => Token::unit(Kelvin),
+		"c" | "°c" | "celsius" | "celcius" => Token::unit(Celsius),
+		"f" | "°f" | "fahrenheit" | "fahrenheits" | "farenheit" | "farenheits" => {
+			Token::unit(Fahrenheit)
+		}
 
 		"AU$" => Token::unit(AUD),
 		"R$" => Token::unit(BRL),
