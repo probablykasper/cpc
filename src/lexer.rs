@@ -7,6 +7,8 @@ use crate::TextOperator::*;
 use crate::Token;
 use crate::UnaryOperator::*;
 use crate::currency::currency_code_to_unit;
+use crate::get_region;
+use crate::units::Ambiguity;
 use crate::units::Unit::*;
 use fastnum::D128;
 use fastnum::decimal::Context;
@@ -404,7 +406,14 @@ fn lex_word(word: &str, lexer: &mut Lexer) -> Result<(), String> {
 					return Ok(());
 				}
 			},
-			false => Token::unit(Pound),
+			false => Token::unit(Ambiguity(Ambiguity {
+				string: "pound",
+				candidates: &[Pound, GBP],
+				fallback: match get_region().as_str() {
+					"GB" => &GBP,
+					_ => &Pound,
+				},
+			})),
 		},
 		"stone" | "stones" => Token::unit(Stone),
 		"st" | "ton" | "tons" => Token::unit(ShortTon),
@@ -816,7 +825,7 @@ pub fn lex(input: &str, remove_trailing_operator: bool) -> Result<Vec<Token>, St
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::numtok;
+	use crate::{numtok, units::Ambiguity};
 	use regex::Regex;
 
 	#[test]
@@ -825,7 +834,13 @@ mod tests {
 		let strip_afterdigit_spacing = Regex::new(r"(\d) ").unwrap();
 		let nonplural_data_units = Regex::new(r"(bit|byte)s").unwrap();
 
-		let run_lex = |input: &str, expected_tokens: Vec<Token>| {
+		#[track_caller]
+		fn run_lex(
+			input: &str,
+			expected_tokens: Vec<Token>,
+			strip_operator_spacing: &Regex,
+			strip_afterdigit_spacing: &Regex,
+		) {
 			let tokens = match lex(input, false) {
 				Ok(tokens) => tokens,
 				Err(e) => {
@@ -836,31 +851,36 @@ mod tests {
 				"run_lex assertion failed.\n input: {}\n  left: {:?}\n right: {:?}",
 				input, expected_tokens, tokens
 			);
-			assert!(tokens == expected_tokens, "{info_msg}");
+			assert_eq!(tokens, expected_tokens);
 
 			// Prove we can handle multiple spaces wherever we handle a single space
 			let input_extra_spaces = input.replace(" ", "   ");
 			let tokens_extra_spaces = lex(&input_extra_spaces, false).unwrap();
-			assert!(tokens_extra_spaces == expected_tokens, "{info_msg}");
+			assert_eq!(tokens_extra_spaces, expected_tokens, "{info_msg}");
 
 			// Prove we don't need spaces around operators
 			let input_stripped_spaces = strip_operator_spacing.replace_all(input, "$1");
 			let tokens_stripped_spaces = lex(&input_stripped_spaces, false).unwrap();
-			assert!(tokens_stripped_spaces == expected_tokens, "{info_msg}");
+			assert_eq!(tokens_stripped_spaces, expected_tokens, "{info_msg}");
 
 			// Prove we don't need a space after a digit
 			let input_afterdigit_stripped_spaces =
 				strip_afterdigit_spacing.replace_all(input, "$1");
 			let tokens_afterdigit_stripped_spaces =
 				lex(&input_afterdigit_stripped_spaces, false).unwrap();
-			assert!(
-				tokens_afterdigit_stripped_spaces == expected_tokens,
+			assert_eq!(
+				tokens_afterdigit_stripped_spaces, expected_tokens,
 				"{info_msg}"
 			);
-		};
+		}
 
 		let run_datarate_lex = |input: &str, expected_tokens: Vec<Token>| {
-			run_lex(input, (*expected_tokens).to_vec());
+			run_lex(
+				input,
+				(*expected_tokens).to_vec(),
+				&strip_operator_spacing,
+				&strip_afterdigit_spacing,
+			);
 
 			// Prove plural and non-plural data units behave identically
 			let input_nonplural_units = nonplural_data_units.replace_all(input, "$1");
@@ -880,26 +900,87 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(2),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("0.5 marathon", vec![numtok!(0.5), Token::unit(Marathon)]);
-		run_lex("100 nmi", vec![numtok!(100), Token::unit(NauticalMile)]);
+		run_lex(
+			"0.5 marathon",
+			vec![numtok!(0.5), Token::unit(Marathon)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"100 nmi",
+			vec![numtok!(100), Token::unit(NauticalMile)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"101 nautical miles",
 			vec![numtok!(101), Token::unit(NauticalMile)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("2 lightyears", vec![numtok!(2), Token::unit(LightYear)]);
-		run_lex("1 light year", vec![numtok!(1), Token::unit(LightYear)]);
-		run_lex("10 lightsec", vec![numtok!(10), Token::unit(LightSecond)]);
-		run_lex("12 light secs", vec![numtok!(12), Token::unit(LightSecond)]);
+		run_lex(
+			"2 lightyears",
+			vec![numtok!(2), Token::unit(LightYear)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 light year",
+			vec![numtok!(1), Token::unit(LightYear)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"10 lightsec",
+			vec![numtok!(10), Token::unit(LightSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"12 light secs",
+			vec![numtok!(12), Token::unit(LightSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"33.3 square meters",
 			vec![numtok!(33.3), Token::unit(SquareMeter)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("54 m2", vec![numtok!(54), Token::unit(SquareMeter)]);
-		run_lex("87 sq miles", vec![numtok!(87), Token::unit(SquareMile)]);
-		run_lex("500 feet2", vec![numtok!(500), Token::unit(SquareFoot)]);
-		run_lex("500 feet²", vec![numtok!(500), Token::unit(SquareFoot)]);
-		run_lex("4 cubic metres", vec![numtok!(4), Token::unit(CubicMeter)]);
+		run_lex(
+			"54 m2",
+			vec![numtok!(54), Token::unit(SquareMeter)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"87 sq miles",
+			vec![numtok!(87), Token::unit(SquareMile)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"500 feet2",
+			vec![numtok!(500), Token::unit(SquareFoot)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"500 feet²",
+			vec![numtok!(500), Token::unit(SquareFoot)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"4 cubic metres",
+			vec![numtok!(4), Token::unit(CubicMeter)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"34 cubic feet + 23 cubic yards",
 			vec![
@@ -909,6 +990,8 @@ mod tests {
 				numtok!(23),
 				Token::unit(CubicYard),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"66 inches3 + 65 millimetre³",
@@ -919,6 +1002,8 @@ mod tests {
 				numtok!(65),
 				Token::unit(CubicMillimeter),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"66 inches³ + 65 millimetre3",
@@ -929,28 +1014,131 @@ mod tests {
 				numtok!(65),
 				Token::unit(CubicMillimeter),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("42 millilitres", vec![numtok!(42), Token::unit(Milliliter)]);
-		run_lex("3 tbs", vec![numtok!(3), Token::unit(Tablespoon)]);
-		run_lex("6 floz", vec![numtok!(6), Token::unit(FluidOunce)]);
-		run_lex("6 fl oz", vec![numtok!(6), Token::unit(FluidOunce)]);
-		run_lex("6 fluid ounces", vec![numtok!(6), Token::unit(FluidOunce)]);
-		run_lex("3 oil barrels", vec![numtok!(3), Token::unit(OilBarrel)]);
-		run_lex("67 kg", vec![numtok!(67), Token::unit(Kilogram)]);
-		run_lex("34 oz", vec![numtok!(34), Token::unit(Ounce)]);
-		run_lex("34 ounces", vec![numtok!(34), Token::unit(Ounce)]);
-		run_lex("210 lb", vec![numtok!(210), Token::unit(Pound)]);
-		run_lex("210 lbs", vec![numtok!(210), Token::unit(Pound)]);
-		run_lex("210 pound", vec![numtok!(210), Token::unit(Pound)]);
-		run_lex("210 pounds", vec![numtok!(210), Token::unit(Pound)]);
+		run_lex(
+			"42 millilitres",
+			vec![numtok!(42), Token::unit(Milliliter)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"3 tbs",
+			vec![numtok!(3), Token::unit(Tablespoon)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"6 floz",
+			vec![numtok!(6), Token::unit(FluidOunce)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"6 fl oz",
+			vec![numtok!(6), Token::unit(FluidOunce)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"6 fluid ounces",
+			vec![numtok!(6), Token::unit(FluidOunce)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"3 oil barrels",
+			vec![numtok!(3), Token::unit(OilBarrel)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"67 kg",
+			vec![numtok!(67), Token::unit(Kilogram)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"34 oz",
+			vec![numtok!(34), Token::unit(Ounce)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"34 ounces",
+			vec![numtok!(34), Token::unit(Ounce)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"210 lb",
+			vec![numtok!(210), Token::unit(Pound)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"210 lbs",
+			vec![numtok!(210), Token::unit(Pound)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"210 pound",
+			vec![
+				numtok!(210),
+				Token::unit(Ambiguity(Ambiguity {
+					candidates: &[Pound, GBP],
+					string: "pound",
+					fallback: &Pound,
+				})),
+			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"210 pounds",
+			vec![
+				numtok!(210),
+				Token::unit(Ambiguity(Ambiguity {
+					candidates: &[Pound, GBP],
+					string: "pound",
+					fallback: &Pound,
+				})),
+			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"210 pounds-force",
 			vec![numtok!(210), Token::LexerKeyword(PoundForce)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("3 ton", vec![numtok!(3), Token::unit(ShortTon)]);
-		run_lex("3 short tons", vec![numtok!(3), Token::unit(ShortTon)]);
-		run_lex("4 lt", vec![numtok!(4), Token::unit(LongTon)]);
-		run_lex("4 long tonnes", vec![numtok!(4), Token::unit(LongTon)]);
+		run_lex(
+			"3 ton",
+			vec![numtok!(3), Token::unit(ShortTon)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"3 short tons",
+			vec![numtok!(3), Token::unit(ShortTon)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"4 lt",
+			vec![numtok!(4), Token::unit(LongTon)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"4 long tonnes",
+			vec![numtok!(4), Token::unit(LongTon)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_datarate_lex("1 bit", vec![numtok!(1), Token::unit(Bit)]);
 		run_datarate_lex("8 bits", vec![numtok!(8), Token::unit(Bit)]);
 		run_datarate_lex("63 kilobits", vec![numtok!(63), Token::unit(Kilobit)]);
@@ -993,37 +1181,71 @@ mod tests {
 		run_datarate_lex("0.73 exbibytes", vec![numtok!(0.73), Token::unit(Exbibyte)]);
 		run_datarate_lex("0.49 zebibytes", vec![numtok!(0.49), Token::unit(Zebibyte)]);
 		run_datarate_lex("0.23 yobibytes", vec![numtok!(0.23), Token::unit(Yobibyte)]);
-		run_lex("432 Bps", vec![numtok!(432), Token::unit(BytesPerSecond)]);
+		run_lex(
+			"432 Bps",
+			vec![numtok!(432), Token::unit(BytesPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"56 kBps",
 			vec![numtok!(56), Token::unit(KilobytesPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("432 bps", vec![numtok!(432), Token::unit(BitsPerSecond)]);
-		run_lex("56 kbps", vec![numtok!(56), Token::unit(KilobitsPerSecond)]);
-		run_lex("12 mbps", vec![numtok!(12), Token::unit(MegabitsPerSecond)]);
+		run_lex(
+			"432 bps",
+			vec![numtok!(432), Token::unit(BitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"56 kbps",
+			vec![numtok!(56), Token::unit(KilobitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"12 mbps",
+			vec![numtok!(12), Token::unit(MegabitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"4.2 gbps",
 			vec![numtok!(4.2), Token::unit(GigabitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2.2 tbps",
 			vec![numtok!(2.2), Token::unit(TerabitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1.7 pbps",
 			vec![numtok!(1.7), Token::unit(PetabitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"0.99 ebps",
 			vec![numtok!(0.99), Token::unit(ExabitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"0.64 zbps",
 			vec![numtok!(0.64), Token::unit(ZettabitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"0.278 ybps",
 			vec![numtok!(0.278), Token::unit(YottabitsPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_datarate_lex(
 			"4 bits per second",
@@ -1331,17 +1553,72 @@ mod tests {
 				Token::unit(Second),
 			],
 		);
-		run_lex("1 flop", vec![numtok!(1), Token::unit(Flop)]);
-		run_lex("2 kflop", vec![numtok!(2), Token::unit(KiloFlop)]);
-		run_lex("3 mflop", vec![numtok!(3), Token::unit(MegaFlop)]);
-		run_lex("4 gflop", vec![numtok!(4), Token::unit(GigaFlop)]);
-		run_lex("5 tflop", vec![numtok!(5), Token::unit(TeraFlop)]);
-		run_lex("6 pflop", vec![numtok!(6), Token::unit(PetaFlop)]);
-		run_lex("7 eflop", vec![numtok!(7), Token::unit(ExaFlop)]);
-		run_lex("8 zflop", vec![numtok!(8), Token::unit(ZettaFlop)]);
-		run_lex("9 yflop", vec![numtok!(9), Token::unit(YottaFlop)]);
-		run_lex("10 rflop", vec![numtok!(10), Token::unit(RonnaFlop)]);
-		run_lex("11 qflop", vec![numtok!(11), Token::unit(QuettaFlop)]);
+		run_lex(
+			"1 flop",
+			vec![numtok!(1), Token::unit(Flop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"2 kflop",
+			vec![numtok!(2), Token::unit(KiloFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"3 mflop",
+			vec![numtok!(3), Token::unit(MegaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"4 gflop",
+			vec![numtok!(4), Token::unit(GigaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"5 tflop",
+			vec![numtok!(5), Token::unit(TeraFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"6 pflop",
+			vec![numtok!(6), Token::unit(PetaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"7 eflop",
+			vec![numtok!(7), Token::unit(ExaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"8 zflop",
+			vec![numtok!(8), Token::unit(ZettaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"9 yflop",
+			vec![numtok!(9), Token::unit(YottaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"10 rflop",
+			vec![numtok!(10), Token::unit(RonnaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"11 qflop",
+			vec![numtok!(11), Token::unit(QuettaFlop)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"1 flop/s",
 			vec![
@@ -1350,6 +1627,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kflop/s",
@@ -1359,6 +1638,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"3 mflop/s",
@@ -1368,6 +1649,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gflop/s",
@@ -1377,6 +1660,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"5 tflop/s",
@@ -1386,6 +1671,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 pflop/s",
@@ -1395,6 +1682,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"7 eflop/s",
@@ -1404,6 +1693,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"8 zflop/s",
@@ -1413,6 +1704,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"9 yflop/s",
@@ -1422,6 +1715,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"10 rflop/s",
@@ -1431,6 +1726,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"11 qflop/s",
@@ -1440,6 +1737,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1 flop per second",
@@ -1449,6 +1748,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kflop per second",
@@ -1458,6 +1759,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"3 mflop per second",
@@ -1467,6 +1770,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gflop per second",
@@ -1476,6 +1781,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"5 tflop per second",
@@ -1485,6 +1792,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 pflop per second",
@@ -1494,6 +1803,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"7 eflop per second",
@@ -1503,6 +1814,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"8 zflop per second",
@@ -1512,6 +1825,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"9 yflop per second",
@@ -1521,6 +1836,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"10 rflop per second",
@@ -1530,6 +1847,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"11 qflop per second",
@@ -1539,35 +1858,105 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("1 flops", vec![numtok!(1), Token::unit(FlopPerSecond)]);
-		run_lex("2 kflops", vec![numtok!(2), Token::unit(KiloFlopPerSecond)]);
-		run_lex("3 mflops", vec![numtok!(3), Token::unit(MegaFlopPerSecond)]);
-		run_lex("4 gflops", vec![numtok!(4), Token::unit(GigaFlopPerSecond)]);
-		run_lex("5 tflops", vec![numtok!(5), Token::unit(TeraFlopPerSecond)]);
-		run_lex("6 pflops", vec![numtok!(6), Token::unit(PetaFlopPerSecond)]);
-		run_lex("7 eflops", vec![numtok!(7), Token::unit(ExaFlopPerSecond)]);
+		run_lex(
+			"1 flops",
+			vec![numtok!(1), Token::unit(FlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"2 kflops",
+			vec![numtok!(2), Token::unit(KiloFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"3 mflops",
+			vec![numtok!(3), Token::unit(MegaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"4 gflops",
+			vec![numtok!(4), Token::unit(GigaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"5 tflops",
+			vec![numtok!(5), Token::unit(TeraFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"6 pflops",
+			vec![numtok!(6), Token::unit(PetaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"7 eflops",
+			vec![numtok!(7), Token::unit(ExaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"8 zflops",
 			vec![numtok!(8), Token::unit(ZettaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"9 yflops",
 			vec![numtok!(9), Token::unit(YottaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"10 rflops",
 			vec![numtok!(10), Token::unit(RonnaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"11 qflops",
 			vec![numtok!(11), Token::unit(QuettaFlopPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("234 wh", vec![numtok!(234), Token::unit(WattHour)]);
-		run_lex("1 w", vec![numtok!(1), Token::unit(Watt)]);
-		run_lex("1 watt", vec![numtok!(1), Token::unit(Watt)]);
-		run_lex("1 watts", vec![numtok!(1), Token::unit(Watt)]);
-		run_lex("1 watt hour", vec![numtok!(1), Token::unit(WattHour)]);
+		run_lex(
+			"234 wh",
+			vec![numtok!(234), Token::unit(WattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 w",
+			vec![numtok!(1), Token::unit(Watt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 watt",
+			vec![numtok!(1), Token::unit(Watt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 watts",
+			vec![numtok!(1), Token::unit(Watt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 watt hour",
+			vec![numtok!(1), Token::unit(WattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"0 watt + 1 watts",
 			vec![
@@ -1577,6 +1966,8 @@ mod tests {
 				numtok!(1),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"0 watt * 1",
@@ -1586,6 +1977,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(1),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 watts + 3 watts",
@@ -1596,6 +1989,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 watts * 3",
@@ -1605,6 +2000,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 watt plus 5 watts",
@@ -1615,6 +2012,8 @@ mod tests {
 				numtok!(5),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 watt times 5",
@@ -1624,6 +2023,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(5),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 watts plus 7 watts",
@@ -1634,6 +2035,8 @@ mod tests {
 				numtok!(7),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 watts times 7",
@@ -1643,14 +2046,38 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(7),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("2.3 kwh", vec![numtok!(2.3), Token::unit(KilowattHour)]);
-		run_lex("1 kw", vec![numtok!(1), Token::unit(Kilowatt)]);
-		run_lex("1 kilowatt", vec![numtok!(1), Token::unit(Kilowatt)]);
-		run_lex("1 kilowatts", vec![numtok!(1), Token::unit(Kilowatt)]);
+		run_lex(
+			"2.3 kwh",
+			vec![numtok!(2.3), Token::unit(KilowattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 kw",
+			vec![numtok!(1), Token::unit(Kilowatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 kilowatt",
+			vec![numtok!(1), Token::unit(Kilowatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 kilowatts",
+			vec![numtok!(1), Token::unit(Kilowatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"1 kilowatt hour",
 			vec![numtok!(1), Token::unit(KilowattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatt + 3 watt",
@@ -1661,6 +2088,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatt * 4",
@@ -1670,6 +2099,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(4),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatt times 4",
@@ -1679,6 +2110,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(4),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatt + 3 watts",
@@ -1689,6 +2122,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatts + 3 watt",
@@ -1699,6 +2134,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatts + 3 watts",
@@ -1709,6 +2146,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatt plus 3 watt",
@@ -1719,6 +2158,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatt plus 3 watts",
@@ -1729,6 +2170,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatts plus 3 watt",
@@ -1739,6 +2182,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 kilowatts plus 3 watts",
@@ -1749,6 +2194,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6.6 watts + 4 kilowatts",
@@ -1759,6 +2206,8 @@ mod tests {
 				numtok!(4),
 				Token::unit(Kilowatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6.6 watts plus 4 kilowatts",
@@ -1769,13 +2218,32 @@ mod tests {
 				numtok!(4),
 				Token::unit(Kilowatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("2.3 mwh", vec![numtok!(2.3), Token::unit(MegawattHour)]);
-		run_lex("1 mw", vec![numtok!(1), Token::unit(Megawatt)]);
-		run_lex("1 megawatt", vec![numtok!(1), Token::unit(Megawatt)]);
+		run_lex(
+			"2.3 mwh",
+			vec![numtok!(2.3), Token::unit(MegawattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 mw",
+			vec![numtok!(1), Token::unit(Megawatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 megawatt",
+			vec![numtok!(1), Token::unit(Megawatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"1 megawatt hour",
 			vec![numtok!(1), Token::unit(MegawattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatt + 3 watt",
@@ -1786,6 +2254,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatt * 6",
@@ -1795,6 +2265,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(6),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatt times 6",
@@ -1804,6 +2276,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(6),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatt + 3 watts",
@@ -1814,6 +2288,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatts + 3 watt",
@@ -1824,6 +2300,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatts + 3 watts",
@@ -1834,6 +2312,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatt plus 3 watt",
@@ -1844,6 +2324,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatt plus 3 watts",
@@ -1854,6 +2336,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatts plus 3 watt",
@@ -1864,6 +2348,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 megawatts plus 3 watts",
@@ -1874,6 +2360,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6.6 watts + 4 megawatts",
@@ -1884,6 +2372,8 @@ mod tests {
 				numtok!(4),
 				Token::unit(Megawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6.6 watts plus 4 megawatts",
@@ -1894,14 +2384,38 @@ mod tests {
 				numtok!(4),
 				Token::unit(Megawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("234 gwh", vec![numtok!(234), Token::unit(GigawattHour)]);
-		run_lex("1 gw", vec![numtok!(1), Token::unit(Gigawatt)]);
-		run_lex("1 gigawatt", vec![numtok!(1), Token::unit(Gigawatt)]);
-		run_lex("1 gigawatts", vec![numtok!(1), Token::unit(Gigawatt)]);
+		run_lex(
+			"234 gwh",
+			vec![numtok!(234), Token::unit(GigawattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 gw",
+			vec![numtok!(1), Token::unit(Gigawatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 gigawatt",
+			vec![numtok!(1), Token::unit(Gigawatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"1 gigawatts",
+			vec![numtok!(1), Token::unit(Gigawatt)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"1 gigawatt hour",
 			vec![numtok!(1), Token::unit(GigawattHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"0 gigawatt + 1 gigawatts",
@@ -1912,6 +2426,8 @@ mod tests {
 				numtok!(1),
 				Token::unit(Gigawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"0 gigawatt * 1",
@@ -1921,6 +2437,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(1),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 gigawatts + 3 gigawatts",
@@ -1931,6 +2449,8 @@ mod tests {
 				numtok!(3),
 				Token::unit(Gigawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2 gigawatts * 3",
@@ -1940,6 +2460,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gigawatt plus 5 watt",
@@ -1950,6 +2472,8 @@ mod tests {
 				numtok!(5),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gigawatt plus 5 megawatt",
@@ -1960,6 +2484,8 @@ mod tests {
 				numtok!(5),
 				Token::unit(Megawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gigawatt plus 5 gigawatt",
@@ -1970,6 +2496,8 @@ mod tests {
 				numtok!(5),
 				Token::unit(Gigawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gigawatt plus 5 watts",
@@ -1980,6 +2508,8 @@ mod tests {
 				numtok!(5),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gigawatt plus 5 megawatts",
@@ -1990,6 +2520,8 @@ mod tests {
 				numtok!(5),
 				Token::unit(Megawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gigawatt plus 5 gigawatts",
@@ -2000,6 +2532,8 @@ mod tests {
 				numtok!(5),
 				Token::unit(Gigawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 gigawatt times 5",
@@ -2009,6 +2543,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(5),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 gigawatts plus 7 watt",
@@ -2019,6 +2555,8 @@ mod tests {
 				numtok!(7),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 gigawatts plus 7 megawatt",
@@ -2029,6 +2567,8 @@ mod tests {
 				numtok!(7),
 				Token::unit(Megawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 gigawatts plus 7 gigawatt",
@@ -2039,6 +2579,8 @@ mod tests {
 				numtok!(7),
 				Token::unit(Gigawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 gigawatts plus 7 watts",
@@ -2049,6 +2591,8 @@ mod tests {
 				numtok!(7),
 				Token::unit(Watt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 gigawatts plus 7 megawatts",
@@ -2059,6 +2603,8 @@ mod tests {
 				numtok!(7),
 				Token::unit(Megawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 gigawatts plus 7 gigawatts",
@@ -2069,6 +2615,8 @@ mod tests {
 				numtok!(7),
 				Token::unit(Gigawatt),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 gigawatts times 7",
@@ -2078,6 +2626,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(7),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"88 mw * 3",
@@ -2087,6 +2637,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"88 mw times 3",
@@ -2096,8 +2648,15 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(3),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("999 kb", vec![numtok!(999), Token::unit(Kilobyte)]);
+		run_lex(
+			"999 kb",
+			vec![numtok!(999), Token::unit(Kilobyte)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"200 gb - 100 mb",
 			vec![
@@ -2107,8 +2666,15 @@ mod tests {
 				numtok!(100),
 				Token::unit(Megabyte),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("999 kib", vec![numtok!(999), Token::unit(Kibibyte)]);
+		run_lex(
+			"999 kib",
+			vec![numtok!(999), Token::unit(Kibibyte)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"200 gib - 100 mib",
 			vec![
@@ -2118,29 +2684,56 @@ mod tests {
 				numtok!(100),
 				Token::unit(Mebibyte),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("45 btu", vec![numtok!(45), Token::unit(BritishThermalUnit)]);
+		run_lex(
+			"45 btu",
+			vec![numtok!(45), Token::unit(BritishThermalUnit)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"45.5 british thermal unit",
 			vec![numtok!(45.5), Token::unit(BritishThermalUnit)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"46 british thermal units",
 			vec![numtok!(46), Token::unit(BritishThermalUnit)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"5432 newton metres",
 			vec![numtok!(5432), Token::unit(NewtonMeter)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"2345 newton-meters",
 			vec![numtok!(2345), Token::unit(NewtonMeter)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("20 lbf", vec![numtok!(20), Token::LexerKeyword(PoundForce)]);
-		run_lex("60 hz", vec![numtok!(60), Token::unit(Hertz)]);
+		run_lex(
+			"20 lbf",
+			vec![numtok!(20), Token::LexerKeyword(PoundForce)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
+		run_lex(
+			"60 hz",
+			vec![numtok!(60), Token::unit(Hertz)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"1100 rpm",
 			vec![numtok!(1100), Token::unit(RevolutionsPerMinute)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1150 revolutions per minute",
@@ -2150,6 +2743,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1 revolution per min",
@@ -2159,6 +2754,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"4 revolution / mins",
@@ -2168,6 +2765,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1250 r / min",
@@ -2177,6 +2776,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1300 rev / min",
@@ -2186,6 +2787,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1350 rev / minute",
@@ -2195,6 +2798,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1250 r per min",
@@ -2204,6 +2809,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1300 rev per min",
@@ -2213,6 +2820,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"1350 rev per minute",
@@ -2222,14 +2831,20 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Minute),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"100 kph",
 			vec![numtok!(100), Token::unit(KilometersPerHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"100 kmh",
 			vec![numtok!(100), Token::unit(KilometersPerHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"100 kilometers per hour",
@@ -2239,6 +2854,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Hour),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"100 kilometre / hrs",
@@ -2248,8 +2865,15 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Hour),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("3.6 mps", vec![numtok!(3.6), Token::unit(MetersPerSecond)]);
+		run_lex(
+			"3.6 mps",
+			vec![numtok!(3.6), Token::unit(MetersPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"3.6 meters per second",
 			vec![
@@ -2258,6 +2882,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"3.6 metre / secs",
@@ -2267,8 +2893,15 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("60 mph", vec![numtok!(60), Token::unit(MilesPerHour)]);
+		run_lex(
+			"60 mph",
+			vec![numtok!(60), Token::unit(MilesPerHour)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"60 miles per hour",
 			vec![
@@ -2277,6 +2910,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Hour),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"60 mile / hr",
@@ -2286,8 +2921,15 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Hour),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("35 fps", vec![numtok!(35), Token::unit(FeetPerSecond)]);
+		run_lex(
+			"35 fps",
+			vec![numtok!(35), Token::unit(FeetPerSecond)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"35 ft / sec",
 			vec![
@@ -2296,6 +2938,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"35 ft per seconds",
@@ -2305,6 +2949,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"35 foot / secs",
@@ -2314,6 +2960,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"35 foot per seconds",
@@ -2323,6 +2971,8 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"35 feet / sec",
@@ -2332,6 +2982,8 @@ mod tests {
 				Token::Operator(Divide),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"35 feet per second",
@@ -2341,8 +2993,15 @@ mod tests {
 				Token::TextOperator(Per),
 				Token::unit(Second),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
-		run_lex("30 pa", vec![numtok!(30), Token::unit(Pascal)]);
+		run_lex(
+			"30 pa",
+			vec![numtok!(30), Token::unit(Pascal)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
+		);
 		run_lex(
 			"23 celsius + 4 celsius",
 			vec![
@@ -2352,6 +3011,8 @@ mod tests {
 				numtok!(4),
 				Token::unit(Celsius),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"54 f - 1.5 fahrenheit",
@@ -2362,63 +3023,93 @@ mod tests {
 				numtok!(1.5),
 				Token::unit(Fahrenheit),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"50 metric tonnes",
 			vec![numtok!(50), Token::unit(MetricTon)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"77 metric hps",
 			vec![numtok!(77), Token::unit(MetricHorsepower)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 
 		run_lex(
 			"100 + 99",
 			vec![numtok!(100), Token::Operator(Plus), numtok!(99)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"100 plus 99",
 			vec![numtok!(100), Token::Operator(Plus), numtok!(99)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"12 - 4",
 			vec![numtok!(12), Token::Operator(Minus), numtok!(4)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"12 minus 4",
 			vec![numtok!(12), Token::Operator(Minus), numtok!(4)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"50.5 * 2",
 			vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"50.5 times 2",
 			vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"50.5 multiplied by 2",
 			vec![numtok!(50.5), Token::Operator(Multiply), numtok!(2)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 / 3",
 			vec![numtok!(6), Token::Operator(Divide), numtok!(3)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"50 / 10",
 			vec![numtok!(50), Token::Operator(Divide), numtok!(10)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"52 ÷ 12",
 			vec![numtok!(52), Token::Operator(Divide), numtok!(12)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"6 divided by 3",
 			vec![numtok!(6), Token::Operator(Divide), numtok!(3)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"7 mod 5",
 			vec![numtok!(7), Token::Operator(Modulo), numtok!(5)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 
 		run_lex(
@@ -2432,6 +3123,8 @@ mod tests {
 				Token::Operator(Multiply),
 				numtok!(4),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"52 weeks * (12 hrs + 12 hours)",
@@ -2447,15 +3140,21 @@ mod tests {
 				Token::unit(Hour),
 				Token::Operator(RightParen),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
-			"12 pound+",
-			vec![numtok!(12), Token::unit(Pound), Token::Operator(Plus)],
+			"12 cm+",
+			vec![numtok!(12), Token::unit(Centimeter), Token::Operator(Plus)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 
 		run_lex(
 			"5 π m",
 			vec![numtok!(5), Token::Constant(Pi), Token::unit(Meter)],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 		run_lex(
 			"5 Ω + 2 mΩ",
@@ -2466,6 +3165,8 @@ mod tests {
 				numtok!(2),
 				Token::unit(Milliohm),
 			],
+			&strip_operator_spacing,
+			&strip_afterdigit_spacing,
 		);
 	}
 }

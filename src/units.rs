@@ -6,6 +6,8 @@ use std::cmp::Reverse;
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// An enum of all possible unit types, like [`Length`], [`DigitalStorage`] etc.
 pub enum UnitType {
+	/// May be one of several units depending on context, such as `pound` or `kr`.
+	Unknown,
 	/// A unit of time, for example [`Hour`]
 	Time,
 	/// A unit of length, for example [`Mile`]
@@ -48,6 +50,7 @@ pub enum UnitType {
 impl UnitType {
 	fn primitive(&self) -> Vec<(Unit, isize)> {
 		let units = match self {
+			UnitType::Unknown => panic!("Unknown unit type for ambiguous unit"),
 			Time => vec![(Second, 1)],
 			Length => vec![(Meter, 1)],
 			Area => vec![(Meter, 2)],
@@ -79,6 +82,13 @@ impl UnitType {
 	}
 }
 use UnitType::*;
+
+#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord, Hash)]
+pub struct Ambiguity {
+	pub string: &'static str,
+	pub candidates: &'static [Unit],
+	pub fallback: &'static Unit,
+}
 
 /// Sort for display and comparison purposes.
 pub fn sort_units(primitives: &mut Vec<(Unit, isize)>) {
@@ -134,6 +144,7 @@ macro_rules! create_units {
 		#[derive(Clone, Copy, PartialEq, Debug, Eq, PartialOrd, Ord, Hash)]
 		/// A Unit enum. Note that it can also be [`NoUnit`].
 		pub enum Unit {
+			Ambiguity(Ambiguity),
 			$($variant),*
 		}
 		use Unit::*;
@@ -141,6 +152,7 @@ macro_rules! create_units {
 		impl Unit {
 			pub fn category(&self) -> UnitType {
 				match self {
+					Unit::Ambiguity(_) => UnitType::Unknown,
 					$(
 						Unit::$variant => $properties.0
 					),*
@@ -148,6 +160,7 @@ macro_rules! create_units {
 			}
 			pub fn weight(&self) -> D128 {
 				match self {
+					Unit::Ambiguity(ambiguity) => panic!("Ambiguous unit {}", ambiguity.string),
 					$(
 						Unit::$variant => $properties.1
 					),*
@@ -155,6 +168,7 @@ macro_rules! create_units {
 			}
 			pub(crate) fn singular(&self) -> &str {
 				match self {
+					Unit::Ambiguity(ambiguity) => panic!("Ambiguous unit {}", ambiguity.string),
 					$(
 						Unit::$variant => $properties.2
 					),*
@@ -162,6 +176,7 @@ macro_rules! create_units {
 			}
 			pub(crate) fn plural(&self) -> &str {
 				match self {
+					Unit::Ambiguity(ambiguity) => panic!("Ambiguous unit {}", ambiguity.string),
 					$(
 						Unit::$variant => $properties.3
 					),*

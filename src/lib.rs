@@ -24,7 +24,11 @@
 
 use crate::units::{Unit, UnitType, primitive_unit, sort_units};
 use fastnum::{D128, dec128 as d};
-use std::fmt::{self, Debug, Display};
+use serde::{Deserialize, Serialize};
+use std::{
+	fmt::{self, Debug, Display},
+	sync::{OnceLock, RwLock, RwLockReadGuard, RwLockWriteGuard},
+};
 use web_time::Instant;
 
 /// Currency exchange rates
@@ -325,6 +329,69 @@ macro_rules! numtok {
 	};
 }
 
+static SETTINGS: OnceLock<RwLock<Settings>> = OnceLock::new();
+
+#[derive(Serialize, Deserialize)]
+pub struct Settings {
+	pub locale: String,
+}
+
+impl Settings {
+	pub fn region(&self) -> String {
+		let region = self.locale.split('-').last().unwrap().to_string();
+		region
+	}
+	pub fn get() -> &'static RwLock<Settings> {
+		SETTINGS.get_or_init(|| RwLock::new(Settings::default()))
+	}
+	pub fn read() -> RwLockReadGuard<'static, Settings> {
+		Self::get().read().unwrap()
+	}
+	pub fn write() -> RwLockWriteGuard<'static, Settings> {
+		Self::get().write().unwrap()
+	}
+	#[cfg(test)]
+	pub fn reset_to_default() {
+		*Self::write() = Settings::default();
+	}
+}
+impl Default for Settings {
+	fn default() -> Self {
+		#[cfg(test)]
+		{
+			Settings {
+				locale: "nb-NO".to_string(),
+			}
+		}
+		#[cfg(not(test))]
+		{
+			#[cfg(target_arch = "wasm32")]
+			{
+				Settings {
+					locale: "".to_string(),
+				}
+			}
+			#[cfg(not(target_arch = "wasm32"))]
+			Settings {
+				locale: sys_locale::get_locale().unwrap_or("".to_string()),
+			}
+		}
+	}
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn set_settings(value: JsValue) -> Result<(), JsValue> {
+	let settings: Settings =
+		serde_wasm_bindgen::from_value(value).map_err(|e| JsValue::from_str(&e.to_string()))?;
+	*Settings::write() = settings;
+	Ok(())
+}
+
+pub fn get_region() -> String {
+	Settings::read().region()
+}
+
 /// Evaluates a string into a resulting [`Number`].
 ///
 /// Example:
@@ -354,14 +421,14 @@ pub fn eval(input: &str, allow_trailing_operators: bool, verbose: bool) -> Resul
 
 			let parse_start = Instant::now();
 			match parser::parse(&tokens) {
-				Ok(ast) => {
+				Ok(mut ast) => {
 					let parse_time = Instant::now().duration_since(parse_start).as_nanos() as f32;
 					if verbose {
 						println!("Parsed AstNode: {:#?}", ast);
 					}
 
 					let eval_start = Instant::now();
-					match evaluator::evaluate(&ast) {
+					match evaluator::evaluate(&mut ast) {
 						Ok(answer) => {
 							let eval_time =
 								Instant::now().duration_since(eval_start).as_nanos() as f32;
