@@ -6,6 +6,7 @@ use crate::UnaryOperator::*;
 use crate::lookup::{lookup_factorial, lookup_named_number};
 use crate::parser::AstNode;
 use crate::units::Unit;
+use crate::units::UnitType;
 use crate::units::multiply_any;
 use crate::units::to_ideal_unit;
 use crate::units::{add, convert, divide, modulo, multiply, pow, subtract};
@@ -14,8 +15,9 @@ use fastnum::decimal::Context;
 use fastnum::{D128, dec128 as d, decimal::RoundingMode};
 
 /// Evaluate an [`AstNode`] into a [`Number`]
-pub fn evaluate(ast: &AstNode) -> Result<Number, String> {
-	let answer = evaluate_node(ast)?;
+pub fn evaluate(ast: &mut AstNode) -> Result<Number, String> {
+	resolve_ambiguities(ast, None);
+	let answer = evaluate_node(&ast)?;
 	Ok(answer)
 }
 
@@ -54,6 +56,42 @@ pub fn tan(input: D128) -> D128 {
 fn replace_without_updating_signals(old: D128, new: D128) -> D128 {
 	let new_without_signal = D128::parse_str(&new.to_string(), Context::default());
 	old - old + new_without_signal
+}
+
+fn find_concrete_category(ast: &AstNode) -> Option<UnitType> {
+	if let Token::Unit(units) = &ast.token {
+		if let Some((u, _)) = units.iter().find(|(u, _)| !matches!(u, Unit::Ambiguity(_))) {
+			return Some(u.category());
+		}
+	}
+	ast.children.iter().find_map(find_concrete_category)
+}
+
+fn resolve_ambiguities(ast: &mut AstNode, hint: Option<UnitType>) {
+	let mut child_hints = vec![hint; ast.children.len()];
+
+	if let Token::TextOperator(To) = &ast.token {
+		if ast.children.len() == 2 {
+			let left_cat = find_concrete_category(&ast.children[0]);
+			let right_cat = find_concrete_category(&ast.children[1]);
+			child_hints[0] = right_cat.or(hint); // left side hinted by right
+			child_hints[1] = left_cat.or(hint); // right side hinted by left
+		}
+	}
+
+	for (child, h) in ast.children.iter_mut().zip(child_hints) {
+		resolve_ambiguities(child, h);
+	}
+
+	if let Token::Unit(units) = &mut ast.token {
+		for (unit, _) in units.iter_mut() {
+			if let Unit::Ambiguity(amb) = unit {
+				*unit = hint
+					.and_then(|cat| amb.candidates.iter().find(|c| c.category() == cat).copied())
+					.unwrap_or(*amb.fallback);
+			}
+		}
+	}
 }
 
 fn evaluate_unit(ast: &AstNode) -> Result<Vec<(Unit, isize)>, String> {
@@ -315,9 +353,9 @@ fn evaluate_node(ast_node: &AstNode) -> Result<Number, String> {
 
 #[cfg(test)]
 mod tests {
+	use crate::{Settings, eval};
+	use serial_test::serial;
 	use std::str::FromStr;
-
-	use crate::eval;
 
 	#[track_caller]
 	fn eval_test(input: &str, expected: &str) {
@@ -410,6 +448,15 @@ mod tests {
 			"1 EUR/gallon to NOK/liter",
 			"≈ 2.98089102160411090430525272544562882356 NOK / liter",
 		);
+	}
+
+	#[test]
+	#[serial]
+	fn test_ambiguous_evals() {
+		Settings::write().locale = "en-GB".to_string();
+		results_eq("1pound", "1gbp");
+		Settings::write().locale = "nb-NO".to_string();
+		results_eq("1pound", "1lbs");
 	}
 
 	#[test]

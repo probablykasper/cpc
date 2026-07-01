@@ -11,6 +11,9 @@
 
 	// Initialize currency cache when cpc module is loaded
 	cpc_promise.then(async (mod) => {
+		mod.set_settings({
+			locale: Intl?.DateTimeFormat()?.resolvedOptions()?.locale ?? navigator.language
+		})
 		cpc = mod;
 
 		// Fetch exchange rates and initialize currency cache
