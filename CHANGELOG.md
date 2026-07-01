@@ -1,8 +1,9 @@
 # Changelog
 
 ## Next
-- Add ambiguous unit resolution depending on context and user locale. `pound` can now become `GBP` or `lbs`
-- Add currency symbols like `€`
+- Add ambiguous unit resolution depending on context and user locale.
+- Add ambiguous units like `pound`
+- Add currency symbols like `€` and `kr`
 - Add `as` and `into` keywords for unit conversion
 - Fix some units not being simplified
 
